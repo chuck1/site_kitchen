@@ -8,11 +8,12 @@ import matplotlib.pyplot as plt
 
 #print len(sys.argv)
 
-if len(sys.argv)!=2:
+if len(sys.argv) < 2:
 	print "usage: python read.py <filename>"
 	sys.exit()
 
 #print sys.argv[1]
+
 
 sz = sci.array((0,0))
 
@@ -77,9 +78,9 @@ for a in range( len(X) ):
 #print r
 
 
-#plt.plot(X,Y,'o')
-#plt.axis([-0.00025, 0, -0.00025, 0.00025])
-#plt.show()
+plt.plot(X,Y,'o')
+plt.axis([-0.00025, 0, -0.00025, 0.00025])
+plt.show()
 
 
 
