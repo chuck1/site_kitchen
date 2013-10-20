@@ -1,5 +1,6 @@
 import math
 import scipy as sci
+import numpy as np
 import sys
 import re
 import matplotlib.pyplot as plt
@@ -38,9 +39,9 @@ for line in f:
 	
 	sz[1] = max( sz[1], len(split) )
 	#print "sz:",sz	
-
-	x = sci.resize( x, sz )
-	y = sci.resize( y, sz )
+	
+	x = np.resize( x, sz )
+	y = np.resize( y, sz )
 	
 	for a in range( sci.size( y, 1 ) ):
 		y[i,a] = ''
@@ -60,32 +61,5 @@ for line in f:
 
 #print x
 #print y
-
-
-X = x[1:,1]
-Y = x[1:,2]
-u = x[1:,4]
-
-print X
-print Y
-
-r = x[1:,0]
-
-for a in range( len(X) ):
-	r[a] = math.sqrt( X[a]*X[a] + Y[a]*Y[a] )
-
-
-#print r
-
-
-plt.plot(X,Y,'o')
-plt.axis([-0.00025, 0, -0.00025, 0.00025])
-plt.show()
-
-
-
-plt.plot(r,u,'o')
-#plt.axis([-0.00025, 0, -0.00025, 0.00025])
-plt.show()
 
 

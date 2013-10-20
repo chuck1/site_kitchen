@@ -1,9 +1,19 @@
+#!/usr/bin/env python
 import sys
 
+# input
+if len(sys.argv) < 6:
+	print "usage: ./mass_flow_rate.py <temperature in> <temperature out> <length> <width> <heat flux>"
+	sys.exit()
+
+T1 = float(sys.argv[1]) #773.15
+T2 = float(sys.argv[2])
+l  = float(sys.argv[3])
+w  = float(sys.argv[4])
+q  = float(sys.argv[5])
+
+# run
 sys.path.append('/nfs/stak/students/r/rymalc/Documents/python')
-
-print sys.path
-
 
 import Mod
 from lxml import etree
@@ -22,39 +32,28 @@ Mod.process_element(root)
 
 
 a = Mod.get(root,material_name,property_name)
-print "a",a
+#print "a",a
 
-T = 773.15
-
-
-rho = Mod.poly_eval(T,a)
-print "rho",rho
+rho = Mod.poly_eval( T1, a )
+print "rho in=%f" % rho
 
 a = Mod.get(root,material_name,"cp")
-print "a",a
+#print "a",a
 
-X = Mod.frange(T,T+150,1)
-print "X",X
+X = Mod.frange( T1, T2, 1 )
+#print "X",X
 
 h = Mod.integ_poly(X,a)
 
-print "h",h
+#print "h",h
 
-
-
-
-
-
-q = 1e6
-l = 1e-2
-w = 5e-4
-d = 5e-4
-
-A = math.pi*d*d/4/2
+#d = 5e-4
+#A = math.pi*d*d/4/2
 
 m = q*l*w/h
-print "m %f" % m
 
-v = m/rho/A
-print "v %f" % v
+print "m %10s" % m
+
+#v = m/rho/A
+#print "v %f" % v
 
