@@ -73,7 +73,7 @@ def read_csv(filename):
 	print "%i lines" % l
 
 	# number of threads
-	n = l/70000
+	n = int( math.ceil( float(l)/70000.0 ) )
 	
 	print "processing in %i threads" % n
 	
@@ -132,7 +132,7 @@ def read_csv(filename):
 	#duration = time.clock() - start_time
 
 	print "elapsed time: %f seconds" % duration
-	print "shape(data)",np.shape(data)
+	#print "shape(data)",np.shape(data)
 	return data
 
 

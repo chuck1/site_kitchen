@@ -172,8 +172,8 @@ class spline:
 				i = index(b,self.m)
 				y = 1
 
-				print "i",i
-				print "y",y
+				#print "i",i
+				#print "y",y
 
 				for c in range(0,self.n): # variable
 					if c == a:
@@ -185,16 +185,16 @@ class spline:
 					else:
 						y *= pow( x[c], i[c] )
 
-					print "y",y,"a",a,"c",c
+					#print "y",y,"a",a,"c",c
 					
 				y *= self.B[b]
 	
-				print "y",y
+				#print "y",y
 
 				g[a] += y
 	
 
-		if 1:
+		if 0:
 			print "x",x
 			print "B",self.B
 		
