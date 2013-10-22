@@ -2,7 +2,6 @@
 
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import animation
 import itertools
 import numpy as np
 import math
@@ -12,12 +11,28 @@ sys.path.append("/nfs/stak/students/r/rymalc/Documents/python")
 
 import vector
 
+def progress( value ):
+	bar_length = 50
+	
+	block = int( round( bar_length * value ) )
+	text = "\rprogress: [{0}]".format( "0"*block + "1"*(bar_length - block) )
+	sys.stdout.write(text)
+	sys.stdout.flush()
 
 
 z_axis = np.array([0,0,1])
 
 
 G = 6.674e-11
+
+def fd1( y0, yp0, yp1, dx ):
+	y1 = y0 + 0.5 * ( yp0 + yp1 ) * dx
+	return y1
+
+def fd0( y0, yp0, dx ):
+	y1 = y0 + yp0 * dx
+	return y1
+
 
 def sphere( ax, r ):
 	u = np.linspace(0, 2 * np.pi, 100)
@@ -48,8 +63,8 @@ class sat:
 		init_y = math.cos(init_lati) * math.sin(init_long)
 		init_z = math.sin(init_lati)
 		
-	
-		init_uX = np.array([init_x,init_y,init_z])
+		
+		init_uX = vector.norm( np.array([init_x,init_y,init_z]) )
 		init_uV = vector.norm( np.cross(init_uX,z_axis) )
 
 		self.init_X = init_uX * ( alt + parent.radius )
@@ -58,17 +73,19 @@ class sat:
 	def init_run( self, nt, dt ):
 		self.x = np.zeros((nt,3))
 		self.v = np.zeros((nt,3))
-		#self.r = np.zeros((nt,3))
-		#self.d = np.zeros(nt)
+		self.a = np.zeros((nt,3))
+		self.f = np.zeros((nt,3))
 		
 		self.x[0,:] = self.init_X
 		self.v[0,:] = self.init_V
 		
-		self.f = np.zeros((nt,3))
-		
 	def step( self, dt, i ):
-		self.v[i] = self.v[i-1] + self.f[i] / self.mass * dt
-		self.x[i] = self.x[i-1] + self.v[i] * dt
+		self.a[i-1,:] = self.f[i-1,:] / self.mass
+		
+		self.v[i] = fd0( self.v[i-1,:], self.a[i-1,:], dt )
+		
+		#self.x[i,:] = fd0( self.x[i-1,:], self.v[i-1,:], dt )
+		self.x[i,:] = fd1( self.x[i-1,:], self.v[i-1,:], self.v[i,:], dt )
 		
 	def plot_traj( self, ax ):
 		ax.plot( self.x[:,0], self.x[:,1], self.x[:,2] )
@@ -76,55 +93,6 @@ class sat:
 		sphere( ax, self.radius )
 	def plot_2dtraj( self, ax ):
 		ax.plot( self.x[:,0], self.x[:,1] )
-	def orbit_expand( self, i, target_alt ):
-		thrust = 1e5
-
-		target_dist = target_alt + self.parent.radius
-
-		target_speed = math.sqrt( G * self.parent.mass / ( target_dist ) )
-
-		#print "speeds %e %e" % ( vector.magn( self.v[i-1,:] ),target_speed )
-		
-		target_pe = -G * self.parent.mass * self.mass / target_dist
-		target_ke = 0.5 * self.mass * target_speed**2
-		target_e = target_pe + target_ke
-
-		rp = self.parent.x[i-1,:] - self.x[i-1,:]
-
-		current_dist = vector.magn( rp )
-		current_speed = vector.magn( self.v[i-1,:] )
-		
-		current_pe = -G * self.parent.mass * self.mass / current_dist
-		current_ke = 0.5 * self.mass * current_speed**2
-		current_e = current_pe + current_ke
-						
-		#print "distances %e %e" % ( current_dist, target_dist )
-			
-		print "energy %e %e" % ( current_e, target_e )
-	
-		if current_e < target_e:
-		#if current_dist < target_dist:
-			#f = vector.norm( rp ) * thrust
-			f = vector.norm( self.v[i-1,:] ) * thrust
-			print "burn"
-			self.f[i] += f
-	def init_anim( self, ax ):
-		self.line, = ax.plot([],[],lw=2)
-		self.line.set_data([],[])
-		return self.line,
-	def animate( self, i ):
-		self.line.set_data( self.x[0:i,0], self.x[0:i,1] )
-		return self.line,
-
-
-
-def approach_control( r ):
-	thrust = 1e5
-	
-	if vector.magn( r ) > 1.0e6:
-		return  vector.norm( r ) * thrust
-	else:
-		return np.zeros(3)
 
 class system:
 	def __init__( self, sats ):
@@ -140,50 +108,45 @@ class system:
 
 		for a in range(self.nb_sats):
 			self.sats[a].init_run( nt, dt )
-	
-		for i in range(1,nt):	
+
+		# loop
+		for i in range(1,nt):
+			progress(float(i)/float(nt))
+			
 			self.step(i)
-		
-	def step( self, i ):
-		
+	
+	def accel( self, i ):
 		for a in range(len( self.pairs )):
 			b = self.pairs[a][0]
 			c = self.pairs[a][1]
 	
-			r = self.sats[b].x[i-1,:] - self.sats[c].x[i-1,:]
+			r = self.sats[b].x[i,:] - self.sats[c].x[i,:]
 			
 			d = vector.magn( r )
-			f = G * self.sats[b].mass * self.sats[c].mass / d / d * ( r / d )
 			
-			self.sats[b].f[i] -= f
-			self.sats[c].f[i] += f
-
-		# extra forces
-		# ss to moon
-		#rp = self.sats[1].x[i-1,:] - self.sats[1].parent.x[i-1,:]
-		#tanj_p = 
+			if d == 0:
+				print "warning: d=0"
+				f = 0
+			else:
+				f = G * self.sats[b].mass * self.sats[c].mass / d / d * ( r / d )
+			
+			self.sats[b].f[i,:] -= f
+			self.sats[c].f[i,:] += f
 		
-		#self.sats[1].f[i] += approach_control( r )
-		#self.sats[1].orbit_expand( i, 3.8e8 )
+			
+	def step( self, i ):
+		self.accel(i-1)
 		
-		
-
 		for a in range(self.nb_sats):
 			self.sats[a].step( self.dt, i )
 
-	def init_anim( self, ax ):
-		for s in self.sats:
-			s.init_anim(ax)
-	def animate( self, i ):
-		for s in self.sats:
-			s.animate(i)
-
-
 class orbit_elip:
 	def v( self, r ):
-		return math.sqrt( G * self.parent.mass * ( 2.0 / r - 1 / self.a ) )
+		return math.sqrt( G * self.parent.mass * ( ( 2.0 / r ) - ( 1 / self.a ) ) )
 	def __init__( self, parent, alt_a, alt_p ):
 		self.parent = parent
+		self.alt_p = alt_p
+		self.alt_a = alt_a
 		self.ra = alt_a + parent.radius
 		self.rp = alt_p + parent.radius
 		
@@ -193,6 +156,15 @@ class orbit_elip:
 		
 		self.va = self.v( self.ra )
 		self.vp = self.v( self.rp )
+
+class orbit_circ:
+	def __init__( self, parent, alt ):
+		self.parent = parent
+		self.alt = alt
+		
+		self.r = self.alt + parent.radius
+		
+		self.v = math.sqrt( G * parent.mass / self.r )
 
 
 
