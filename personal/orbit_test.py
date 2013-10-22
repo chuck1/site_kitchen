@@ -24,16 +24,16 @@ time_step = int(sys.argv[2])
 
 #------------------
 
-alt_ss = 4.17e5
-alt_moon = 3.8e8
+alt_ss   = 4.17e5
+alt_moon = 3.80e8
 
-radius_earth = 6.371e6
-radius_ss = 100
-radius_moon = 1.73814e3
+radius_earth = 6.37100e6
+radius_ss    = 1.00000e2
+radius_moon  = 1.73814e3
 
 mass_earth = 5.97219e24
-mass_ss = 4.5e5
-mass_moon = 7.3477e22
+mass_ss    = 4.50000e5
+mass_moon  = 7.34770e22
 
 #----------------------
 
@@ -45,15 +45,21 @@ oc_moon = orbit.orbit_circ( earth, alt_moon )
 oc_ss = orbit.orbit_circ( earth, alt_ss )
 oe_ss = orbit.orbit_elip( earth, alt_moon, alt_ss )
 
+print oe_ss.P/2.0
+
+theta_ss = oc_moon.theta( oe_ss.P / 2.0 ) - math.pi
+
 print oc_ss.v
 print oe_ss.vp
 
+#-----------------------
+
 ss = orbit.sat()
-ss.init_rel( earth, radius_ss, oe_ss.alt_p, oe_ss.vp, 0 * math.pi / 2, 0, mass_ss )
+ss.init_rel( earth, radius_ss, oe_ss.alt_p, oe_ss.vp, 0.0 / 2.0 * math.pi, theta_ss, mass_ss )
 #ss.init_rel( earth, radius_ss, oc_ss.alt, oc_ss.v, 0 * math.pi / 2, 0, mass_ss )
 
 moon = orbit.sat()
-moon.init_rel( earth, radius_moon, oc_moon.alt, oc_moon.v, 0, 0.0 / 2.0 * math.pi, mass_moon )
+moon.init_rel( earth, radius_moon, oc_moon.alt, oc_moon.v, 0.0, 0.0 / 2.0 * math.pi, mass_moon )
 
 #-------------------
 
@@ -75,8 +81,8 @@ earth.plot_2dtraj( ax )
 ss.plot_2dtraj( ax )
 moon.plot_2dtraj( ax )
 
-#plt.figure()
-#plt.plot(t,d)
+plt.figure()
+plt.plot(ps.t,ss.c0)
 
 plt.show()
 

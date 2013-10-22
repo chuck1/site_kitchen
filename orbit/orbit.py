@@ -49,6 +49,7 @@ class sat:
 	def init_abs( self, radius, mass, init_X ):
 		self.radius = radius
 		self.mass = mass
+		self.mu = G * self.mass
 		self.init_X = init_X
 		self.init_V = np.zeros(3)
 	def init_rel( self, parent, radius, alt, speed, init_lati, init_long, mass ):
@@ -58,14 +59,15 @@ class sat:
 		self.init_lati = init_lati
 		self.init_long = init_long
 		self.mass = mass
-		
+		self.mu = G * self.mass
+
 		init_x = math.cos(init_lati) * math.cos(init_long)
 		init_y = math.cos(init_lati) * math.sin(init_long)
 		init_z = math.sin(init_lati)
 		
 		
 		init_uX = vector.norm( np.array([init_x,init_y,init_z]) )
-		init_uV = vector.norm( np.cross(init_uX,z_axis) )
+		init_uV = vector.norm( np.cross( z_axis, init_uX ) )
 
 		self.init_X = init_uX * ( alt + parent.radius )
 		self.init_V = init_uV * speed
@@ -73,19 +75,55 @@ class sat:
 	def init_run( self, nt, dt ):
 		self.x = np.zeros((nt,3))
 		self.v = np.zeros((nt,3))
-		self.a = np.zeros((nt,3))
 		self.f = np.zeros((nt,3))
-		
-		self.x[0,:] = self.init_X
-		self.v[0,:] = self.init_V
+		self.a = np.zeros((nt,3))
+		self.V = np.zeros(nt)
+		self.A = np.zeros(nt)
+		self.c0 = np.zeros(nt)
+				
+		self.x[0,:] = np.array( self.init_X )
+		self.v[0,:] = np.array( self.init_V )
+
+		#self.stats(0)
+
+	def stats( self, i ):
+		self.V[i] = vector.magn( self.v[i,:] )
+		self.A[i] = vector.magn( self.a[i,:] )
+		self.c0[i] = self.A[i]/self.V[i]
+
 		
 	def step( self, dt, i ):
-		self.a[i-1,:] = self.f[i-1,:] / self.mass
+		v_old = np.array( self.v[i,:] )
+
+		# acceleration
+		self.a[i,:] = self.f[i,:] / self.mass
+
+		# velocity
+		self.v[i,:] = fd1( self.v[i-1,:], self.a[i-1,:], self.a[i,:], dt )
 		
-		self.v[i] = fd0( self.v[i-1,:], self.a[i-1,:], dt )
+		#print self.a[i-1,:]	
+		#print self.a[i,:]
+		#print v_old
+		#print self.v[i,:]
 		
 		#self.x[i,:] = fd0( self.x[i-1,:], self.v[i-1,:], dt )
 		self.x[i,:] = fd1( self.x[i-1,:], self.v[i-1,:], self.v[i,:], dt )
+		
+		self.stats(i-1)
+		
+		V_delta = vector.magn( self.v[i,:] - v_old )
+		V_old = vector.magn( v_old )
+		
+		#print "V_delta",V_delta,"V_old",V_old
+		
+		if V_old == 0:
+			if V_delta == 0:
+				return 0
+			else:
+				return 1
+		else:
+			return V_delta / V_old
+		
 		
 	def plot_traj( self, ax ):
 		ax.plot( self.x[:,0], self.x[:,1], self.x[:,2] )
@@ -104,18 +142,35 @@ class system:
 		self.nt = nt
 		self.dt = dt
 		
-		t = np.arange(0,nt) * dt
+		self.t = np.arange(0,nt) * dt
 
 		for a in range(self.nb_sats):
 			self.sats[a].init_run( nt, dt )
 
+		self.accel(0)
+		self.init_next_x(0)
+		
+		#print "starting loop"
+		
 		# loop
 		for i in range(1,nt):
 			progress(float(i)/float(nt))
 			
 			self.step(i)
+		print
 	
+	def init_next_x( self, i ):
+		if i < (self.nt-1):
+			for s in self.sats:
+				s.x[i+1] = np.array( s.x[i] )
+				s.v[i+1] = np.array( s.v[i] )
+
 	def accel( self, i ):
+		# reset force
+		for a in range(self.nb_sats):
+			self.sats[a].f[i,:] = 0
+		
+		# calculate force
 		for a in range(len( self.pairs )):
 			b = self.pairs[a][0]
 			c = self.pairs[a][1]
@@ -125,8 +180,7 @@ class system:
 			d = vector.magn( r )
 			
 			if d == 0:
-				print "warning: d=0"
-				f = 0
+				raise Exception("error: d=0")
 			else:
 				f = G * self.sats[b].mass * self.sats[c].mass / d / d * ( r / d )
 			
@@ -135,16 +189,26 @@ class system:
 		
 			
 	def step( self, i ):
-		self.accel(i-1)
+		self.init_next_x(i)
 		
-		for a in range(self.nb_sats):
-			self.sats[a].step( self.dt, i )
+		while(1):
+			self.accel(i)
+			
+			e = 0
+			for a in range(self.nb_sats):
+				e += self.sats[a].step( self.dt, i )
+			
+			#print "e",e
+			
+			if e < 0.0001:
+				break
 
 class orbit_elip:
 	def v( self, r ):
-		return math.sqrt( G * self.parent.mass * ( ( 2.0 / r ) - ( 1 / self.a ) ) )
+		return math.sqrt( self.parent.mu * ( ( 2.0 / r ) - ( 1 / self.a ) ) )
 	def __init__( self, parent, alt_a, alt_p ):
 		self.parent = parent
+		
 		self.alt_p = alt_p
 		self.alt_a = alt_a
 		self.ra = alt_a + parent.radius
@@ -156,7 +220,11 @@ class orbit_elip:
 		
 		self.va = self.v( self.ra )
 		self.vp = self.v( self.rp )
+		
+		self.P = 2.0 * math.pi * math.sqrt( pow(self.a,3) / self.parent.mu )
 
+	def theta( self, t ):
+		return 2.0 * math.pi * t / self.P
 class orbit_circ:
 	def __init__( self, parent, alt ):
 		self.parent = parent
@@ -164,7 +232,12 @@ class orbit_circ:
 		
 		self.r = self.alt + parent.radius
 		
-		self.v = math.sqrt( G * parent.mass / self.r )
+		self.v = math.sqrt( parent.mu / self.r )
+		
+		self.P = 2.0 * math.pi * math.sqrt( pow(self.r,3) / self.parent.mu )
+
+	def theta( self, t ):
+		return 2.0 * math.pi * t / self.P
 
 
 
