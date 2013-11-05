@@ -19,6 +19,13 @@ import Mod
 from lxml import etree
 import math
 
+
+def mass_flow_rate( fluid, T_in, T_out, q ):
+
+
+
+
+
 material_name = "carbon_dioxide"
 property_name = "density"
 
@@ -37,8 +44,9 @@ a = Mod.get(root,material_name,property_name)
 rho = Mod.poly_eval( T1, a )
 print "rho in=%f" % rho
 
+# polynomial coefficients for cp
 a = Mod.get(root,material_name,"cp")
-#print "a",a
+
 
 X = Mod.frange( T1, T2, 1 )
 #print "X",X
@@ -54,6 +62,16 @@ m = q*l*w/h
 
 print "m %10s" % m
 
+
 #v = m/rho/A
 #print "v %f" % v
+
+
+
+
+
+
+
+
+
 

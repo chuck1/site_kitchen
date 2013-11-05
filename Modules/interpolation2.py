@@ -55,6 +55,8 @@ class spline:
 		p = np.prod(m)
 
 		if n == 1:
+			print np.shape(x)
+			print p
 			x = np.reshape( x, (p,1) )
 		
 		if np.ndim(x) != 2:

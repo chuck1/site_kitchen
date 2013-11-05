@@ -57,6 +57,10 @@ def nearest_in_direction(x,X,n,dir):
 	if np.ndim(dir) != 1:
 		raise Exception("dir must be 1D array")
 	if np.ndim(x) != 1:
+		print "x",x
+		print "X",X
+		print "n",n
+		print "dir",dir
 		raise Exception("x must be 1D array")
 	if np.ndim(X) != 2:
 		raise Exception("X must be 2D array")
