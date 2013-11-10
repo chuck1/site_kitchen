@@ -5,8 +5,8 @@ import sys
 from lxml import etree
 import numpy as np
 
-root_dir = re.search( '(.*Python/).*', os.getcwd() ).group(1)
-media_dir = root_dir + 'Modules/Sci/media/'
+modules_dir = os.environ["HOME"] + '/Programming/Python/Modules/'
+media_dir = modules_dir + 'Sci/media/'
 
 def get_child_by_attr(root,attr,value):
 	for child in list(root):
@@ -70,6 +70,8 @@ class Property:
 class Fluid:
 	def __init__( self, filename ):
 		self.dict = {}
+		
+		print "parsing '{0}'".format(media_dir + filename)
 		
 		tree = etree.parse( media_dir + filename )
 		root = tree.getroot()

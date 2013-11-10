@@ -6,12 +6,15 @@ import os
 import re
 import numpy as np
 import matplotlib.pyplot as plt
+import warnings
 
 sys.path.append('/nfs/stak/students/r/rymalc/Documents/python')
 
-import read_csv
+import csv
 import interpolation2 as i2
 import vector
+
+warnings.filterwarnings("ignore",".*",DeprecationWarning)
 
 tol = 1e-7
 
@@ -52,8 +55,13 @@ def nearest(x,X,n):
 	return X[0:n,:]
 
 def nearest_in_direction(x,X,n,dir):
-	print "nearest neighbor"
-
+	# arrays:
+	#  x   (d,)
+	#  X   (p,d)
+	#  dir (d,)
+	
+	# checks
+	
 	if np.ndim(dir) != 1:
 		raise Exception("dir must be 1D array")
 	if np.ndim(x) != 1:
@@ -75,7 +83,9 @@ def nearest_in_direction(x,X,n,dir):
 	if np.size(X,1) != d:
 		raise Exception("size(X,1) must be greater than or equal to size(x,0)")
 	
-	dir = vector.norm( dir )
+	# function
+	
+	dir = vector.norm(dir)
 	
 	Xnew = np.zeros((1,d))
 	arg = np.array( [], int )
@@ -99,7 +109,8 @@ def nearest_in_direction(x,X,n,dir):
 
 	m = np.size(arg,0)
 	
-	#print arg
+	
+	
 	
 	# calculate distances
 	r = np.zeros( m )
@@ -108,9 +119,19 @@ def nearest_in_direction(x,X,n,dir):
 		r += temp
 	r = np.sqrt( r )
 	
-	# sort
-	ind = np.argsort( r )
+	# remove duplicates
+	u, uind = np.unique(r, return_index=True)
+	r = r[uind]
+	arg = arg[uind]
 	
+	#for a in range(0,np.size(arg,0)):
+	
+	
+	
+	# sort
+	ind = np.argsort(r)
+	
+	# apply sorting index
 	r = r[ind]
 	arg = arg[ind]
 	

@@ -93,8 +93,9 @@ class spline:
 		try:
 			B = np.linalg.solve(A,Z)
 		except np.linalg.linalg.LinAlgError:
-			plt.plot(x[:,0],x[:,1],'o')
-			plt.show()
+			print x
+			#plt.plot(x[:,0],x[:,1],'o')
+			#plt.show()
 			raise Exception("singular matrix!")
 
 
