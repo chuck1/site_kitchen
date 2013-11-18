@@ -15,7 +15,7 @@ def get_child_by_attr(root,attr,value):
 	return None
 
 def process_element(root):
-	print root.tag
+	#print root.tag
 	for child in list(root):
 		process_element(child)
 
@@ -25,21 +25,21 @@ class Poly:
 		
 		self.a = np.array([])
 		
-		print 'poly tag=%r' % node.tag
-		print 'poly text=%r' % node.text	
-		print 'split {0}'.format( split )
+		#print 'poly tag=%r' % node.tag
+		#print 'poly text=%r' % node.text	
+		#print 'split {0}'.format( split )
 		
 		# process coefficients
 		for s in split: #len(split)-1]:
 			if s:
-				print "s=%r" % s
+				#print "s=%r" % s
 				self.a = np.append( self.a, float(s) )
 
 	def eval( self, X ):
 		if isinstance( X, float ):
-			Y = np.array( [x]*len(a) )
+			Y = np.array( [X]*len(self.a) )
 			
-			z = np.sum( a * np.power( Y, range(len(a)) ) )
+			z = np.sum( self.a * np.power( Y, range(len(self.a)) ) )
 
 			return z
 		elif isinstance( X, np.ndarray ):
@@ -61,27 +61,35 @@ class Property:
 	def __init__( self, node ):
 		self.poly = []
 		
-		print 'prop tag=%r' % node.tag
+		#print 'prop tag=%r' % node.tag
 		
 		for child in list(node):
 			self.poly.append( Poly( child ) )
+		
 		
 		
 class Fluid:
 	def __init__( self, filename ):
 		self.dict = {}
 		
-		print "parsing '{0}'".format(media_dir + filename)
+		filename = filename + ".xml"
+		
 		
 		tree = etree.parse( media_dir + filename )
 		root = tree.getroot()
 	
-		print 'root tag=%r' % root.tag
-		
+
+
+		#print "parsing '{0}'".format(media_dir + filename)
+		#print 'root tag=%r' % root.tag
+
+	
+
+	
 		# process children
 		for child in list(root):
 			name = child.get( 'name' )
-			print 'name=%r' % name
+			#print 'name=%r' % name
 			
 			if name:
 				self.dict[name] = Property( child )
@@ -91,6 +99,8 @@ class Fluid:
 		if prop_name in self.dict:
 			prop = self.dict[prop_name]
 		else:
+			print "properties:"
+			print self.dict
 			raise Exception("property not found")
 		
 		

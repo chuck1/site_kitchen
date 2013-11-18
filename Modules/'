@@ -2,6 +2,7 @@
 
 import sys
 import os
+import re
 import numpy as np
 import csv
 import matplotlib.pyplot as plt
@@ -16,17 +17,17 @@ def empty_string(s):
 	return True
 
 def read(filename, delim=','):
-	filename_npy = filename + ".npy"
+	filename_bin = re.sub("\.csv", ".bin", filename)
 	
-	try:
-		data = np.load(filename_npy)
+	f = open(filename_bin,'rb')
+	if f:
 		print "reading binary"
-	except IOError:
-		print "reading text"
 		
-		try:
-			f = open( filename, 'rb' )
-
+		return np.fromfile(filename_bin)
+	else:
+		print "no binary, reading text"
+		
+		with open( filename, 'rb' ) as f:
 			reader = csv.reader( f, delimiter=delim, quoting=csv.QUOTE_NONNUMERIC, skipinitialspace=True )
 			
 			# skip first line
@@ -36,7 +37,7 @@ def read(filename, delim=','):
 	
 			r = 0
 			while 1:
-				row = []
+				row = 0
 				
 				try:
 					row = reader.next()
@@ -58,20 +59,16 @@ def read(filename, delim=','):
 					print err
 					sys.exit(0)
 				except:
-					#print row
+					print
+					print row
 					print sys.exc_info()[0]
 					break
 				
 				rows.append( row )
-			
-			data = np.array( rows )
-			
-			np.save(filename,data)
-			
-		except IOError as err:
-			print err
-			sys.exit(0)
 	
-	return data
+	
+	print len(rows)
+	
+	return np.array( rows )
 	
 	
