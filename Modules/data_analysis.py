@@ -16,7 +16,7 @@ import vector
 
 warnings.filterwarnings("ignore",".*",DeprecationWarning)
 
-tol = 1e-7
+tol = 1e-8
 
 
 
@@ -54,7 +54,9 @@ def nearest(x,X,n):
 	
 	return X[0:n,:]
 
-def nearest_in_direction(x,X,n,dir):
+def all_in_direction(x, dir, data, col, bidirectional=False):
+	X = data[:,col]
+	
 	# arrays:
 	#  x   (d,)
 	#  X   (p,d)
@@ -91,13 +93,18 @@ def nearest_in_direction(x,X,n,dir):
 	arg = np.array( [], int )
 	
 	for a in range(p):
+		# center to point
 		v = X[a,:] - x
-		perp = np.dot( v, dir )	
+
+		# parallel distance
+		par = np.dot( v, dir )	
 		
-		if perp > -tol:	
-			v -= perp * dir
 		
-			if vector.magn( v ) < tol:
+		if (par > -tol) or bidirectional:
+			# perpendicular vector
+			perp = v - (par * dir)
+			
+			if vector.magn( perp ) < tol:
 				#print np.shape(X[a,:])
 				arg = np.append( arg, a )
 				#Xnew = np.insert( Xnew, 1, X[a,:], axis=0 )
@@ -124,9 +131,6 @@ def nearest_in_direction(x,X,n,dir):
 	r = r[uind]
 	arg = arg[uind]
 	
-	#for a in range(0,np.size(arg,0)):
-	
-	
 	
 	# sort
 	ind = np.argsort(r)
@@ -135,9 +139,17 @@ def nearest_in_direction(x,X,n,dir):
 	r = r[ind]
 	arg = arg[ind]
 	
-	return arg[0:n], r[0:n]
 	
+	return data[arg,:], arg, r
 
+def nearest_in_direction(x,dir,data,col,n,bidirectional=False):
+	
+	data, arg, r = all_in_direction(x,dir,data,col,bidirectional)
+	
+	
+	
+	return data[0:n,:], arg[0:n], r[0:n]
+	
 def dist_weigh_avg(x,X,Z):
 	print "distance weighted average"
 	

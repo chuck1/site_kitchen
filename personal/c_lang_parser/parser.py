@@ -1,231 +1,304 @@
-#from termcolor import colored
-import curses
 import re
-
-
-stdscr = curses.initscr()
-
-
-
-
-curses.start_color()
-
-curses.init_pair(1,curses.COLOR_BLUE,curses.COLOR_WHITE)
-curses.init_pair(2,curses.COLOR_RED,curses.COLOR_WHITE)
-curses.init_pair(3,curses.COLOR_GREEN,curses.COLOR_WHITE)
-curses.init_pair(4,curses.COLOR_MAGENTA,curses.COLOR_WHITE)
-curses.init_pair(5,curses.COLOR_YELLOW,curses.COLOR_WHITE)
-curses.init_pair(6,curses.COLOR_CYAN,curses.COLOR_WHITE)
-
-
-
-
-if curses.can_change_color() == 1:
-	stdscr.addstr( "can change color\n", curses.color_pair(1) )
-else:
-	stdscr.addstr( "cannot change color\n", curses.color_pair(1) )
-
-#curses.init_color(0,0,0,0)
-
-
-
-#stdscr.addstr( "Pretty text", curses.color_pair(1) )
-
-
-
-class bclr:
-	blue = '\033]95m'
-	end = '\033]0m'
+import vim
 
 def displaysearch(search):
 	if search is None:
 		return None
 	return '<Search: %r, groups=%r>' % (search.group(), search.groups())
 
+class Scope:
+	def __init__(self, name, list_key_start, list_scope_child, list_key_end):
+		self.name = name
+		self.list_key_start = list_key_start
+		self.list_scope_child = list_scope_child
+		self.list_key_end = list_key_end
 
 
-class Ref:
-	def __init__(self,obj):
-		self.obj = obj
-	def get(self):
-		return self.obj
-	def set(self,obj):
-		self.obj = obj
+class Key:
+	def __init__(self, name, string_pattern, ):
+		self.name = name
+		self.string_pattern = string_pattern
+		self.pattern = re.compile(string_pattern)
+		
+	def test(self, word):
+		if self.pattern.match(word):
+			return True
+
+		return False
+
+scope_none = Scope(
+	'none',
+	[],
+	['preproc if','preproc ifndef'],
+	[]);
+
+scope_class = Scope(
+	'class',
+	['class'],
+	['class body'],
+	[('semicolon',True)])
+
+scope_class_body = Scope(
+	'class body',
+	['curly open'],
+	[],
+	[('curly close',True)])
+
+scope_preproc_if = Scope(
+	'preproc if',	
+	['preproc if'],
+	['class'],
+	[('preproc endif',True)])
 
 
-gcolor_pair = 0
+scope_preproc_ifndef = Scope(
+	'preproc ifndef',
+	['preproc ifndef'],
+	['class'],
+	[])
+
+
+list_scope = {
+	'class':		scope_class,
+	'class body':		scope_class_body,
+	'preproc define':	Scope('preproc define',[],[],[]),
+	'preproc if':		scope_preproc_if,
+	'preproc ifndef':	scope_preproc_ifndef,
+	'preproc else':		Scope('preproc else',[],[],[]),
+	'preproc elif':		Scope('preproc elif',[],[],[]),
+	'preproc endif':	Scope('preproc endif',[],[],[])}
+
+
+
+
+key_class = Key(
+	'class',
+	'class$')
+
+key_semicolon = Key(
+	'semicolon',
+	';')
+
+key_preproc_if = Key(
+	'preproc if',	
+	'#if$')
+
+key_preproc_ifndef = Key(
+	'preproc ifndef',
+	'#ifndef$')
+
+list_key = {
+	'class':		key_class,
+	'curly open':		Key('curly open','{$'),
+	'curly close':		Key('curly open','}$'),
+	'semicolon':		key_semicolon,
+	'preproc define':	Key('preproc define','#define$'),
+	'preproc if':		key_preproc_if,
+	'preproc ifndef':	key_preproc_ifndef,
+	'preproc else':		Key('preproc else','#else$'),
+	'preproc elif':		Key('preproc elif','#elif$'),
+	'preproc endif':	Key('preproc endif','#endif$')}
+	
+def key_in_scope_start(key, list_scope_):
+	for scope_name in list_scope_:
+		scope = list_scope[scope_name]
+		if key in scope.list_key_start:
+			return scope
+	
+	return None
+
 
 class Chunk:
-	def __init__(self):
-		global gcolor_pair
-		#self.chunks = []
-		#self.text = []
-		self.code = 0
-		self.words = []
+	def __init__(self, words, scope=scope_none):
+		self.words = words
 		self.keep = []
-		gcolor_pair = gcolor_pair + 1
-		if gcolor_pair > 6:
-			gcolor_pair = 1
-		self.color_pair = gcolor_pair
-	def scan(self,term):
-		ret = []
-		while len(self.words) > 0:
-			w = self.words.pop(0)
-			# terminator
-			if w == term:
-				ret.append(w)
-				return ret
-			# discard
-			#if any(w == s for s in discard):
-			#	continue
-			# neutral
-			ret.append(w)
-		return ret
+		self.scope = scope
+		
+#	def scan_start(self):
+#		ret = []
+#		if self.scope.list_key_start:
+#			while self.words:
+#				w = self.words.pop(0)
+#				
+#				k = classify(w)
+#				
+#				# terminator
+#				if k in self.scope.list_key_start:
+#					self.keep.append(w)
+#					return ret
+#				
+#				# discard
+#				#if any(w == s for s in discard):
+#				#	continue
+#				# neutral
+#				self.keep.append(w)
+
 	def process(self):
-		term = terminator_dict[self.code]
-	
-		# if chunk has a code, then it was created by another call to process and we should therefore look for an initiator
-		if self.code > 0:
-			init = initiator_dict[self.code]
-			if init != 0:
-				self.keep += self.scan(init)
+		#term = terminator_dict[self.code]
+		
+		# if chunk has a starter, then it was created by another call to process and we should therefore scan for an initiator
+		#self.scan_start()
+		
+		#print self.words
 		
 		# do until all words are poped
-		while len(self.words) > 0:
+		while self.words:
 			# pop words until starter is found
 			word = self.words.pop(0)
 			#print "%r" % word
 			
-			s_code = classify_starter(word)
-			if s_code > 0:
-				
+			
+			key = classify(word)
+			#print "key={0}".format(key)
+			#print "end={0}".format(self.scope.list_key_end)
+			
+			# child
+			scope = key_in_scope_start(key, self.scope.list_scope_child)
+			if scope:
 				# create new chunk
-				new_chunk = Chunk()
+				new_chunk = Chunk(self.words, scope)
 				
 				new_chunk.keep.append(word)
-				new_chunk.code = s_code
-				
-				new_chunk.words = self.words
+
+				print "word"
+				print word
+				print "words"
+				print self.words
+				print "keep"
+				print self.keep
+				print new_chunk.keep
+
 				self.words = new_chunk.process()
-				
-				
+											
 				self.keep.append(new_chunk)
-				
-				continue	
-			if term != 0:
-				if term == 1:
+					
+				continue
+			
+			# end
+			for k,b in self.scope.list_key_end: #if term != 0:
+				if key == k:
+					
+					# immediate terminator
+					#if term == 1:
+					#	ret = self.words
+					#	ret.insert(0,word)
+					#	self.words = []
+					#	return ret
+					# return what was not used
+					#if word == term:
+	
+					# keep or return the end word?
+					if b:
+						self.keep.append(word)
+					else:
+						self.words.insert(0,word)
+					
+					# return all unused words
 					ret = self.words
-					ret.insert(0,word)
 					self.words = []
-					return ret
-				# return what was not used
-				if word == term:
-					self.keep.append(word)
-					ret = self.words
-					self.words = []
+					
 					return ret
 			
-			# if word is neither a starter nor a terminator, keep it
+			# if word is neither a start nor an end, keep it
 			self.keep.append(word)
-	def cprint(self):
-		for k in self.keep:
-			if isinstance(k,Chunk):
-				k.cprint()
-			else:
-				stdscr.addstr( k, curses.color_pair(self.color_pair) )
+			
+		return []
+
+	def cprint(self,prefix=''):
+		#print self.keep
+
+		keep = self.keep
 		
-	#chunks = []
-	#text = []
-	code = 0
-	words = []
-	keep = []
-	color_pair = 1
+		string = ''
+		
+		while keep:
+			word = keep.pop(0)
+			
+			
+			if isinstance(word,Chunk):
+				if string != '':
+					print prefix+string
+					string = ''
+				
+				word.cprint(prefix+'\t')
+			elif word == '\n':
+				if string != '':
+					print prefix+string
+					string = ''
+
+			else:
+				string += word
+		
+		
+		if string != '':
+			print prefix+string
+			string = ''
 	
-#def print_chunk(chunk,pre,a):
-#	stdscr.addstr( pre + (">>>%r<<<" % (" ".join(chunk.text)+" "+" ".join(chunk.keep))) + "\n", curses.color_pair(1) )
-#	#print pre+"text==>"+" ".join(chunk.text)
-#	#print pre+"keep==>"+" ".join(chunk.keep)
-#	pre = pre+"\t"
-#	for c in chunk.chunks:
-#		print_chunk(c,pre,a+1)
+				
 
 
+def classify(word):
+	for k,v in list_key.items():
+		if v.test(word):
+			#print "'{0}' is a '{1}' key".format(word,v.name)
+			return k
 
-def classify_starter(word):
-	if len(word) > 0:
-		if word[0] == '#':
-			return 1
-	if word == 'namespace':
-		return 2
-	if word == 'class':
-		return 3
-	if re.match("\w+:",word):
-		return 4
-	return 0
+	return None
 
+def get_buffer():
+	word_list = []
 
+	cb = vim.current.buffer
+	
+	for i in range(0,len(cb)):
+		line = cb[i]
+		#print line
+		word_list.append(line+'\n')
+	
+	return word_list
 
-#codes
-# 0  unset
-# 1  preprocessor
-# 2  namespace
-# 3  class
+def fragment(list_word, string_pattern):
+	pat = re.compile(string_pattern)
+	
+	list_word_frag = []
+	
+	for word in list_word:
+		list_subword = pat.split(word)
+		#for subword in list_subword:
+		#	list_word_frag.append(subword)
+		list_word_frag += list_subword
+		
+	return list_word_frag
+	
+def nullstring(x):
+	if x == '':
+		return False
+	return True
+	
+def reformat():
+	list_word = get_buffer();
+	#print list_word
+	
+	list_word = fragment(list_word, "[\t\ ]+")
+	#print list_word
+	
+	list_word = fragment(list_word, "([\n{};])")
+	#print list_word
+	
+	list_word = filter(nullstring,list_word)
+	print list_word
 
-terminator_dict = {
-	0  : 0,
-	1  : "\n",
-	2  : '}',
-	3  : '}',
-	4  : 1,
-}
-
-initiator_dict = {
-	1  : 0,
-	2  : "{",
-	3  : "{",
-	4  : 0,
-}
-
-
-
-f = open('test.hpp','r')
-
-pat = re.compile("[^\t ]+")
-
-word_list = []
-
-for line in f:
-	words = re.split('([;\s])',line)
-	word_list += words
-
-
-
-# global chunk
-gchunk = Chunk()
-gchunk.words = word_list
-#process2(gchunk)
-gchunk.process()
-
-
-
-
-#print len(gchunk.chunks)
-#print len(gchunk.chunks[0].chunks)
-#print len(gchunk.chunks[0].chunks[0].chunks)
-
-
-
-
-#print_chunk(gchunk,"",0)
-gchunk.cprint()
-
-
-
-stdscr.refresh()
-
-
-
-
-
+	
+	# global chunk
+	gchunk = Chunk(list_word)
+	gchunk.process()
+	
+	
+	#print_chunk(gchunk,"",0)
+	print '%%%'
+	gchunk.cprint()
+	
+	print '%%%'
+	print gchunk.keep
 
 

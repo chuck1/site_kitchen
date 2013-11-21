@@ -190,7 +190,7 @@ print dirs
 filename_xml = folder + "exp.xml"
 
 tree = etree.parse(filename_xml)
-root = tree.getroot()
+root = XML.Element(tree.getroot())
 
 for val_name in strings_value:
 	
@@ -227,14 +227,9 @@ for val_name in strings_value:
 		"d"]
 	
 	element_origin = XML.find(root, str, False)
+
+	element_origin
 	
-	if element_origin is None:
-		print "not found"
-		sys.exit(1)
-	
-	if element_origin.text is None:
-		print "not found"
-		sys.exit(1)
 	
 	search = re.findall('[-e\.\d]+', element_origin.text)
 	

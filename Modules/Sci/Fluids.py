@@ -79,11 +79,8 @@ class Fluid:
 		root = tree.getroot()
 	
 
-
 		#print "parsing '{0}'".format(media_dir + filename)
 		#print 'root tag=%r' % root.tag
-
-	
 
 	
 		# process children
