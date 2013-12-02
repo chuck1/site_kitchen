@@ -1,4 +1,5 @@
 import re
+import sys
 
 def invalid(arg):
 	print "invalid argument: {0}".format(arg)
@@ -28,8 +29,8 @@ class commandline:
 		while self.argv:
 			string = self.argv.pop(0)
 			
-			print string
-			print len(string)
+			#print string
+			#print len(string)
 			
 			if len(string) > 1:
 				print string[0:2]
@@ -46,16 +47,17 @@ class commandline:
 			if string[0] == '-':
 				if len(string) == 1:
 					invalid(string)
-					continue
+					sys.exit(0)
 				
 				
-				if self.process_short(string):
+				if self.process_shorts(string):
 					continue
 				else:
-					continue
+					sys.exit(0)
 
 			
 			print "value: {0}".format(string)
+			
 			if self.lastarg:
 				self.args[self.lastarg].values.append(string)
 			else:
@@ -66,10 +68,10 @@ class commandline:
 	def process_long(self, string):
 		string = string[2:len(string)]
 
-		print string
+		#print string
 	
 		for long, arg in self.args.items():
-			print long
+			#print long
 			
 			if string == long:
 				arg.isset = True

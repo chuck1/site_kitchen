@@ -31,25 +31,16 @@ def read(filename, delim=','):
 			
 			# skip first line
 			
-			
 			rows=[]
-	
+			col = 0
 			r = 0
 			while 1:
 				row = []
-				
 				try:
 					row = reader.next()
-	
 					#print row
-	
 					row = filter(empty_string, row)
-	
 					#print row
-	
-							#print row
-					
-					
 					r += 1
 				except ValueError:
 					#print "ValueError"
@@ -57,13 +48,21 @@ def read(filename, delim=','):
 				except NameError as err:
 					print err
 					sys.exit(0)
+				except StopIteration:
+					break
 				except:
 					#print row
 					print sys.exc_info()[0]
 					break
 				
-				rows.append( row )
+				if col == 0:
+					col = len(row)
+				
+				if len(row) == col:
+					rows.append( row )
 			
+			#print rows
+	
 			data = np.array( rows )
 			
 			np.save(filename,data)

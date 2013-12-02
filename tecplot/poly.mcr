@@ -1,0 +1,19 @@
+#!MC 1300
+# Created by Tecplot 360 build 13.1.1.16314
+$!VarSet |MFBD| = '/nfs/stak/students/r/rymalc/mohr/bin/experiments/exp_0003'
+$!PICK SETMOUSEMODE
+  MOUSEMODE = SELECT
+$!EXTRACTFROMPOLYLINE 
+  EXTRACTTHROUGHVOLUME = NO
+  EXTRACTLINEPOINTSONLY = NO
+  INCLUDEDISTANCEVAR = NO
+  NUMPTS = 20
+  EXTRACTTOFILE = YES
+  FNAME = '/nfs/stak/students/r/rymalc/Programming/Python/tecplot/tec_polyline_extract.dat'
+  RAWDATA
+2
+-0.000788995833885 -0.00043843381125 0
+0.000807452571975 -0.000114488796886 0
+$!PICK SETMOUSEMODE
+  MOUSEMODE = SELECT
+$!RemoveVar |MFBD|
