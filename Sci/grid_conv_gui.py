@@ -1,11 +1,17 @@
 #!/usr/bin/env python
-
+import os
+import sys
 import numpy as np
 
 import pygtk
 
 pygtk.require('2.0')
 import gtk
+
+modules_dir = os.environ["HOME"] + "/Programming/Python/Modules"
+sys.path.append( modules_dir )
+
+import Sci.gridconv as gc
 
 class HelloWorld:
 
@@ -32,9 +38,19 @@ class HelloWorld:
 			else:
 				print "empty string"
 				return
-		
+	
+		s = self.entry[6].get_text()
+		if s:
+			v = float(self.entry[6].get_text())
+		else:
+			print "empty string"
+			return
+
+		print v
 		print n
 		print y
+
+		gc.grid_refinement(y,n,v,0)
 	def delete_event(self, widget, event, data=None):
 		# If you return FALSE in the "delete_event" signal handler,
 		# GTK will emit the "destroy" signal. Returning TRUE means
@@ -73,11 +89,12 @@ class HelloWorld:
 		vbox.pack_start(self.button[1], True, True, 0)
 		self.button[1].show()
 
-		labels = ["n[0]","n[1]","n[2]","y[0]","y[1]","y[2]"];
+		labels = ["n[0]","n[1]","n[2]","y[0]","y[1]","y[2]","v"];
+		x = [pow(100,3),pow(150,3),pow(225,3),2.0,1.1,1.0,1.0]
 		
 		self.vbox = []
 		self.entry = []
-		for i in range(6):
+		for i in range(7):
 			vb = gtk.VBox(False,0)
 			vbox.pack_start(vb, True, True, 0)
 			vb.show()
@@ -87,6 +104,7 @@ class HelloWorld:
 			l.show()
 			
 			e = gtk.Entry(max=0)
+			e.set_text("{0}".format(x[i]))
 			vb.pack_start(e, True, True, 0)
 			e.show()
 			self.entry.append(e)

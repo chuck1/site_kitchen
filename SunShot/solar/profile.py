@@ -71,5 +71,13 @@ s = a*X*X + b*Z*Z + c
 
 CS = plt.contourf(X,Z,s)
 CB = plt.colorbar(CS,format='%e')
+CB.set_label('heat flux (W/m2)')
+plt.axis('equal')
+plt.xlabel('x (cm)')
+plt.ylabel('y (cm)')
 plt.show()
+
+
+
+
 

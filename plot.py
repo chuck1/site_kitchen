@@ -12,8 +12,7 @@ sys.path.append(module_dir)
 import CSV
 import commandline as cl
 
-if __name__ == "__main__":
-
+def myplot():
 	if len(sys.argv) == 1:
 		print "Usage: {0} FILENAME [OPTIONS...]".format(sys.argv[0])
 		sys.exit(0)

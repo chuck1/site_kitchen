@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-
+import os
+import sys
 import numpy as np
 
 import pygtk
@@ -7,34 +8,38 @@ import pygtk
 pygtk.require('2.0')
 import gtk
 
+modules_dir = os.environ["HOME"] + "/Programming/Python/Modules"
+sys.path.append( modules_dir )
+
 class HelloWorld:
 
 	# This is a callback function. The data arguments are ignored
 	# in this example. More on callbacks below.
 	def hello(self, widget, data=None):
-		print "Hello World"
-		n = np.zeros(3)
-		y = np.zeros(3)
-		
-		s = None
-		
-		for i in range(3):	
+		n = [0]
+		for i in range(1):	
 			s = self.entry[i].get_text()
 			if s:
 				n[i] = float(s)
 			else:
 				print "empty string"
 				return
-		for i in range(3):
-			s = self.entry[i].get_text()
-			if s:
-				y[i] = float(self.entry[i+3].get_text())
-			else:
-				print "empty string"
-				return
 		
-		print n
-		print y
+		T = float(self.entry[0].get_text())
+		
+		T_inf = 298.0
+		h_nat = 15.0
+		sigma = 5.67 * pow(10,-8)
+		emiss = 0.95
+		
+		q_abs = 1e6
+		q_rad = emiss * sigma * (pow(T,4) - pow(T_inf,4))
+		q_conv = h_nat * (T - T_inf)
+		
+		eff = q_abs * emiss / (q_abs + q_rad + q_conv)
+		
+		self.entry[1].set_text("{0}".format(eff))
+		
 	def delete_event(self, widget, event, data=None):
 		# If you return FALSE in the "delete_event" signal handler,
 		# GTK will emit the "destroy" signal. Returning TRUE means
@@ -73,11 +78,12 @@ class HelloWorld:
 		vbox.pack_start(self.button[1], True, True, 0)
 		self.button[1].show()
 
-		labels = ["n[0]","n[1]","n[2]","y[0]","y[1]","y[2]"];
+		labels = ["temperature (K)","efficiency"];
+		x = [0,0]
 		
 		self.vbox = []
 		self.entry = []
-		for i in range(6):
+		for i in range(2):
 			vb = gtk.VBox(False,0)
 			vbox.pack_start(vb, True, True, 0)
 			vb.show()
@@ -87,6 +93,7 @@ class HelloWorld:
 			l.show()
 			
 			e = gtk.Entry(max=0)
+			e.set_text("{0}".format(x[i]))
 			vb.pack_start(e, True, True, 0)
 			e.show()
 			self.entry.append(e)
