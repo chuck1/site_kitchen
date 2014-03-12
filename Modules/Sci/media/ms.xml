@@ -1,0 +1,21 @@
+<fluid>
+	<property name="density">
+		<poly>
+			2.013800E+03
+			-4.231200E-01
+			3.622700E-05
+			-1.705800E-08
+		</poly>
+	</property>
+	<property name="cp">
+		<poly>
+			2.018200E+03
+			-8.302800E-01
+		</poly>
+	</property>
+	<property name="thermal-conductivity">
+		<poly>
+			4.800000E-01
+		</poly>
+	</property>
+</fluid>

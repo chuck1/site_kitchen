@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+
 import sys
 
-for arg
+print "Image"
+
+import Image
+
