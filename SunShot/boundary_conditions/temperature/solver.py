@@ -5,7 +5,7 @@ from pylab import plot, show, figure, contour
 import pylab as pl
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
-from sympy import *
+#from sympy import *
 import math
 import inspect
 import pickle
@@ -20,7 +20,75 @@ alpha_src = 1.4
 it_max_1 = 1000
 it_max_2 = 1000
 
+def sign(x):
+	return -1 if x < 0 else 1
 
+def align(ind1, ind2):
+	s = max(min(ind1), min(ind2))
+	e = min(max(ind1), max(ind2))
+	
+	try:
+		s1 = ind1.index(s)
+		e1 = ind1.index(e)
+		s2 = ind2.index(s)
+		e2 = ind2.index(e)
+	except
+		pass
+	
+	d1 = sign(e1-s1)
+	d2 = sign(e2-s2)
+
+	if ver:
+		print ind1
+		print ind2
+	
+		print "min",min(ind1), min(ind2), s
+		print "max",max(ind1), max(ind2), e
+	
+		print s1, e1, d1
+		print s2, e2, d2
+	
+	i1 = lambda i: s1 + (i - (d1-1)/2) * d1
+	i2 = lambda i: s2 + (i - (d2-1)/2) * d2
+	
+	r1 = []
+	r2 = []
+	
+	for i in range(abs(e1-s1)):
+		if ver:
+			print "1:", i1(i), "'", ind1[i1(i)], ind1[i1(i)+1], "'" #, ind1[i+s1]
+			print "2:", i2(i), "'", ind2[i2(i)], ind2[i2(i)+1], "'" #, ind2[i+s2]
+		
+		r1.append(i1(i))
+		r2.append(i2(i))
+
+	return r1,r2
+	
+class LocalCoor:
+	# store as [[-1, 1],[-2, 2]]
+	
+	# xyz
+	
+	def __init__(self, Z):
+		self.Z = Z
+		self.X = nxt(self.Z)
+		self.Y = nxt(self.X)
+		
+	def glo_to_loc(self, G):
+		sg = sign(G)
+		sz = sign(self.Z)
+		
+		d = nxt_dist(abs(self.Z), abs(G))
+		
+		L = sg * nxt(3 * sz, d)
+		
+		return L
+		
+	def loc_to_glo(self, L):
+		G = sign(L) * nxt(self.Z, abs(L) % 3)
+		return G
+	
+	
 def nice_axes(a, b):
 	p = math.floor(math.log10(b - a))
 	a = nice_lower(a, p)
@@ -39,9 +107,6 @@ def nice_lower(a, p):
 	a = a * 10**p
 	return a
 
-def save_prob(o, filename):
-	f = open(filename, 'w')
-	pickle.dump(o, f)
 	
 def load_prob(filename):
 	f = open(filename, 'r')
@@ -54,66 +119,91 @@ def source_spreader(x,y,a,b,m,n):
 	
 	return u
 
+def is2v(i,s):
+	return (i + 1) * s
+def v2is(v):
+	return abs(v) - 1, sign(v)
+	
+def fwd(A, n):
+	a,s = v2is(A)
 
-def forward(A):
-	s = sign(A)
-	a = abs(A - s)
-	a = (((a+1) % 3) * s) + s
-	return a
+	b = (a + n) % 3
 	
-def backward(A):
-	s = sign(A)
-	a = abs(A - s)
-	a = (((a+2) % 3) * s) + s
-	return a
+	B = is2v(b,s)
+	return B
+
+def fwd_dist(A, B):
+	a,sa = v2is(A)
+	b,sb = v2is(B)
 	
-def next_dir(A):
+	d = b - a
+	d = d if d > 0 else d + 3
+	return d
+
+def bwd(A, n):
+	B = fwd(A, 2 * n)
+	return B
+
+def bwd_dist(A, B):
+	d = fwd_dist(B, A)
+
+def nxt(A, n = 1):
 	if A > 0:
-		return forward(A)
+		return fwd(A, n)
 	else:
-		return backward(A)
-def cross(a,b):
-	#print a,b
+		return bwd(A, n)
 
-	A = abs(a)-1
-	B = abs(b)-1
-	
-	
-	
-	if B == (A+1) % 3:
-		c = ((A+2) % 3) + 1
+def nxt_dist(A, B):
+	if A > 0:
+		return fwd_dist(A, B)
 	else:
-		c = ((A+1) % 3) + 1
+		return bwd_dist(A, B)
+
+
+	
+def cross(A,B):
+	#print A,B
+	
+	a,sa = v2is(A)
+	b,sb = v2is(B)
+	
+	if b == (a+1) % 3:
+		c = ((a+2) % 3) + 1
+	else:
+		c = ((a+1) % 3) + 1
 		c = -c
 	
-	c *= sign(a) * sign(b)
+	c *= sa * sb
 	
-
 	#print a, b, c
 
 	return c
 
-class Face:
-	def __init__(self, N, ll, ur, z, n, Tll, Tur, mean_target):
-		self.N = N
+class Face(LocalCoor):
+	def __init__(self, normal, ext, z, n, T_bou, mean_target):
 		
-		self.ll = np.array(ll)
-		self.ur = np.array(ur)
+		#self.ll = np.array(ll)
+		#self.ur = np.array(ur)
+		
+		self.ext = np.array(ext)
+		
 		self.z = z
-
-		print "ll =",self.ll
-		print "ur =",self.ur
-
+		
 		self.n = np.array(n)
-		self.d = (self.ur - self.ll) / np.float32(self.n)
+		self.d = (self.ext[:,1] - self.ext[:,0]) / np.float32(self.n)
 		self.T = np.ones(n) * mean_target
-	
-		self.Tur = np.array(Tur)
-		self.Tll = np.array(Tll)
+		
+		if any(self.d < 0):
+			print self.ll
+			print self.ur
+			print self.d
+			raise ValueError('bad')
+		
+		self.T_bou = np.array(T_bou)
 
-		self.nbrsll = [None,None]
-		self.nbrsur = [None,None]
-
+		self.nbrs = np.empty((2,2), dtype=object)
+		
+		
 		self.S = 0
 		self.s = np.zeros(n)
 		
@@ -122,9 +212,9 @@ class Face:
 		
 		# source
 		self.l = np.array([
-			(self.ur[0] - self.ll[0]) / 2.0,
-			(self.ur[1] - self.ll[1]) / 2.0])
-
+			(self.ext[0,1] - self.ext[0,0]) / 2.0,
+			(self.ext[1,1] - self.ext[1,0]) / 2.0])
+		
 		
 		a = self.l[0] / 2.
 		b = self.l[1] / 2.
@@ -138,12 +228,8 @@ class Face:
 		self.Src = 0
 
 		# coordinates
-		self.S = cross(self.N, abs(forward(self.N)))
-		
-		#print "f.S =",f.S
+		LocalCoor.__init__(self, normal)
 
-		self.R = cross(self.S, self.N)
-	
 	def x(self, i):
 		return (i + 0.5) * self.d[0]
 		
@@ -160,9 +246,9 @@ class Face:
 		#print TW, TE, TS, TN
 		
 		
-
-		dx = (self.ur[0] - self.ll[0]) / 2.0
-		dy = (self.ur[1] - self.ll[1]) / 2.0
+		
+		dx = (self.ext[0,1] - self.ext[0,0]) / 2.0
+		dy = (self.ext[1,1] - self.ext[1,0]) / 2.0
 			
 		T = self.mean_target
 		
@@ -179,59 +265,31 @@ class Face:
 		
 		#print "s_new =",snew
 		
-	def T_boundary(self, v):
-		if v == -2:
+	def T_boundary(self, V):
+		if V == -2:
 			return np.mean(self.T[0,:])
-		if v == 2:
+		if V == 2:
 			return np.mean(self.T[-1,:])
-		if v == -3:
+		if V == -3:
 			return np.mean(self.T[:,0])
-		if v == 3:
+		if V == 3:
 			return np.mean(self.T[:,-1])
-
-		raise
 		
-
-	def xyz_to_nrs(f, v):
-		if v == -f.N:
-			return -1
-		if v == f.N:
-			return 1
-
-		if v == -f.R:
-			return -2
-		if v == f.R:
-			return 2
-
-		if v == -f.S:
-			return -3
-		if v == f.S:
-			return 3
-		
-	def nrs_to_xyz(f, v):
-		if v == 2:
-			return f.R
-		if v == -2:
-			return -f.R
-		if v == 3:
-			return f.S
-		if v == -3:
-			return -f.S
-
 		raise
 
-	def nbr_to_nrs(self, nbr):
+
+	def nbr_to_loc(self, nbr):
 		if not nbr:
 			raise ValueError('nbr is None')
 		
-		if nbr == self.nbrsll[0]:
+		if nbr == self.nbrs[0,0]:
+			return -1
+		if nbr == self.nbrs[0,1]:
+			return 1
+		if nbr == self.nbrs[1,0]:
 			return -2
-		if nbr == self.nbrsur[0]:
+		if nbr == self.nbrs[1,1]:
 			return 2
-		if nbr == self.nbrsll[1]:
-			return -3
-		if nbr == self.nbrsur[1]:
-			return 3
 		
 		
 		print self.nbrsll, self.nbrsur
@@ -239,17 +297,21 @@ class Face:
 
 		raise ValueError('nbr not found')
 
+	def loc_to_nbr(self, V):
+		v,sv = v2is(V)
+		return self.nbrs[v, (sv+1)/2]
+
 	def index_lambda(self, nbr, par):
-		PAR = self.xyz_to_nrs(par)
+		PAR = self.glo_to_loc(par)
 		
-		ORT = self.nbr_to_nrs(nbr)
+		ORT = self.nbr_to_loc(nbr)
 		
 		#print "PAR,ORT",PAR,ORT
 
-		if PAR == 2:
+		if PAR == 1:
 			i = lambda p: p
 			d = self.d[1]
-		elif PAR == -2:
+		elif PAR == -1:
 			i = lambda p: self.n[0] - p - 1
 			d = self.d[1]
 		else:
@@ -259,10 +321,10 @@ class Face:
 				i = lambda p: self.n[0] - 1
 		
 		
-		if PAR == 3:
+		if PAR == 2:
 			j = lambda p: p
 			d = self.d[0]
-		elif PAR == -3:
+		elif PAR == -2:
 			j = lambda p: self.n[1] - p - 1
 			d = self.d[0]
 		else:
@@ -276,6 +338,41 @@ class Face:
 
 		return i,j,d
 		
+	def term(self, ind, V, To):
+		
+		v,sv = v2is(V)
+		
+		isInterior = (ind[v] > 0 and sv < 0) or (ind[v] < (self.n[v] - 1) and sv > 0)
+		
+		if isInterior:
+			a = 1.0 / self.d[v]
+
+			indnbr = np.array(ind)
+			indnbr[v] += sv
+
+			T = self.T[indnbr[0],indnbr[1]]
+		else:
+			nbr = self.loc_to_nbr(V)
+			if nbr:
+				#print "neighbor face",V
+				
+				# local direction parallel to edge
+				P = abs(cross(3, V))
+				p,_ = v2is(P)
+
+				li,lj,d = nbr.index_lambda(self, self.loc_to_glo(P))
+				
+				a = 2.0 / (self.d[v] + d)
+				
+				indnbr = [li(ind[p]), lj(ind[p])]
+				
+				T = nbr.T[indnbr[0],indnbr[1]]
+			else:
+
+				a = 1.0 / self.d[v]
+				T = 2.0*self.T_bou[v,(sv+1)/2] - To
+		
+		return a,T
 		
 	def step(self):
 		R = 0.0
@@ -289,6 +386,12 @@ class Face:
 			for j in range(self.n[1]):
 				To = self.T[i,j]
 
+				aW, TW = self.term([i,j],-1, To)
+				aE, TE = self.term([i,j], 1, To)
+				aS, TS = self.term([i,j],-2, To)
+				aN, TN = self.term([i,j], 2, To)
+				
+				"""
 				if i > 0:
 					aW = 1.0 / self.d[0]
 					TW = self.T[i-1,j]
@@ -296,7 +399,7 @@ class Face:
 					#print "west"
 
 					nbr = self.nbrsll[0]
-					li,lj,d = nbr.index_lambda(self, self.nrs_to_xyz(3))
+					li,lj,d = nbr.index_lambda(self, self.nrs_to_xyz(2))
 					
 					aW = 2.0 / (self.d[0] + d)
 					TW = nbr.T[li(j),lj(j)]
@@ -312,7 +415,7 @@ class Face:
 				elif self.nbrsur[0]:
 					#print "east"
 					nbr = self.nbrsur[0]
-					li,lj,d = nbr.index_lambda(self, self.nrs_to_xyz(3))
+					li,lj,d = nbr.index_lambda(self, self.nrs_to_xyz(2))
 					
 					aE = 2.0 / (self.d[0] + d)
 					TE = nbr.T[li(j),lj(j)]
@@ -328,7 +431,7 @@ class Face:
 					
 					
 					nbr = self.nbrsll[1]
-					li,lj,d = nbr.index_lambda(self, self.nrs_to_xyz(2))
+					li,lj,d = nbr.index_lambda(self, self.nrs_to_xyz(1))
 					
 					aS = 2.0 / (self.d[1] + d)
 					TS = nbr.T[li(i),lj(i)]
@@ -349,7 +452,7 @@ class Face:
 
 					
 					nbr = self.nbrsur[1]
-					li,lj,d = nbr.index_lambda(self, self.nrs_to_xyz(2))
+					li,lj,d = nbr.index_lambda(self, self.nrs_to_xyz(1))
 					
 					aN = 2.0 / (self.d[1] + d)
 					TN = nbr.T[li(i),lj(i)]
@@ -361,7 +464,7 @@ class Face:
 				else:
 					aN = 1.0 / self.d[1]
 					TN = 2.0*self.Tur[1] - To
-				
+				"""
 				
 				#ver = True
 			
@@ -374,6 +477,12 @@ class Face:
 
 				dT = alpha * (Ts - To)
 
+				if aW < 0 or aE < 0 or aS < 0 or aN < 0:
+					print "aW aE aS aN"
+					print aW, aE, aS, aN
+					print "TW TE TS TN To Ts dT"
+					print TW, TE, TS, TN, To, Ts, dT
+					raise ValueError('bad')
 
 
 				if ver1:
@@ -384,8 +493,12 @@ class Face:
 
 				if math.isnan(To):
 					raise ValueError('nan')
-				if math.isnan(Ts):
-					raise ValueError('nan')
+				if math.isnan(Ts) or math.isinf(Ts):
+					print "aW aE aS aN"
+					print aW, aE, aS, aN
+					print "TW TE TS TN To Ts dT"
+					print TW, TE, TS, TN, To, Ts, dT
+					raise ValueError('bad')
 				if math.isnan(dT):
 					raise ValueError('nan')
 				
@@ -445,19 +558,46 @@ class Face:
 		#pl.colorbar(con)
 
 	def plot(self, V = None):
-		ll = self.ll
-		ur = self.ur
+		fig = figure()
+		ax = fig.add_subplot(121)
 		
-		x = np.linspace(ll[0],ur[0],self.n[0])
-		y = np.linspace(ll[1],ur[1],self.n[1])
+		self.plot_temp_sub(ax)
+		
+		# gradient
+		ax = fig.add_subplot(122)
+
+		self.plot_grad_sub(ax)
+		
+		return con
+	def plot_temp_sub(self, ax, V = None):
+		x = np.linspace(self.ext[0,0], self.ext[0,1], self.n[0])
+		y = np.linspace(self.ext[1,0], self.ext[1,1], self.n[1])
 		
 		X,Y = np.meshgrid(x, y)
 		
-		Z = np.transpose(self.T)
-	
-		fig = figure()
-		ax = fig.add_subplot(111)
+		T = np.transpose(self.T)
 		
+				
+		if not V is None:
+			con = ax.contourf(X, Y, T, V)
+		else:
+			con = ax.contourf(X, Y, T)
+		
+		pl.colorbar(con)
+		pl.axis('equal')
+		
+	def plot_grad_sub(self, ax, V = None):
+		x = np.linspace(self.ext[0,0], self.ext[0,1], self.n[0])
+		y = np.linspace(self.ext[1,0], self.ext[1,1], self.n[1])
+		
+		X,Y = np.meshgrid(x, y)
+		
+		T = np.transpose(self.T)
+
+		Z = np.gradient(T, self.d[0], self.d[1])
+		Z = np.sqrt(np.sum(np.square(Z),0))
+		
+				
 		if not V is None:
 			con = ax.contourf(X, Y, Z, V)
 		else:
@@ -466,16 +606,13 @@ class Face:
 		pl.colorbar(con)
 		pl.axis('equal')
 
-		return con
-	def plot_grad(self):
-		ll = self.ll
-		ur = self.ur
-		
-		x = np.linspace(ll[0],ur[0],self.n[0])
-		y = np.linspace(ll[1],ur[1],self.n[1])
+
+	def plot_grad(self, V = None):
+		x = np.linspace(self.ext[0,0], self.ext[0,1], self.n[0])
+		y = np.linspace(self.ext[1,0], self.ext[1,1], self.n[1])
 		
 		X,Y = np.meshgrid(x, y)
-
+		
 		T = np.transpose(self.T)
 
 		Z = np.gradient(T, self.d[0], self.d[1])
@@ -488,17 +625,30 @@ class Face:
 		fig = figure()
 		ax = fig.add_subplot(111)
 
-		con = ax.contourf(X, Y, Z)
+		if not V is None:
+			con = ax.contourf(X, Y, Z, V)
+		else:
+			con = ax.contourf(X, Y, Z)
 		
 		pl.colorbar(con)
-		
+		pl.axis('equal')
+
 		return con
 
+	def grad(self):
+		return np.gradient(self.T, self.d[0], self.d[1])
+	def grad_mag(self):
+		return np.sqrt(np.sum(np.square(self.grad()),0))
+	
 	def temp_min(self):
 		return np.min(self.T)
 	def temp_max(self):
 		return np.max(self.T)
-		
+	def grad_min(self):
+		return np.min(self.grad_mag())
+	def grad_max(self):
+		return np.max(self.grad_mag())
+	
 	def mean(self):
 		return np.mean(self.T)
 
@@ -541,13 +691,32 @@ class Problem:
 			T = min(f.temp_min(), T)
 		
 		return T
+	def grad_max(self):
+		T = float("-inf")
+		for f in self.faces:
+			T = max(f.grad_max(), T)
+		
+		return T
+	def grad_min(self):
+		T = float("inf")
+		for f in self.faces:
+			T = min(f.grad_min(), T)
+		
+		return T
 
 	def plot(self):
 		a, b = nice_axes(self.temp_min(), self.temp_max())
 		V = np.linspace(a, b, 21)
 		
+		a, b = nice_axes(self.grad_min(), self.grad_max())
+		Vg = np.linspace(a, b, 21)
+		
+		
 		for f in self.faces:
 			f.plot(V)
+			#f.plot_grad(Vg)
+		
+
 
 		pl.show()
 	
@@ -580,18 +749,36 @@ class Problem:
 			if R[-1] < cond:
 				break
 		
+		return it
+		
 		#if ver:
 			#pl.semilogy(R)
 			#pl.show()
 		
 	
-	def solve2(self, cond1, cond2, ver = False):
-	
-		R = 0.0
-		for it in range(it_max_2):
-				
-			self.solve(cond1, ver, R)
+	def solve3(self, cond1_final, cond2_final, ver = False):
+		cond1 = 1
+		cond2 = 1
+		
+		for it_3 in range(1000):
+			it_2 = self.solve2(cond1_final, cond2, ver)
+						
+			if it_2 < it_cond and cond2 > cond2_final:
+				cond2 /= 10**0.5
 
+
+	def solve2(self, cond1_final, cond2, ver = False):
+		cond1 = 1
+		
+		R = 0.0
+		for it_2 in range(it_max_2):
+			
+			it_1 = self.solve(cond1, ver, R)
+			
+			if it_1 < it_cond and cond1 > cond1_final:
+				cond1 /= 10**0.5
+			
+			
 			R = 0.0
 			
 			for f in self.faces:
@@ -602,12 +789,36 @@ class Problem:
 			
 			if math.isnan(R):
 				raise ValueError('nan')
-
+			
 			if R < cond2:
 				break
+		
+		return it_2
+
+	def save(self, filename):
+		f = open('case_' + filename, 'w')
+		pickle.dump(self, f)
+
+
+def test_localcoor(z):
+	lc = LocalCoor(z)
+
+	print "g   l"
+	print "1   ",lc.glo_to_loc(1)
+	print "2   ",lc.glo_to_loc(2)
+	print "3   ",lc.glo_to_loc(3)
+	
+	print "l   g"
+	print "1   ",lc.loc_to_glo(1)
+	print "2   ",lc.loc_to_glo(2)
+	print "3   ",lc.loc_to_glo(3)
+
+	
 	
 
-
+if __name__ == '__main__':
+	test_localcoor(2)
+	
 
 
 
