@@ -74,8 +74,8 @@ class Patch(LocalCoor):
 def stitch(patch1, patch2):
 	
 	if patch1.Z == patch2.Z:
-		raise ValueError('patches must be orthogonal')
-	
+		stitch_ortho(patch1, patch2)
+
 	# global direction parallel to common edge
 	P = cross(patch1.Z, patch2.Z)
 	
@@ -118,11 +118,66 @@ def stitch(patch1, patch2):
 		
 		patch2.faces[ind2[0],ind2[1]].nbrs[ol2,(sol2+1)/2] = patch1.faces[ind1[0],ind1[1]]
 
+def stitch_ortho(patch1, pathc2):
+	
+	
 
+	try:
+		r01,r02 = align(patch1.indices[0], patch2.indices[0])
+	except EdgeError as e:
+		o = 0
+		p = 1
+	
+		rev = e.rev
 
+		if e.rev:
+			ind1[o] = 0
+			ind2[o] = patch2.npatch[o] - 1
+		else:
+			ind1[o] = patch1.npatch[o] - 1
+			ind2[o] = 0
 
+	else:		
+		r1, r2 = r01, r02
+	
+	try:
+		r11,r12 = align(patch1.indices[1], patch2.indices[1])
+	except EdgeError as e:
+		o = 1
+		p = 0
+
+		rev = e.rev
+
+		if e.rev:
+			ind1[o] = 0
+			ind2[o] = patch2.npatch[o] - 1
+		else:
+			ind1[o] = patch1.npatch[o] - 1
+			ind2[o] = 0
+	else:		
+		r1, r2 = r11, r12
+	
+	if rev:
+		sol1 = -1
+		sol2 = 1
+	else:
+		sol1 = 1
+		sol2 = -1
 
 	
+
+	for i1, i2 in zip(r1, r2):
+		ind1[p] = i1
+		ind2[p] = i2
+		
+		patch1.faces[ind1[0],ind1[1]].nbrs[ol1,(sol1+1)/2] = patch2.faces[ind2[0],ind2[1]]
+		
+		patch2.faces[ind2[0],ind2[1]].nbrs[ol2,(sol2+1)/2] = patch1.faces[ind1[0],ind1[1]]
+		
+		
+	
+	
+
 
 x = [0.002,  0.008, 0.005]
 
@@ -152,9 +207,9 @@ f_hi_ym   = Patch(-2, [[3,2,1,0], [3,2,1,0]], 0, x, z, y, nx, nz, ny)
 
 f_hi_zo   = Patch(-3, [[3,2,1,0], [3,2,1,0]], 0, y, x, z, ny, nx, nz)
 
-f_hi_zi_1 = Patch( 3, [[2,3],     [0,1,2,3]], 0, x, y, z, nx, ny, nz)
-f_hi_zi_2 = Patch( 3, [[0,1,2],   [0,1]],     0, x, y, z, nx, ny, nz)
-f_hi_zi_3 = Patch( 3, [[0,1,2],   [2,3]],     0, x, y, z, nx, ny, nz)
+f_hi_zi_1 = Patch( 3, [[2,3],     [0,1,2,3]], 3, x, y, z, nx, ny, nz)
+f_hi_zi_2 = Patch( 3, [[0,1,2],   [0,1]],     3, x, y, z, nx, ny, nz)
+f_hi_zi_3 = Patch( 3, [[0,1,2],   [2,3]],     3, x, y, z, nx, ny, nz)
 
 stitch(f_hi_xp,   f_hi_yp_1)
 stitch(f_hi_xp,   f_hi_ym)
@@ -181,13 +236,13 @@ f_ho_yp_1 = Patch( 2, [[6,7,8,9], [1,2,3]],   3, z, x, y, nz, nx, ny)
 f_ho_yp_2 = Patch( 2, [[6,7],     [0,1]],     3, z, x, y, nz, nx, ny)
 f_ho_yp_3 = Patch( 2, [[8,9],     [0,1]],     3, z, x, y, nz, nx, ny)
 
-f_ho_ym   = Patch(-2, [[3,2,1,0], [3,2,1,0]], 0, x, z, y, nx, nz, ny)
+f_ho_ym   = Patch(-2, [[3,2,1,0], [9,8,7,6]], 0, x, z, y, nx, nz, ny)
 
-f_ho_zo   = Patch(-3, [[3,2,1,0], [3,2,1,0]], 0, y, x, z, ny, nx, nz)
+f_ho_zo   = Patch(-3, [[3,2,1,0], [3,2,1,0]], 9, y, x, z, ny, nx, nz)
 
-f_ho_zi_1 = Patch( 3, [[2,3],     [0,1,2,3]], 0, x, y, z, nx, ny, nz)
-f_ho_zi_2 = Patch( 3, [[0,1,2],   [0,1]],     0, x, y, z, nx, ny, nz)
-f_ho_zi_3 = Patch( 3, [[0,1,2],   [2,3]],     0, x, y, z, nx, ny, nz)
+f_ho_zi_1 = Patch( 3, [[2,3],     [0,1,2,3]], 6, x, y, z, nx, ny, nz)
+f_ho_zi_2 = Patch( 3, [[0,1,2],   [0,1]],     6, x, y, z, nx, ny, nz)
+f_ho_zi_3 = Patch( 3, [[0,1,2],   [2,3]],     6, x, y, z, nx, ny, nz)
 
 stitch(f_ho_xp,   f_ho_yp_1)
 stitch(f_ho_xp,   f_ho_ym)

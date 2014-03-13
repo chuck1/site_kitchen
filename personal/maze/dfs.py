@@ -257,9 +257,9 @@ class dfs:
 
 
 
-n = 6
+n = 12
 
-m = dfs( np.array((n,n,n)) )
+m = dfs( np.array((n,n)) )
 
 m.run()
 
