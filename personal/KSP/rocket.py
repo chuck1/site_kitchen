@@ -45,6 +45,7 @@ class tank:
 
 
 
+<<<<<<< HEAD
 
 liquidEngine1       = engine("LV-T30 Liquid Fuel Engine", 1.25, 320.0, 370.0, 215.0)
 liquidEngine2       = engine("LV-T45 Liquid Fuel Engine", 1.50, 320.0, 370.0, 200.0)
@@ -84,12 +85,31 @@ tanks   = [
 	fuelTankSmall, fuelTank2, fuelTankLarge, fuelTank4_2, fuelTank1_2, fuelTank3_2]
 
 engines = [liquidEngine1, liquidEngine3, engineLargePoodle, engineLargeSkipper, engineLargeMainsail, nuclearEngine]
+=======
+commandPod         = part("Command Pod", 1.0)
+commandPod2        = part("Command Pod Mk2",4.0)
+
+engineLargeSkipper = engine("Skipper", 4.0,  300.0, 350.0, 650.0)
+nuclearEngine      = engine("Nuclear", 2.25, 220.0, 800.0,  60.0)
+
+fuelTank1_2        = tank("ft1", 18.0, 2.0)
+fuelTank3_2        = tank("ft2", 36.0, 4.0)
+
+parts   = [commandPod, commandPod2]
+tanks   = [fuelTank1_2, fuelTank3_2]
+engines = [engineLargeSkipper, nuclearEngine]
+>>>>>>> d37015cd5018115e2d059aeafd2fa234ca647b50
 
 
 class Stage:
 	def __init__(self):
+<<<<<<< HEAD
 		self.parts   = [0.0]*len(parts)
 		self.tanks   = [0.0]*len(tanks)
+=======
+		self.parts = [0.0]*len(parts)
+		self.tanks = [0.0]*len(tanks)
+>>>>>>> d37015cd5018115e2d059aeafd2fa234ca647b50
 		self.engines = [0.0]*len(engines)
 
 	def get_mass_total(self):
@@ -139,6 +159,10 @@ class Stage:
 
 	
 class Rocket:
+<<<<<<< HEAD
+=======
+	
+>>>>>>> d37015cd5018115e2d059aeafd2fa234ca647b50
 	def __init__(self):
 		self.stages = []
 	
@@ -152,6 +176,7 @@ class Rocket:
 		
 		for s in self.stages:
 			m.pop(0)
+<<<<<<< HEAD
 			m_t = sum(m) + s.get_mass_total()
 			m_d = sum(m) + s.get_mass_dry()
 			isp = s.get_isp_vac() * 9.81
@@ -164,11 +189,27 @@ class Rocket:
 				dv.append( isp * math.log(m_t / m_d) )
 		#print dv
 		return dv
+=======
+			m_t = sum(m) + s.m_total()
+			m_d = sum(m) + s.get_m_dry()
+			isp = s.isp() * 9.81
+			#print "m_t",m_t
+			#print "m_d",m_d
+			#print "isp",isp
+			
+			dv.append( isp * math.log(m_t / m_d) )
+		#print dv
+		return sum(dv)
+>>>>>>> d37015cd5018115e2d059aeafd2fa234ca647b50
 
 	def get_m_total_list(self):
 		m = []
 		for s in self.stages:
+<<<<<<< HEAD
 			m.append(s.get_mass_total())
+=======
+			m.append(s.m_total())
+>>>>>>> d37015cd5018115e2d059aeafd2fa234ca647b50
 		return m
 	def get_m_total(self):
 		return sum(self.get_m_total_list())
@@ -229,9 +270,12 @@ class stage_gui:
 
 	def destroy(self, widget, data=None):
 		print "destroy signal occurred"
+<<<<<<< HEAD
 		
 		self.rg.update()
 		
+=======
+>>>>>>> d37015cd5018115e2d059aeafd2fa234ca647b50
 		gtk.main_quit()
 
 	def init_buttons(self):
@@ -329,6 +373,10 @@ class stage_gui:
 			self.engines[-1].show()
 			
 			self.row += 1
+<<<<<<< HEAD
+=======
+			
+>>>>>>> d37015cd5018115e2d059aeafd2fa234ca647b50
 		
 
 	def init_label(self):
@@ -345,10 +393,15 @@ class stage_gui:
 			i += 1
 		
 		
+<<<<<<< HEAD
 	def __init__(self, rg, stage):
 		self.rg = rg
 		self.stage = stage
 		
+=======
+	def __init__(self, stage):
+		self.stage = stage
+>>>>>>> d37015cd5018115e2d059aeafd2fa234ca647b50
 
 		self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
 		self.window.connect("delete_event", self.delete_event)
@@ -396,12 +449,15 @@ class stage_gui:
 
 
 class rocket_gui:
+<<<<<<< HEAD
 	def update(self):
 		deltav = self.rocket.deltav()
 		
 		for r,dv in itertools.izip(self.rows,deltav):
 			r[1].set_text("{0}".format(dv))
 		
+=======
+>>>>>>> d37015cd5018115e2d059aeafd2fa234ca647b50
 	def delete_event(self, widget, event, data=None):
 		# If you return FALSE in the "delete_event" signal handler,
 		# GTK will emit the "destroy" signal. Returning TRUE means
@@ -419,7 +475,11 @@ class rocket_gui:
 		gtk.main_quit()
 	
 	def edit_stage(self, widget, stage):
+<<<<<<< HEAD
 		g = stage_gui(self, stage)
+=======
+		g = stage_gui(stage)
+>>>>>>> d37015cd5018115e2d059aeafd2fa234ca647b50
 		g.main()
 		
 	def new_stage(self, widget):
@@ -428,6 +488,7 @@ class rocket_gui:
 		
 		
 		label_name = gtk.Label("name")
+<<<<<<< HEAD
 		self.table.attach(label_name, 0, 1, self.row, self.row+1)
 		label_name.show()
 		
@@ -437,6 +498,17 @@ class rocket_gui:
 		
 		button_edit = gtk.Button("Edit")
 		button_edit.connect_object("clicked", self.edit_stage, self.window, s)
+=======
+		self.table.attach(label, 0, 1, self.row, self.row+1)
+		label.show()
+		
+		label_deltav = gtk.Label("0.0")
+		self.table.attach(label, 1, 2, self.row, self.row+1)
+		label.show()
+		
+		button_edit = gtk.Button("Edit")
+		button_edit.connect_object("clicked", self.edit_stage, sef.window, s)
+>>>>>>> d37015cd5018115e2d059aeafd2fa234ca647b50
 		self.table.attach(button_edit, 2, 3, self.row, self.row+1)
 		button_edit.show()
 		
@@ -447,7 +519,11 @@ class rocket_gui:
 		#self.vbox.pack_start(self.button[1], True, True, 0)
 		#button[1].show()
 		
+<<<<<<< HEAD
 		self.rows.append([label_name,label_deltav,button_edit])
+=======
+		self.rows.append((label_name,label_deltav,button_edit))
+>>>>>>> d37015cd5018115e2d059aeafd2fa234ca647b50
 		
 		
 	def init_table(self):
@@ -468,9 +544,13 @@ class rocket_gui:
 		self.table.show()
 	def __init__(self, rocket):
 		self.rocket = rocket
+<<<<<<< HEAD
 		self.rows = []
 
 
+=======
+		
+>>>>>>> d37015cd5018115e2d059aeafd2fa234ca647b50
 		self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
 		self.window.connect("delete_event", self.delete_event)
 		self.window.connect("destroy", self.destroy)
