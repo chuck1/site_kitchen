@@ -14,8 +14,8 @@ import sys
 
 k = 10
 
-alpha = 1.4
-alpha_src = 1.4
+alpha = 1.2
+alpha_src = 1.2
 
 it_max_1 = 1000
 it_max_2 = 1000
@@ -795,7 +795,7 @@ class Problem:
 			it_1 = self.solve(cond1, ver, R)
 			
 			if it_1 < it_cond and cond1 > cond1_final:
-				cond1 /= 10**0.5
+				cond1 /= 10**1.0
 			
 			
 			R = 0.0
