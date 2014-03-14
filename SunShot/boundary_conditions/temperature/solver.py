@@ -20,30 +20,52 @@ alpha_src = 1.4
 it_max_1 = 1000
 it_max_2 = 1000
 
+class NoIntersectError:
+	a = 0
+class EdgeError:
+	rev = 0
+
 def sign(x):
 	return -1 if x < 0 else 1
 
 def align(ind1, ind2):
+	#ver = False
+	ver = True
+
 	s = max(min(ind1), min(ind2))
 	e = min(max(ind1), max(ind2))
+	
+	if ver:
+		print "ind1", ind1
+		print "ind2", ind2
+		print "s", s, "e", e
 	
 	try:
 		s1 = ind1.index(s)
 		e1 = ind1.index(e)
 		s2 = ind2.index(s)
 		e2 = ind2.index(e)
-	except
-		pass
+	except ValueError:
+		raise NoIntersectError
+	
+	if ver:
+		print "s1", s1, "e1", e1
+		print "s2", s2, "e2", e2
+
+	if s == e:
+		err = EdgeError
+		err.rev = True if s1 > s2 else False
+		raise err
 	
 	d1 = sign(e1-s1)
 	d2 = sign(e2-s2)
-
+	
 	if ver:
 		print ind1
 		print ind2
-	
-		print "min",min(ind1), min(ind2), s
-		print "max",max(ind1), max(ind2), e
+
+		print "min",min(ind1), min(ind2), "s", s
+		print "max",max(ind1), max(ind2), "e", e
 	
 		print s1, e1, d1
 		print s2, e2, d2
@@ -505,7 +527,7 @@ class Face(LocalCoor):
 
 				
 				
-			
+			 
 				self.T[i,j] += dT
 				
 				R += math.fabs(dT/To)
@@ -517,46 +539,33 @@ class Face(LocalCoor):
 				
 		return R
 
-	def plot3d(self, V):
+	def plot3(self, ax, T_max):
 		x = [0]*3
+
+		Xdir = abs(self.loc_to_glo(1)) - 1
+		Ydir = abs(self.loc_to_glo(2)) - 1
+		Zdir = abs(self.loc_to_glo(3)) - 1
 		
-
-		Xdir = Abs(self.xyz_to_nrs(1)) - 1
-		Ydir = Abs(self.xyz_to_nrs(2)) - 1
-		Zdir = Abs(self.xyz_to_nrs(3)) - 1
-	
-		print Xdir, Ydir, Zdir, x
-
-		x[Xdir] = np.linspace(self.ll[0],self.ur[0],self.n[0])
-		x[Ydir] = np.linspace(self.ll[1],self.ur[1],self.n[1])
+		print "glo", Xdir, Ydir, Zdir
+		
+		x[Xdir] = np.linspace(self.ext[0,0],self.ext[0,1],self.n[0])
+		x[Ydir] = np.linspace(self.ext[1,0],self.ext[1,1],self.n[1])
+		
+		print "x", x[Xdir]
+		print "y", x[Ydir]
 		
 		x[Xdir],x[Ydir] = np.meshgrid(x[Xdir], x[Ydir])
 		
 		x[Zdir] = np.ones((self.n[0],self.n[1])) * self.z
 		
-		
 		print np.shape(cm.jet(self.T))
 		
-		FC = cm.jet(self.T)
-		FC = np.ones(np.shape(self.T))
+		T = np.transpose(self.T)
 
-		fig = figure()
+		FC = cm.jet(T/T_max)
+
+		ax.plot_surface(x[0], x[1], x[2], rstride=1, cstride=1, facecolors=FC, shade=False)
 		
-		ax = Axes3D(fig)
-		
-		ax.plot_surface(x[Xdir], x[Ydir], x[Zdir], rstride=1, cstride=1, facecolors=FC)
-		
-		#print type(X)
-		#print np.shape(X)
-
-		#Z = np.rot90(np.flip(self.T))
-		#Z = self.T
-		#Z = np.transpose(self.T)
-
-		#con = pl.contourf(X,Y,Z, V)
-
-		#pl.colorbar(con)
-
 	def plot(self, V = None):
 		fig = figure()
 		ax = fig.add_subplot(121)
@@ -716,10 +725,18 @@ class Problem:
 			f.plot(V)
 			#f.plot_grad(Vg)
 		
-
-
 		pl.show()
-	
+
+	def plot3(self):
+		T_max = self.temp_max()
+		
+		fig = figure()
+		ax = Axes3D(fig)
+		
+		for f in self.faces:
+			f.plot3(ax, T_max)
+		
+		
 	def solve(self, cond, ver=True, R_outer=0.0):
 		
 		#fig = pl.figure()
@@ -770,6 +787,8 @@ class Problem:
 	def solve2(self, cond1_final, cond2, ver = False):
 		cond1 = 1
 		
+		it_cond = 5
+
 		R = 0.0
 		for it_2 in range(it_max_2):
 			
@@ -785,7 +804,7 @@ class Problem:
 				f.reset_s()
 				R += math.fabs(f.mean() - f.mean_target) / f.mean_target
 			
-			print "{0:3d} {1:8e}".format(it,R)
+			print "{0:3d} {1:8e}".format(it_2,R)
 			
 			if math.isnan(R):
 				raise ValueError('nan')

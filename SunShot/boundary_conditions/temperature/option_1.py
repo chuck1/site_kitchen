@@ -72,9 +72,13 @@ class Patch(LocalCoor):
 
 
 def stitch(patch1, patch2):
+	print "stitch"	
+	print "patch1.Z", patch1.Z
+	print "patch2.Z", patch2.Z
 	
 	if patch1.Z == patch2.Z:
 		stitch_ortho(patch1, patch2)
+		return
 
 	# global direction parallel to common edge
 	P = cross(patch1.Z, patch2.Z)
@@ -85,6 +89,8 @@ def stitch(patch1, patch2):
 	ol1,_ = v2is(patch1.glo_to_loc(patch2.Z))
 	ol2,_ = v2is(patch2.glo_to_loc(patch1.Z))
 	
+	print "ol1", ol1, "ol2", ol2
+
 	if patch1.indices[ol1].index(patch2.Zind) == 0:
 		sol1 = -1
 	else:
@@ -118,9 +124,11 @@ def stitch(patch1, patch2):
 		
 		patch2.faces[ind2[0],ind2[1]].nbrs[ol2,(sol2+1)/2] = patch1.faces[ind1[0],ind1[1]]
 
-def stitch_ortho(patch1, pathc2):
-	
-	
+def stitch_ortho(patch1, patch2):
+	print "stitch_ortho"
+
+	ind1 = [0,0]
+	ind2 = [0,0]
 
 	try:
 		r01,r02 = align(patch1.indices[0], patch2.indices[0])
@@ -170,9 +178,9 @@ def stitch_ortho(patch1, pathc2):
 		ind1[p] = i1
 		ind2[p] = i2
 		
-		patch1.faces[ind1[0],ind1[1]].nbrs[ol1,(sol1+1)/2] = patch2.faces[ind2[0],ind2[1]]
+		patch1.faces[ind1[0],ind1[1]].nbrs[o,(sol1+1)/2] = patch2.faces[ind2[0],ind2[1]]
 		
-		patch2.faces[ind2[0],ind2[1]].nbrs[ol2,(sol2+1)/2] = patch1.faces[ind1[0],ind1[1]]
+		patch2.faces[ind2[0],ind2[1]].nbrs[o,(sol2+1)/2] = patch1.faces[ind1[0],ind1[1]]
 		
 		
 	
