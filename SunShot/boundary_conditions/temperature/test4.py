@@ -33,11 +33,13 @@ f2.nbrs[1,1] = f1
 
 faces = [f0, f1, f2]
 
-prob = Problem(faces,'test4')
+prob = Problem('test4')
+
+prob.faces = faces
 
 
-prob.solve2(1e-4, 1e-2, True)
-#prob.solve(1e-4)
+#prob.solve2(1e-4, 1e-4, True)
+prob.solve(1e-4)
 
 prob.plot3()
 

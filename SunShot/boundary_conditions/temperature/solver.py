@@ -111,7 +111,6 @@ def load_prob(filename):
 
 
 
-
 def spreader_test():
 	x = np.linspace(-1.,1.)
 	y = np.linspace(-1.,1.)
@@ -188,6 +187,7 @@ class Problem:
 		for f in self.faces:
 			f.plot3(ax, T_max)
 		
+		return ax
 		
 	def solve(self, cond, ver=True, R_outer=0.0):
 		
@@ -300,7 +300,10 @@ class Patch(LocalCoor):
 				
 				#print "I,J",I,J
 				
-				faces[i,j] = Face(1, ext, x[self.z][indices[self.z]], [numx, numy], [[20.,20.], [20.,20.]], 30.0, self.k)
+				loc_z = x[self.z][indices[self.z]]
+				
+				
+				faces[i,j] = Face(normal, ext, loc_z, [numx, numy], [[20.,20.], [20.,20.]], 30.0)
 		
 		self.npatch = np.array([NX,NY])
 
