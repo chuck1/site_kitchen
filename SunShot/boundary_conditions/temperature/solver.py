@@ -110,38 +110,31 @@ def load_prob(filename):
 	return o
 
 def source_spreader(x,y,a,b,m,n):
-	u = (1 - (x / a)**m) * (1 - (y / b)**n) * (m + 1) / m * (n + 1) / n
+	c = (1 - np.power((x / a), m))
+	d = (1 - np.power((y / b), n))
+	u = np.multiply(c,d) * (m + 1) / m * (n + 1) / n
 	return u
 
 
 class Face(LocalCoor):
-	def __init__(self, normal, ext, z, n, T_bou, mean_target):
-		
-		#self.ll = np.array(ll)
-		#self.ur = np.array(ur)
-		
+	def __init__(self, normal, ext, loc_z, n, T_bou, mean_target):
+		LocalCoor.__init__(self, normal)
+
 		self.ext = np.array(ext)
 		
-		self.z = z
+		self.loc_z = loc_z
 		
 		self.n = np.array(n)
 		self.d = (self.ext[:,1] - self.ext[:,0]) / np.float32(self.n)
 		self.T = np.ones(n) * mean_target
 		
 		if any(self.d < 0):
-			print self.ll
-			print self.ur
 			print self.d
 			raise ValueError('bad')
 		
 		self.T_bou = np.array(T_bou)
 
 		self.nbrs = np.empty((2,2), dtype=object)
-		
-		
-		self.S = 0
-		self.s = np.zeros(n)
-		
 		
 		self.mean_target = mean_target
 		
@@ -156,19 +149,20 @@ class Face(LocalCoor):
 		
 		x = np.linspace(self.d[0] / 2. - a, a - self.d[0] / 2., self.n[0])
 		y = np.linspace(self.d[1] / 2. - b, b - self.d[1] / 2., self.n[1])
-		X,Y = np.meshgrid(x,y)
+		Y,X = np.meshgrid(y,x)
 		
-		self.s = source_spreader(X,Y,a,b,2,2)
+		#print np.shape(x), np.shape(y), np.shape(X)
+		
+		self.s = source_spreader(X,Y,a,b,2.,2.)
+		
+		#print "s", np.shape(self.s), "T", np.shape(self.T)
 
 		self.Src = 0
-
-		# coordinates
-		LocalCoor.__init__(self, normal)
-
-	def x(self, i):
+		
+	def loc_x(self, i):
 		return (i + 0.5) * self.d[0]
 		
-	def y(self, j):
+	def loc_y(self, j):
 		return (j + 0.5) * self.d[1]
 	
 
@@ -323,9 +317,12 @@ class Face(LocalCoor):
 				aN, TN = self.term([i,j], 2, To)
 				
 				#ver = True
-				#print "source =",self.s(To)
 				
-				Ts = (aW*TW + aE*TE + aS*TS + aN*TN + self.s[i,j] * self.Src / k) / (aW + aE + aS + aN)
+				#print i,j, "s", np.shape(self.s), "T", np.shape(self.T)
+
+				s = self.s[i,j]
+				
+				Ts = (aW*TW + aE*TE + aS*TS + aN*TN + s * self.Src / k) / (aW + aE + aS + aN)
 
 				dT = alpha * (Ts - To)
 
@@ -378,13 +375,20 @@ class Face(LocalCoor):
 		
 		x[Xdir],x[Ydir] = np.meshgrid(x[Xdir], x[Ydir])
 		
-		x[Zdir] = np.ones((self.n[0],self.n[1])) * self.z
-		
+		x[Zdir] = np.ones((self.n[0],self.n[1])) * self.loc_z
+		x[Zdir] = np.transpose(x[Zdir])
+
+
 		print np.shape(cm.jet(self.T))
 		
 		T = np.transpose(self.T)
 
 		FC = cm.jet(T/T_max)
+		
+		print "x", np.shape(x[Xdir])
+		print "y", np.shape(x[Ydir])
+		print "z", np.shape(x[Zdir])
+		print "T", np.shape(T)
 
 		ax.plot_surface(x[0], x[1], x[2], rstride=1, cstride=1, facecolors=FC, shade=False)
 		
@@ -559,6 +563,7 @@ class Problem:
 		for f in self.faces:
 			f.plot3(ax, T_max)
 		
+		return ax
 		
 	def solve(self, cond, ver=True, R_outer=0.0):
 		
@@ -669,7 +674,10 @@ class Patch(LocalCoor):
 				
 				#print "I,J",I,J
 				
-				faces[i,j] = Face(1, ext, x[self.z][indices[self.z]], [numx, numy], [[20.,20.], [20.,20.]], 30.0)
+				loc_z = x[self.z][indices[self.z]]
+				
+				
+				faces[i,j] = Face(normal, ext, loc_z, [numx, numy], [[20.,20.], [20.,20.]], 30.0)
 		
 		self.npatch = np.array([NX,NY])
 
