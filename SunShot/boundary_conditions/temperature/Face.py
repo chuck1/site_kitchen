@@ -1,35 +1,80 @@
+import math
 import numpy as np
+import multiprocessing
+from matplotlib import cm
+import pylab as pl
 
 from unit_vec import *
 
 def source_spreader(x,y,a,b,m,n):
-	u = (1 - (x / a)**m) * (1 - (y / b)**n) * (m + 1) / m * (n + 1) / n
+	u = (1 - np.power(x / a, m)) * (1 - np.power(y / b, n)) * (m + 1) / m * (n + 1) / n
 	return u
 
+class Conn:
+	# information concerning connection between face and nbr
+	# from perspective of face
+	def __init__(self, face, conn):
+		self.face = face
+		self.conn = conn
+		
+		self.MP = False
+
+	def refresh(self):
+		self.OL = self.face.nbr_to_loc(self.twin.face)
+		
+		self.ol, self.sol = v2is(self.OL)
+		
+		self.PL = abs(cross(3, self.OL))
+		self.pl,_ = v2is(self.PL)
+
+		self.PG = self.face.loc_to_glo(self.PL)
+		
+		self.li, self.lj, self.d = self.face.index_lambda(self.twin.face, self.PG)
+		
+	def send(self, T):
+		if self.MP:
+			self.conn.send(T)
+		else:
+			self.T = T
+	
+	def recv(self):
+		
+		if self.MP:
+			T = self.conn.recv()
+		else:
+			T = self.twin.T
+		
+		return T
 
 class Face(LocalCoor):
-	def __init__(self, normal, ext, z, n, T_bou, mean_target, k):
-		
-		#self.ll = np.array(ll)
-		#self.ur = np.array(ur)
+	def __init__(self, normal, ext, z, n, T_bou, mean_target, k, alpha, alpha_src):
 		
 		self.ext = np.array(ext)
 		
 		self.z = z
 		
 		self.n = np.array(n)
-		self.d = (self.ext[:,1] - self.ext[:,0]) / np.float32(self.n)
-		self.T = np.ones(n) * mean_target
+
+		# the extra 2 rows/cols are for storing neighbor values
+		n_extended = self.n + np.array([2, 2])
 		
-		if any(self.d < 0):
-			print self.ll
-			print self.ur
+		
+		self.d = np.zeros((n_extended[0], n_extended[1], 2))
+		for i in range(n_extended[0]):
+			for j in range(n_extended[1]):
+				self.d[i,j,:] = (self.ext[:,1] - self.ext[:,0]) / np.float32(self.n)
+
+		
+		# temperature array
+		self.T = np.ones(n_extended) * mean_target
+		
+		if np.any(self.d < 0):
 			print self.d
 			raise ValueError('bad')
 		
 		self.T_bou = np.array(T_bou)
 
-		self.nbrs = np.empty((2,2), dtype=object)
+		self.conns = np.empty((2,2), dtype=object)
 		
 		
 		self.S = 0
@@ -38,6 +83,8 @@ class Face(LocalCoor):
 		
 		self.mean_target = mean_target
 		self.k = k
+		self.alpha = alpha
+		self.alpha_src = alpha_src
 
 		# source
 		self.l = np.array([
@@ -48,9 +95,9 @@ class Face(LocalCoor):
 		a = self.l[0] / 2.
 		b = self.l[1] / 2.
 		
-		x = np.linspace(self.d[0] / 2. - a, a - self.d[0] / 2., self.n[0])
-		y = np.linspace(self.d[1] / 2. - b, b - self.d[1] / 2., self.n[1])
-		X,Y = np.meshgrid(x,y)
+		x = np.linspace(self.d[0,0,0] / 2. - a, a - self.d[0,0,0] / 2., self.n[0])
+		y = np.linspace(self.d[0,0,1] / 2. - b, b - self.d[0,0,1] / 2., self.n[1])
+		Y,X = np.meshgrid(y,x)
 		
 		self.s = source_spreader(X,Y,a,b,2,2)
 
@@ -58,6 +105,8 @@ class Face(LocalCoor):
 
 		# coordinates
 		LocalCoor.__init__(self, normal)
+
+		self.Tmean = []
 
 	def x(self, i):
 		return (i + 0.5) * self.d[0]
@@ -75,12 +124,18 @@ class Face(LocalCoor):
 		dx = (self.ext[0,1] - self.ext[0,0]) / 2.0
 		dy = (self.ext[1,1] - self.ext[1,0]) / 2.0
 			
-		T = self.mean_target
+		Tm = self.mean()
+
+		dT = self.mean_target - Tm
 		
-		dSrc = k * (T - self.mean()) * 10
+		dSrc = self.k * dT / 1000.
 		
-		self.Src += alpha_src * dSrc
+		self.Src += self.alpha_src * dSrc
 		
+		self.Tmean.append(Tm)
+		
+		return math.fabs(dT/self.mean_target)
+
 	def T_boundary(self, V):
 		if V == -2:
 			return np.mean(self.T[0,:])
@@ -95,27 +150,33 @@ class Face(LocalCoor):
 
 
 	def nbr_to_loc(self, nbr):
+		if not isinstance(nbr, Face):
+			raise ValueError('nbr is not Face')
 		if not nbr:
 			raise ValueError('nbr is None')
 		
-		if nbr == self.nbrs[0,0]:
-			return -1
-		if nbr == self.nbrs[0,1]:
-			return 1
-		if nbr == self.nbrs[1,0]:
-			return -2
-		if nbr == self.nbrs[1,1]:
-			return 2
+		for i in range(2):
+			for j in range(2):
+				conn = self.conns[i,j]
+				if conn:
+					if nbr == conn.twin.face:
+						return is2v(i,2*j-1)
 		
-		print self.nbrs
+		print [conn.nbr if conn else conn for conn in self.conns.flatten()]
 		print nbr
 		raise ValueError('nbr not found')
 
-	def loc_to_nbr(self, V):
+	def loc_to_conn(self, V):
 		v,sv = v2is(V)
-		return self.nbrs[v, (sv+1)/2]
+		return self.conns[v, (sv+1)/2]
 
 	def index_lambda(self, nbr, par):
+		# returns lambda which is function of positive parallel index of neighbor
+		# and return for index of my cell
+		
+		if not isinstance(nbr, Face):
+			raise ValueError('nbr is not a Face')
+		
 		PAR = self.glo_to_loc(par)
 		
 		ORT = self.nbr_to_loc(nbr)
@@ -151,6 +212,25 @@ class Face(LocalCoor):
 		#print inspect.getsource(j)
 
 		return i,j,d
+	
+	def send_array(self, conn):
+		T = np.ones(self.n[conn.pl])
+		
+		for a in range(self.n[conn.pl]):
+			T[a] = self.T[conn.li(a), conn.lj(a)]
+		
+		conn.send(T)
+		
+	def recv_array(self, conn):
+		T = conn.recv()
+		
+		ind = [0,0]
+		ind[conn.ol] = -1 if conn.sol < 1 else self.n[conn.ol]
+		
+		for a in range(self.n[conn.pl]):
+			ind[conn.pl] = a
+			
+			self.T[ind[0],ind[1]] = T[a]
 		
 	def term(self, ind, V, To):
 		
@@ -158,44 +238,59 @@ class Face(LocalCoor):
 		
 		isInterior = (ind[v] > 0 and sv < 0) or (ind[v] < (self.n[v] - 1) and sv > 0)
 		
-		if isInterior:
-			a = 1.0 / self.d[v]
+		conn = self.loc_to_conn(V)
+		d = self.d[ind[0],ind[1],v]
 
+		if isInterior or ((not isInterior) and conn):
+			# interior cells and boundary cells with Face neighbors
 			indnbr = np.array(ind)
 			indnbr[v] += sv
-
+			
 			T = self.T[indnbr[0],indnbr[1]]
+
+			#print ind,indnbr
+			#print "T",T,"To",To
+			
+			d_nbr = self.d[indnbr[0],indnbr[1],v]
+			
+			a = 2.0 / (d + d_nbr)
 		else:
-			nbr = self.loc_to_nbr(V)
-			if nbr:
+			#print "boundary"
+
+			a = 1.0 / d
+			T = 2.0*self.T_bou[v,(sv+1)/2] - To
+			"""
+			if conn:
 				#print "neighbor face",V
 				
 				# local direction parallel to edge
 				P = abs(cross(3, V))
 				p,_ = v2is(P)
-
-				li,lj,d = nbr.index_lambda(self, self.loc_to_glo(P))
+				
+				li,lj,d = conn.twin.face.index_lambda(conn.face, self.loc_to_glo(P))
 				
 				a = 2.0 / (self.d[v] + d)
 				
 				indnbr = [li(ind[p]), lj(ind[p])]
 				
-				T = nbr.T[indnbr[0],indnbr[1]]
+				T = conn.twin.face.T[indnbr[0],indnbr[1]]
 			else:
+			"""
+					
 
-				a = 1.0 / self.d[v]
-				T = 2.0*self.T_bou[v,(sv+1)/2] - To
-		
 		return a,T
-		
+	
+
 	def step(self):
 		R = 0.0
-
+		
 		ver1 = False
 		#ver1 = True
-
+		
 		ver2 = False
 		
+		# solve equation
+
 		for i in range(self.n[0]):
 			for j in range(self.n[1]):
 				To = self.T[i,j]
@@ -208,9 +303,9 @@ class Face(LocalCoor):
 				#ver = True
 				#print "source =",self.s(To)
 				
-				Ts = (aW*TW + aE*TE + aS*TS + aN*TN + self.s[i,j] * self.Src / k) / (aW + aE + aS + aN)
+				Ts = (aW*TW + aE*TE + aS*TS + aN*TN + self.s[i,j] * self.Src / self.k) / (aW + aE + aS + aN)
 
-				dT = alpha * (Ts - To)
+				dT = self.alpha * (Ts - To)
 
 				def debug():
 					print "aW aE aS aN"
@@ -240,10 +335,19 @@ class Face(LocalCoor):
 				if math.isnan(R):
 					print dT, To
 					raise ValueError('nan')
-				
-				
 		return R
 
+	def send(self):
+		# send/recv neighbor values
+		for con in self.conns.flatten():
+			if con:
+				self.send_array(con)
+	
+	def recv(self):
+		for con in self.conns.flatten():
+			if con:
+				self.recv_array(con)	
+		
 	def plot3(self, ax, T_max):
 		x = [0]*3
 
@@ -259,28 +363,33 @@ class Face(LocalCoor):
 		print "x", x[Xdir]
 		print "y", x[Ydir]
 		
-		x[Xdir],x[Ydir] = np.meshgrid(x[Xdir], x[Ydir])
+		x[Ydir],x[Xdir] = np.meshgrid(x[Ydir], x[Xdir])
 		
 		x[Zdir] = np.ones((self.n[0],self.n[1])) * self.z
+	
 		
-		print np.shape(cm.jet(self.T))
-		
-		T = np.transpose(self.T)
+				
+		T = np.transpose(self.T[:-2,:-2])
 
 		FC = cm.jet(T/T_max)
 
+		print np.shape(x[0])
+		print np.shape(x[1])
+		print np.shape(x[2])
+		print np.shape(FC)
+
 		ax.plot_surface(x[0], x[1], x[2], rstride=1, cstride=1, facecolors=FC, shade=False)
 		
-	def plot(self, V = None):
-		fig = figure()
+	def plot(self, V = None, Vg = None):
+		fig = pl.figure()
 		ax = fig.add_subplot(121)
 		
-		self.plot_temp_sub(ax)
+		self.plot_temp_sub(ax, V)
 		
 		# gradient
 		ax = fig.add_subplot(122)
 		
-		self.plot_grad_sub(ax)
+		self.plot_grad_sub(ax, Vg)
 		
 		return
 	def plot_temp_sub(self, ax, V = None):
@@ -289,9 +398,12 @@ class Face(LocalCoor):
 		
 		X,Y = np.meshgrid(x, y)
 		
-		T = np.transpose(self.T)
+		T = np.transpose(self.T[:-2,:-2])
 		
-				
+		print np.shape(X)
+		print np.shape(Y)
+		print np.shape(T)
+		
 		if not V is None:
 			con = ax.contourf(X, Y, T, V)
 		else:
@@ -306,12 +418,9 @@ class Face(LocalCoor):
 		
 		X,Y = np.meshgrid(x, y)
 		
-		T = np.transpose(self.T)
-
-		Z = np.gradient(T, self.d[0], self.d[1])
-		Z = np.sqrt(np.sum(np.square(Z),0))
+		Z = self.grad_mag()
+		Z = Z[:-2,:-2]
 		
-				
 		if not V is None:
 			con = ax.contourf(X, Y, Z, V)
 		else:
@@ -350,20 +459,40 @@ class Face(LocalCoor):
 		return con
 
 	def grad(self):
-		return np.gradient(self.T, self.d[0], self.d[1])
+		return np.gradient(self.T, self.d[0,0,0], self.d[0,0,1])
 	def grad_mag(self):
 		return np.sqrt(np.sum(np.square(self.grad()),0))
 	
 	def temp_min(self):
-		return np.min(self.T)
+		return np.min(self.T[:-2,:-2])
 	def temp_max(self):
-		return np.max(self.T)
+		return np.max(self.T[:-2,:-2])
 	def grad_min(self):
-		return np.min(self.grad_mag())
+		return np.min(self.grad_mag()[:-2,:-2])
 	def grad_max(self):
-		return np.max(self.grad_mag())
+		return np.max(self.grad_mag()[:-2,:-2])
 	
 	def mean(self):
-		return np.mean(self.T)
+		return np.mean(self.T[:-2,:-2])
 
+def connect(f1, a1, b1, f2, a2, b2, multi = False):
+	if multi:
+		c1, c2 = multiprocessing.Pipe()
+	else:
+		c1, c2 = None, None
+	
+	conn1 = Conn(f1, c1)
+	conn2 = Conn(f2, c2)
+	
+	conn1.twin = conn2
+	conn2.twin = conn1
+	
+	#f1.nbrs[a1,b1] = f2
+	#f2.nbrs[a2,b2] = f1
+	
+	f1.conns[a1,b1] = conn1
+	f2.conns[a2,b2] = conn2
+	
+	conn1.refresh()
+	conn2.refresh()
 

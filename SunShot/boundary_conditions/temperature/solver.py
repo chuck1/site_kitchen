@@ -1,7 +1,6 @@
 import time
 import numpy as np
 import itertools
-from pylab import plot, show, figure, contour
 import pylab as pl
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
@@ -14,11 +13,6 @@ import sys
 from unit_vec import *
 from Face import *
 
-alpha = 1.2
-alpha_src = 1.4
-
-it_max_1 = 1000
-it_max_2 = 1000
 
 class NoIntersectError(Exception):
 	pass
@@ -125,18 +119,26 @@ def spreader_test():
 	
 
 class Problem:
-	def __init__(self, name, k):
+	def __init__(self, name, k, alpha, alpha_src, it_max_1 = 100, it_max_2 = 100):
 		self.name = name
+
 		self.k = k
+
+		self.alpha = alpha
+		self.alpha_src = alpha_src
+
+		self.it_max_1 = it_max_1
+		self.it_max_2 = it_max_2
+
 		self.faces = []
 		signal.signal(signal.SIGINT, self)
 	def createPatch(self, normal, indices, x, nx):
-		p = Patch(normal, indices, x, nx, self.k)
+		p = Patch(normal, indices, x, nx, self.k, self.alpha, self.alpha_src)
 		self.faces += list(p.faces.flatten())
 		return p
 	def __call__(self, signal, frame):
 		print "saving"
-		self.save()
+		#self.save()
 		sys.exit(0)
 		
 	def temp_max(self):
@@ -173,7 +175,7 @@ class Problem:
 		
 		
 		for f in self.faces:
-			f.plot(V)
+			f.plot(V, Vg)
 			#f.plot_grad(Vg)
 		
 		pl.show()
@@ -188,29 +190,27 @@ class Problem:
 			f.plot3(ax, T_max)
 		
 		return ax
-		
+	
 	def solve(self, cond, ver=True, R_outer=0.0):
-		
-		#fig = pl.figure()
-		#ax = fig.add_subplot(111)
-		#hl, = ax.plot([],[])
-		#pl.ion()
-		#pl.show()
+		return self.solve_serial(cond, ver, R_outer)
+
+	def solve_serial(self, cond, ver=True, R_outer=0.0):
 		
 		R = np.array([])
 	
-		for it in range(it_max_1):
+		for it in range(self.it_max_1):
 			R = np.append(R, 0.0)
 			
 			for face in self.faces:
 				R[-1] = max(face.step(), R[-1])
+				face.send()
+			
+			for face in self.faces:
+				face.recv()
+			
 			
 			if ver:
 				print "{0:3d} {1:8e} {2:8e}".format(it, R_outer, R[-1])
-			
-			#hl.set_xdata(np.append(hl.get_xdata(), it))
-			#hl.set_ydata(np.append(hl.get_ydata(), R))
-			#pl.draw()
 			
 			if math.isnan(R[-1]):
 				raise ValueError('nan')
@@ -220,39 +220,25 @@ class Problem:
 		
 		return it
 		
-		#if ver:
-			#pl.semilogy(R)
-			#pl.show()
-		
-	
-	def solve3(self, cond1_final, cond2_final, ver = False):
-		cond1 = 1
-		cond2 = 1e-4
-		
-		it_2 = self.solve2(cond1_final, cond2, ver)
 
 	def solve2(self, cond1_final, cond2, ver = False):
-		cond1 = 1
+		#cond1 = 1
 		
-		it_cond = 2
+		#it_cond = 2
 		
 		R = 1.0
-		for it_2 in range(it_max_2):
+		for it_2 in range(self.it_max_2):
 			
 			cond1 = R / 10.0 # target residual for inner loop is proportional to current residual for outer loop
 			
 			it_1 = self.solve(cond1, ver, R)
 			
-			#if it_1 < it_cond and cond1 > cond1_final:
-			#cond1 /= 10**0.2
-			
-			
-			
 			R = 0.0
 			
 			for f in self.faces:
-				f.reset_s()
-				R = max(math.fabs(f.mean() - f.mean_target) / f.mean_target, R)
+				Rn = f.reset_s()
+				
+				R = max(Rn, R)
 			
 			print "{0:3d} {1:8e}".format(it_2,R)
 			
@@ -269,10 +255,11 @@ class Problem:
 		pickle.dump(self, f)
 
 class Patch(LocalCoor):
-	def __init__(self, normal, indices, x, nx, k):
+	def __init__(self, normal, indices, x, nx, k, alpha, alpha_src):
 		LocalCoor.__init__(self, normal)
 		
 		self.k = k
+		self.alpha = alpha
 		
 		self.indices = indices
 		
@@ -303,7 +290,7 @@ class Patch(LocalCoor):
 				loc_z = x[self.z][indices[self.z]]
 				
 				
-				faces[i,j] = Face(normal, ext, loc_z, [numx, numy], [[20.,20.], [20.,20.]], 30.0)
+				faces[i,j] = Face(normal, ext, loc_z, [numx, numy], [[20.,20.], [20.,20.]], 30.0, k, alpha, alpha_src)
 		
 		self.npatch = np.array([NX,NY])
 
@@ -317,14 +304,20 @@ class Patch(LocalCoor):
 	
 		for i in range(nx):
 			for j in range(ny):
+				f1 = self.faces[i,j]
 				if i > 0:
-					self.faces[i,j].nbrs[0,0] = self.faces[i-1,j]
+					if not f1.conns[0,0]:
+						connect(f1, 0, 0, self.faces[i-1,j], 0, 1)
 				if i < (nx-1):
-					self.faces[i,j].nbrs[0,1] = self.faces[i+1,j]
+					if not f1.conns[0,1]:
+						connect(f1, 0, 1, self.faces[i+1,j], 0, 0)
 				if j > 0:
-					self.faces[i,j].nbrs[1,0] = self.faces[i,j-1]
+					if not f1.conns[1,0]:
+						connect(f1, 1, 0, self.faces[i,j-1], 1, 1)
 				if j < (ny-1):
-					self.faces[i,j].nbrs[1,1] = self.faces[i,j+1]
+					if not f1.conns[1,1]:
+						connect(f1, 1, 1, self.faces[i,j+1], 1, 0)
+
 	
 
 
@@ -386,9 +379,13 @@ def stitch(patch1, patch2):
 		ind1[pl1] = i1
 		ind2[pl2] = i2
 
-		patch1.faces[ind1[0],ind1[1]].nbrs[ol1,(sol1+1)/2] = patch2.faces[ind2[0],ind2[1]]
-		
-		patch2.faces[ind2[0],ind2[1]].nbrs[ol2,(sol2+1)/2] = patch1.faces[ind1[0],ind1[1]]
+		f1 = patch1.faces[ind1[0],ind1[1]]
+		f2 = patch2.faces[ind2[0],ind2[1]]
+
+		#f1.nbrs[ol1,(sol1+1)/2] = f2
+		#f2.nbrs[ol2,(sol2+1)/2] = f1
+
+		connect(f1, ol1, (sol1+1)/2, f2, ol2, (sol2+1)/2)
 
 def stitch_ortho(patch1, patch2):
 	ver = False
@@ -447,18 +444,19 @@ def stitch_ortho(patch1, patch2):
 		f1 = patch1.faces[ind1[0],ind1[1]]
 		f2 = patch2.faces[ind2[0],ind2[1]]
 		
-		if not f1.nbrs[o,(sol1+1)/2] is None:
+		if not f1.conns[o,(sol1+1)/2] is None:
 			print "face1", ind1
 			print "face2", ind2
 			raise ValueError('nbr not none')
-		if not f2.nbrs[o,(sol2+1)/2] is None:
-			
+		if not f2.conns[o,(sol2+1)/2] is None:
 			raise ValueError('nbr not none')
+		
+		connect(f1, o, (sol1+1)/2, f2, o, (sol2+1)/2)
+		#f1.nbrs[o,(sol1+1)/2] = f2
+		#f2.nbrs[o,(sol2+1)/2] = f1
+		
+	
 
-		
-		f1.nbrs[o,(sol1+1)/2] = f2
-		f2.nbrs[o,(sol2+1)/2] = f1
-		
 def test_localcoor(z):
 	lc = LocalCoor(z)
 

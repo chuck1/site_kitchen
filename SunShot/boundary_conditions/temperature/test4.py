@@ -16,36 +16,38 @@ from solver import *
 
 n = 20
 
+k = 10.0
+alpha = 1.0
+alpha_src = 1.0
 
-f0 = Face(1, [[0.,1.],[0.,1.]], 1., [n,n],[[10.,10.],[10.,10.]],10.0)
-f1 = Face(2, [[0.,1.],[0.,1.]], 1., [n,n],[[30.,30.],[30.,30.]],30.0)
-f2 = Face(3, [[0.,1.],[0.,1.]], 1., [n,n],[[20.,20.],[20.,20.]],20.0)
+x = [[0., 1.], [0., 1.], [0., 1.]]
+n = [[10],[10],[10]]
 
-f0.nbrs[0,1] = f1
-f0.nbrs[1,1] = f2
+prob = Problem('test4', k, alpha, alpha_src, it_max_1 = 1000, it_max_2 = 1000 )
 
-f1.nbrs[1,1] = f0
-f1.nbrs[0,1] = f2
+p0 = prob.createPatch(1,	[1,	[0,1],	[0,1]],	x, n)
+p1 = prob.createPatch(2,	[[0,1],	1,	[0,1]],	x, n)
+p2 = prob.createPatch(3,	[[0,1],	[0,1],	1],	x, n)
 
-f2.nbrs[0,1] = f0
-f2.nbrs[1,1] = f1
+stitch(p0,p1)
+stitch(p1,p2)
+stitch(p0,p2)
 
+f0 = p0.faces[0,0]
 
-faces = [f0, f1, f2]
-
-prob = Problem('test4')
-
-prob.faces = faces
+f0.T_bou[0,0] = 10.
+f0.T_bou[1,0] = 10.
 
 
-#prob.solve2(1e-4, 1e-4, True)
-prob.solve(1e-4)
+prob.solve2(1e-4, 1e-4, True)
+#prob.solve(1e-4)
 
-prob.plot3()
+prob.plot()
 
-#save_prob(prob, 'case1')
+pl.plot(f0.Tmean)
 
 pl.show()
+
 
 
 

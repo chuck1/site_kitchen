@@ -14,7 +14,7 @@
 
 from solver import *
 
-prob = Problem('opt1')
+prob = Problem('opt1', 10., alpha = 1.4, alpha_src = 1.4)
 
 x = [0.002,  0.008, 0.005]
 
@@ -139,7 +139,9 @@ f_po_zo = prob.createPatch( 3, [[0,1],	[3,4],	8],	X, N)
 
 
 prob.solve2(1e-4, 1e-2, True)
-prob.save()
+
+"""
+#prob.save()
 
 ax = prob.plot3()
 
@@ -152,7 +154,7 @@ ax.set_zlim3d(0, lim)
 
 
 pl.show()
-
+"""
 
 
 
