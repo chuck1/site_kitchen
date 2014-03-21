@@ -241,46 +241,41 @@ class Face(LocalCoor):
 		conn = self.loc_to_conn(V)
 		d = self.d[ind[0],ind[1],v]
 
-		if isInterior or ((not isInterior) and conn):
-			# interior cells and boundary cells with Face neighbors
-			indnbr = np.array(ind)
-			indnbr[v] += sv
+		# interior cells and boundary cells with Face neighbors
+		indnbr = np.array(ind)
+		indnbr[v] += sv
 			
-			T = self.T[indnbr[0],indnbr[1]]
+		T = self.T[indnbr[0],indnbr[1]]
 
-			#print ind,indnbr
-			#print "T",T,"To",To
+		#print ind,indnbr
+		#print "T",T,"To",To
 			
-			d_nbr = self.d[indnbr[0],indnbr[1],v]
+		d_nbr = self.d[indnbr[0],indnbr[1],v]
 			
-			a = 2.0 / (d + d_nbr)
-		else:
-			#print "boundary"
-
-			a = 1.0 / d
-			T = 2.0*self.T_bou[v,(sv+1)/2] - To
-			"""
-			if conn:
-				#print "neighbor face",V
-				
-				# local direction parallel to edge
-				P = abs(cross(3, V))
-				p,_ = v2is(P)
-				
-				li,lj,d = conn.twin.face.index_lambda(conn.face, self.loc_to_glo(P))
-				
-				a = 2.0 / (self.d[v] + d)
-				
-				indnbr = [li(ind[p]), lj(ind[p])]
-				
-				T = conn.twin.face.T[indnbr[0],indnbr[1]]
-			else:
-			"""
-					
+		a = 2.0 / (d + d_nbr)
 
 		return a,T
-	
 
+	def step_pre_cell(self, ind, V):
+		v,sv = v2is(V)
+		conn = self.loc_to_conn(V)
+		if not conn:
+			indn = np.array(ind)
+			indn[v] += sv
+			self.T[indn] = 2.0*self.T_bou[v,(sv+1)/2] - self.T[ind]
+			
+	def step_pre(self):
+		# for boundaries, load boundary temperature cells with proper value
+		# west/east
+		for j in range(self.n[1]):
+			self.step_pre_cell([          0, j], -1)
+			self.step_pre_cell([self.n[0]-1, j],  1)
+		
+		# north/south
+		for i in range(self.n[0]):
+			self.step_pre_cell([i,           0], -2)
+			self.step_pre_cell([i, self.n[1]-1],  2)
+		
 	def step(self):
 		R = 0.0
 		
@@ -290,6 +285,8 @@ class Face(LocalCoor):
 		ver2 = False
 		
 		# solve equation
+
+		self.step_pre()
 
 		for i in range(self.n[0]):
 			for j in range(self.n[1]):
