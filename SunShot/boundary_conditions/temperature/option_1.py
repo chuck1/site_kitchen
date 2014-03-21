@@ -14,7 +14,11 @@
 
 from solver import *
 
-prob = Problem('opt1', 10., alpha = 1.4, alpha_src = 1.4)
+prob = Problem('opt1',
+		k = 10.,
+		alpha = 1.4,
+		alpha_src = 1.4,
+		it_max_2 = 20)
 
 x = [0.002,  0.008, 0.005]
 
@@ -143,6 +147,8 @@ prob.solve2(1e-4, 1e-2, True)
 """
 #prob.save()
 
+
+"""
 ax = prob.plot3()
 
 lim = 0.05
@@ -151,10 +157,7 @@ ax.set_xlim3d(0, lim)
 ax.set_ylim3d(0, lim)
 ax.set_zlim3d(0, lim)
 
-
-
 pl.show()
-"""
 
 
 

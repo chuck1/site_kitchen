@@ -1,0 +1,70 @@
+\documentclass{article}
+
+\usepackage{amsmath}
+
+\begin{document}
+
+\section{Equations of Motion}
+\subsection{Translation}
+
+\[
+m \ddot{\mathbf{x}} = \mathbf{g} + \mathbf{F} + \mathbf{F}_D
+\]
+
+\[
+\mathbf{g} = -mg \mathbf{k}
+\]
+
+\[
+\mathbf{F} = \mathbf{R} \mathbf{F}_B
+\]
+
+
+
+\[
+\mathbf{F}_B = k \mathbf{u}_2 \sum{\gamma}
+\]
+
+\subsection{Rotation}
+
+\[
+I \dot{\omega} + \omega \times \left( I \omega \right) = \tau
+\]
+
+\[
+I =
+\begin{bmatrix}
+I_{xx} & 0 & 0 \\
+0 & I_{yy} & 0 \\
+0 & 0 & I_{zz}
+\end{bmatrix}
+\]
+
+\[
+\tau_B =
+\begin{bmatrix}
+Lk \left( \gamma_1 - \gamma_3 \right) \\
+Lk \left( \gamma_2 - \gamma_4 \right) \\
+b \left(  \gamma_1 - \gamma_2 + \gamma_3 - \gamma_4 \right)
+\end{bmatrix}
+\]
+
+\section{Control}
+\subsection{Position}
+
+\[
+\mathbf{e} = \mathbf{x}_{ref} - \mathbf{x}
+\]
+
+\[
+\mathbf{F} =
+m \mathbf{a} =
+m \left( \mathbf{K}_p \mathbf{e} + \mathbf{K}_d \dot{\mathbf{e}} \right)
+\]
+
+
+
+\end{document}
+
+
+

@@ -47,11 +47,11 @@ class Conn:
 		return T
 
 class Face(LocalCoor):
-	def __init__(self, normal, ext, z, n, T_bou, mean_target, k, alpha, alpha_src):
+	def __init__(self, normal, ext, pos_z, n, T_bou, mean_target, k, alpha, alpha_src):
 		
 		self.ext = np.array(ext)
 		
-		self.z = z
+		self.pos_z = pos_z
 		
 		self.n = np.array(n)
 
@@ -171,11 +171,14 @@ class Face(LocalCoor):
 		return self.conns[v, (sv+1)/2]
 
 	def index_lambda(self, nbr, par):
-		# returns lambda which is function of positive parallel index of neighbor
-		# and return for index of my cell
+		# returns lambda:
+		# function of positive parallel index of neighbor
+		# returns the index of my cell
 		
 		if not isinstance(nbr, Face):
 			raise ValueError('nbr is not a Face')
+		
+		# par = global direction equal to the neighbors positiove local parallel
 		
 		PAR = self.glo_to_loc(par)
 		
@@ -260,9 +263,17 @@ class Face(LocalCoor):
 		v,sv = v2is(V)
 		conn = self.loc_to_conn(V)
 		if not conn:
+			# constant temperature boundary
 			indn = np.array(ind)
 			indn[v] += sv
-			self.T[indn] = 2.0*self.T_bou[v,(sv+1)/2] - self.T[ind]
+
+			Tb = self.T_bou[v,(sv+1)/2]
+
+			if Tb == 0.0:
+				# insulated
+				self.T[tuple(indn)] = self.T[tuple(ind)]
+			else:
+				self.T[tuple(indn)] = 2.0 * Tb - self.T[tuple(ind)]
 			
 	def step_pre(self):
 		# for boundaries, load boundary temperature cells with proper value
@@ -360,13 +371,40 @@ class Face(LocalCoor):
 		print "x", x[Xdir]
 		print "y", x[Ydir]
 		
-		x[Ydir],x[Xdir] = np.meshgrid(x[Ydir], x[Xdir])
+		# x and y
+		#x[Ydir],x[Xdir] = np.meshgrid(x[Ydir], x[Xdir])
+		x[Xdir],x[Ydir] = np.meshgrid(x[Xdir], x[Ydir])
+
+		# z
+		#x[Zdir] = np.ones((self.n[0],self.n[1])) * self.z
+		x[Zdir] = np.ones((self.n[1],self.n[0])) * self.pos_z
+
+		# T
+		T = self.T[:-2,:-2]
+		if self.zs > 0:
+			T = np.transpose(T)
+		else:
+			pass
 		
-		x[Zdir] = np.ones((self.n[0],self.n[1])) * self.z
-	
+
+		if self.Z == -1:
+			T = np.rot90(T,1)
+			T = np.fliplr(T)
+		elif self.Z == -2:
+			#T = np.rot90(T,3)
+			#T = np.flipud(T)
+			T = np.rot90(T,1)
+			T = np.fliplr(T)
+		elif self.Z == -3:
+			T = np.rot90(T,1)
+			T = np.fliplr(T)
 		
-				
-		T = np.transpose(self.T[:-2,:-2])
+
+		# negative faces
+		if self.zs < 0:
+			#T = np.flipud(T)
+			#T = np.fliplr(T)
+			pass
 
 		FC = cm.jet(T/T_max)
 
