@@ -1,7 +1,6 @@
 import time
 import numpy as np
 import itertools
-from pylab import plot, show, figure, contour
 import pylab as pl
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
@@ -12,14 +11,8 @@ import signal
 import sys
 
 from unit_vec import *
+from Face import *
 
-k = 10
-
-alpha = 1.2
-alpha_src = 1.4
-
-it_max_1 = 1000
-it_max_2 = 1000
 
 class NoIntersectError(Exception):
 	pass
@@ -109,383 +102,7 @@ def load_prob(filename):
 	o = pickle.load(f)
 	return o
 
-def source_spreader(x,y,a,b,m,n):
-	c = (1 - np.power((x / a), m))
-	d = (1 - np.power((y / b), n))
-	u = np.multiply(c,d) * (m + 1) / m * (n + 1) / n
-	return u
 
-
-class Face(LocalCoor):
-	def __init__(self, normal, ext, loc_z, n, T_bou, mean_target):
-		LocalCoor.__init__(self, normal)
-
-		self.ext = np.array(ext)
-		
-		self.loc_z = loc_z
-		
-		self.n = np.array(n)
-		self.d = (self.ext[:,1] - self.ext[:,0]) / np.float32(self.n)
-		self.T = np.ones(n) * mean_target
-		
-		if any(self.d < 0):
-			print self.d
-			raise ValueError('bad')
-		
-		self.T_bou = np.array(T_bou)
-
-		self.nbrs = np.empty((2,2), dtype=object)
-		
-		self.mean_target = mean_target
-		
-		# source
-		self.l = np.array([
-			(self.ext[0,1] - self.ext[0,0]) / 2.0,
-			(self.ext[1,1] - self.ext[1,0]) / 2.0])
-		
-		
-		a = self.l[0] / 2.
-		b = self.l[1] / 2.
-		
-		x = np.linspace(self.d[0] / 2. - a, a - self.d[0] / 2., self.n[0])
-		y = np.linspace(self.d[1] / 2. - b, b - self.d[1] / 2., self.n[1])
-		Y,X = np.meshgrid(y,x)
-		
-		#print np.shape(x), np.shape(y), np.shape(X)
-		
-		self.s = source_spreader(X,Y,a,b,2.,2.)
-		
-		#print "s", np.shape(self.s), "T", np.shape(self.T)
-
-		self.Src = 0
-		
-	def loc_x(self, i):
-		return (i + 0.5) * self.d[0]
-		
-	def loc_y(self, j):
-		return (j + 0.5) * self.d[1]
-	
-
-	def reset_s(self):
-		TW = self.T_boundary(-2)
-		TE = self.T_boundary(2)
-		TS = self.T_boundary(-3)
-		TN = self.T_boundary(3)
-		
-		#print TW, TE, TS, TN
-		
-		dx = (self.ext[0,1] - self.ext[0,0]) / 2.0
-		dy = (self.ext[1,1] - self.ext[1,0]) / 2.0
-			
-		T = self.mean_target
-		
-		#snew = ((T - TW)/dx + (T - TE)/dx + (T - TS)/dy + (T - TN)/dy) * k
-		
-		dSrc = k * (T - self.mean()) * 10
-		
-		self.Src += alpha_src * dSrc # / float(np.prod(self.n)) / 100000.0
-		
-
-		#print "Src =",self.Src
-		
-		#snew = snew / np.prod(self.n)
-		
-		#print "s_new =",snew
-		
-	def T_boundary(self, V):
-		if V == -2:
-			return np.mean(self.T[0,:])
-		if V == 2:
-			return np.mean(self.T[-1,:])
-		if V == -3:
-			return np.mean(self.T[:,0])
-		if V == 3:
-			return np.mean(self.T[:,-1])
-		
-		raise
-
-
-	def nbr_to_loc(self, nbr):
-		if not nbr:
-			raise ValueError('nbr is None')
-		
-		if nbr == self.nbrs[0,0]:
-			return -1
-		if nbr == self.nbrs[0,1]:
-			return 1
-		if nbr == self.nbrs[1,0]:
-			return -2
-		if nbr == self.nbrs[1,1]:
-			return 2
-		
-		print self.nbrs
-		print nbr
-		raise ValueError('nbr not found')
-
-	def loc_to_nbr(self, V):
-		v,sv = v2is(V)
-		return self.nbrs[v, (sv+1)/2]
-
-	def index_lambda(self, nbr, par):
-		PAR = self.glo_to_loc(par)
-		
-		ORT = self.nbr_to_loc(nbr)
-		
-		#print "PAR,ORT",PAR,ORT
-
-		if PAR == 1:
-			i = lambda p: p
-			d = self.d[1]
-		elif PAR == -1:
-			i = lambda p: self.n[0] - p - 1
-			d = self.d[1]
-		else:
-			if ORT < 0:
-				i = lambda p: 0
-			else:
-				i = lambda p: self.n[0] - 1
-		
-		
-		if PAR == 2:
-			j = lambda p: p
-			d = self.d[0]
-		elif PAR == -2:
-			j = lambda p: self.n[1] - p - 1
-			d = self.d[0]
-		else:
-			if ORT < 0:
-				j = lambda p: 0
-			else:
-				j = lambda p: self.n[1] - 1
-		
-		#print inspect.getsource(i)
-		#print inspect.getsource(j)
-
-		return i,j,d
-		
-	def term(self, ind, V, To):
-		
-		v,sv = v2is(V)
-		
-		isInterior = (ind[v] > 0 and sv < 0) or (ind[v] < (self.n[v] - 1) and sv > 0)
-		
-		if isInterior:
-			a = 1.0 / self.d[v]
-
-			indnbr = np.array(ind)
-			indnbr[v] += sv
-
-			T = self.T[indnbr[0],indnbr[1]]
-		else:
-			nbr = self.loc_to_nbr(V)
-			if nbr:
-				#print "neighbor face",V
-				
-				# local direction parallel to edge
-				P = abs(cross(3, V))
-				p,_ = v2is(P)
-
-				li,lj,d = nbr.index_lambda(self, self.loc_to_glo(P))
-				
-				a = 2.0 / (self.d[v] + d)
-				
-				indnbr = [li(ind[p]), lj(ind[p])]
-				
-				T = nbr.T[indnbr[0],indnbr[1]]
-			else:
-
-				a = 1.0 / self.d[v]
-				T = 2.0*self.T_bou[v,(sv+1)/2] - To
-		
-		return a,T
-		
-	def step(self):
-		R = 0.0
-
-		ver1 = False
-		#ver1 = True
-
-		ver2 = False
-		
-		for i in range(self.n[0]):
-			for j in range(self.n[1]):
-				To = self.T[i,j]
-
-				aW, TW = self.term([i,j],-1, To)
-				aE, TE = self.term([i,j], 1, To)
-				aS, TS = self.term([i,j],-2, To)
-				aN, TN = self.term([i,j], 2, To)
-				
-				#ver = True
-				
-				#print i,j, "s", np.shape(self.s), "T", np.shape(self.T)
-
-				s = self.s[i,j]
-				
-				Ts = (aW*TW + aE*TE + aS*TS + aN*TN + s * self.Src / k) / (aW + aE + aS + aN)
-
-				dT = alpha * (Ts - To)
-
-				def debug():
-					print "aW aE aS aN"
-					print aW, aE, aS, aN
-					print "TW TE TS TN To Ts dT"
-					print TW, TE, TS, TN, To, Ts, dT
-				
-				
-				if aW < 0 or aE < 0 or aS < 0 or aN < 0:
-					debug()
-					raise ValueError('bad')
-
-				if ver1: debug()
-
-				if math.isnan(To):
-					raise ValueError('nan')
-				if math.isnan(Ts) or math.isinf(Ts):
-					debug()
-					raise ValueError('bad')
-				if math.isnan(dT):
-					raise ValueError('nan')
-			 
-				self.T[i,j] += dT
-				
-				R = max(math.fabs(dT/To), R)
-				
-				if math.isnan(R):
-					print dT, To
-					raise ValueError('nan')
-				
-				
-		return R
-
-	def plot3(self, ax, T_max):
-		x = [0]*3
-
-		Xdir = abs(self.loc_to_glo(1)) - 1
-		Ydir = abs(self.loc_to_glo(2)) - 1
-		Zdir = abs(self.loc_to_glo(3)) - 1
-		
-		print "glo", Xdir, Ydir, Zdir
-		
-		x[Xdir] = np.linspace(self.ext[0,0],self.ext[0,1],self.n[0])
-		x[Ydir] = np.linspace(self.ext[1,0],self.ext[1,1],self.n[1])
-		
-		print "x", x[Xdir]
-		print "y", x[Ydir]
-		
-		x[Xdir],x[Ydir] = np.meshgrid(x[Xdir], x[Ydir])
-		
-		x[Zdir] = np.ones((self.n[0],self.n[1])) * self.loc_z
-		x[Zdir] = np.transpose(x[Zdir])
-
-
-		print np.shape(cm.jet(self.T))
-		
-		T = np.transpose(self.T)
-
-		FC = cm.jet(T/T_max)
-		
-		print "x", np.shape(x[Xdir])
-		print "y", np.shape(x[Ydir])
-		print "z", np.shape(x[Zdir])
-		print "T", np.shape(T)
-
-		ax.plot_surface(x[0], x[1], x[2], rstride=1, cstride=1, facecolors=FC, shade=False)
-		
-	def plot(self, V = None):
-		fig = figure()
-		ax = fig.add_subplot(121)
-		
-		self.plot_temp_sub(ax)
-		
-		# gradient
-		ax = fig.add_subplot(122)
-		
-		self.plot_grad_sub(ax)
-		
-		return
-	def plot_temp_sub(self, ax, V = None):
-		x = np.linspace(self.ext[0,0], self.ext[0,1], self.n[0])
-		y = np.linspace(self.ext[1,0], self.ext[1,1], self.n[1])
-		
-		X,Y = np.meshgrid(x, y)
-		
-		T = np.transpose(self.T)
-		
-				
-		if not V is None:
-			con = ax.contourf(X, Y, T, V)
-		else:
-			con = ax.contourf(X, Y, T)
-		
-		pl.colorbar(con)
-		pl.axis('equal')
-		
-	def plot_grad_sub(self, ax, V = None):
-		x = np.linspace(self.ext[0,0], self.ext[0,1], self.n[0])
-		y = np.linspace(self.ext[1,0], self.ext[1,1], self.n[1])
-		
-		X,Y = np.meshgrid(x, y)
-		
-		T = np.transpose(self.T)
-
-		Z = np.gradient(T, self.d[0], self.d[1])
-		Z = np.sqrt(np.sum(np.square(Z),0))
-		
-				
-		if not V is None:
-			con = ax.contourf(X, Y, Z, V)
-		else:
-			con = ax.contourf(X, Y, Z)
-		
-		pl.colorbar(con)
-		pl.axis('equal')
-
-
-	def plot_grad(self, V = None):
-		x = np.linspace(self.ext[0,0], self.ext[0,1], self.n[0])
-		y = np.linspace(self.ext[1,0], self.ext[1,1], self.n[1])
-		
-		X,Y = np.meshgrid(x, y)
-		
-		T = np.transpose(self.T)
-
-		Z = np.gradient(T, self.d[0], self.d[1])
-		Z = np.sqrt(np.sum(np.square(Z),0))
-		
-		
-		#print np.shape(self.T)
-		#print np.shape(Z)
-		
-		fig = figure()
-		ax = fig.add_subplot(111)
-
-		if not V is None:
-			con = ax.contourf(X, Y, Z, V)
-		else:
-			con = ax.contourf(X, Y, Z)
-		
-		pl.colorbar(con)
-		pl.axis('equal')
-
-		return con
-
-	def grad(self):
-		return np.gradient(self.T, self.d[0], self.d[1])
-	def grad_mag(self):
-		return np.sqrt(np.sum(np.square(self.grad()),0))
-	
-	def temp_min(self):
-		return np.min(self.T)
-	def temp_max(self):
-		return np.max(self.T)
-	def grad_min(self):
-		return np.min(self.grad_mag())
-	def grad_max(self):
-		return np.max(self.grad_mag())
-	
-	def mean(self):
-		return np.mean(self.T)
 
 
 def spreader_test():
@@ -502,17 +119,26 @@ def spreader_test():
 	
 
 class Problem:
-	def __init__(self, name):
+	def __init__(self, name, k, alpha, alpha_src, it_max_1 = 100, it_max_2 = 100):
 		self.name = name
+
+		self.k = k
+
+		self.alpha = alpha
+		self.alpha_src = alpha_src
+
+		self.it_max_1 = it_max_1
+		self.it_max_2 = it_max_2
+
 		self.faces = []
 		signal.signal(signal.SIGINT, self)
 	def createPatch(self, normal, indices, x, nx):
-		p = Patch(normal, indices, x, nx)
+		p = Patch(normal, indices, x, nx, self.k, self.alpha, self.alpha_src)
 		self.faces += list(p.faces.flatten())
 		return p
 	def __call__(self, signal, frame):
 		print "saving"
-		self.save()
+		#self.save()
 		sys.exit(0)
 		
 	def temp_max(self):
@@ -549,7 +175,7 @@ class Problem:
 		
 		
 		for f in self.faces:
-			f.plot(V)
+			f.plot(V, Vg)
 			#f.plot_grad(Vg)
 		
 		pl.show()
@@ -564,29 +190,27 @@ class Problem:
 			f.plot3(ax, T_max)
 		
 		return ax
-		
+	
 	def solve(self, cond, ver=True, R_outer=0.0):
-		
-		#fig = pl.figure()
-		#ax = fig.add_subplot(111)
-		#hl, = ax.plot([],[])
-		#pl.ion()
-		#pl.show()
+		return self.solve_serial(cond, ver, R_outer)
+
+	def solve_serial(self, cond, ver=True, R_outer=0.0):
 		
 		R = np.array([])
 	
-		for it in range(it_max_1):
+		for it in range(self.it_max_1):
 			R = np.append(R, 0.0)
 			
 			for face in self.faces:
 				R[-1] = max(face.step(), R[-1])
+				face.send()
+			
+			for face in self.faces:
+				face.recv()
+			
 			
 			if ver:
 				print "{0:3d} {1:8e} {2:8e}".format(it, R_outer, R[-1])
-			
-			#hl.set_xdata(np.append(hl.get_xdata(), it))
-			#hl.set_ydata(np.append(hl.get_ydata(), R))
-			#pl.draw()
 			
 			if math.isnan(R[-1]):
 				raise ValueError('nan')
@@ -596,39 +220,25 @@ class Problem:
 		
 		return it
 		
-		#if ver:
-			#pl.semilogy(R)
-			#pl.show()
-		
-	
-	def solve3(self, cond1_final, cond2_final, ver = False):
-		cond1 = 1
-		cond2 = 1e-4
-		
-		it_2 = self.solve2(cond1_final, cond2, ver)
 
 	def solve2(self, cond1_final, cond2, ver = False):
-		cond1 = 1
+		#cond1 = 1
 		
-		it_cond = 2
+		#it_cond = 2
 		
 		R = 1.0
-		for it_2 in range(it_max_2):
+		for it_2 in range(self.it_max_2):
 			
 			cond1 = R / 10.0 # target residual for inner loop is proportional to current residual for outer loop
 			
 			it_1 = self.solve(cond1, ver, R)
 			
-			#if it_1 < it_cond and cond1 > cond1_final:
-			#cond1 /= 10**0.2
-			
-			
-			
 			R = 0.0
 			
 			for f in self.faces:
-				f.reset_s()
-				R = max(math.fabs(f.mean() - f.mean_target) / f.mean_target, R)
+				Rn = f.reset_s()
+				
+				R = max(Rn, R)
 			
 			print "{0:3d} {1:8e}".format(it_2,R)
 			
@@ -645,8 +255,11 @@ class Problem:
 		pickle.dump(self, f)
 
 class Patch(LocalCoor):
-	def __init__(self, normal, indices, x, nx):
+	def __init__(self, normal, indices, x, nx, k, alpha, alpha_src):
 		LocalCoor.__init__(self, normal)
+		
+		self.k = k
+		self.alpha = alpha
 		
 		self.indices = indices
 		
@@ -677,7 +290,7 @@ class Patch(LocalCoor):
 				loc_z = x[self.z][indices[self.z]]
 				
 				
-				faces[i,j] = Face(normal, ext, loc_z, [numx, numy], [[20.,20.], [20.,20.]], 30.0)
+				faces[i,j] = Face(normal, ext, loc_z, [numx, numy], [[20.,20.], [20.,20.]], 30.0, k, alpha, alpha_src)
 		
 		self.npatch = np.array([NX,NY])
 
@@ -691,14 +304,20 @@ class Patch(LocalCoor):
 	
 		for i in range(nx):
 			for j in range(ny):
+				f1 = self.faces[i,j]
 				if i > 0:
-					self.faces[i,j].nbrs[0,0] = self.faces[i-1,j]
+					if not f1.conns[0,0]:
+						connect(f1, 0, 0, self.faces[i-1,j], 0, 1)
 				if i < (nx-1):
-					self.faces[i,j].nbrs[0,1] = self.faces[i+1,j]
+					if not f1.conns[0,1]:
+						connect(f1, 0, 1, self.faces[i+1,j], 0, 0)
 				if j > 0:
-					self.faces[i,j].nbrs[1,0] = self.faces[i,j-1]
+					if not f1.conns[1,0]:
+						connect(f1, 1, 0, self.faces[i,j-1], 1, 1)
 				if j < (ny-1):
-					self.faces[i,j].nbrs[1,1] = self.faces[i,j+1]
+					if not f1.conns[1,1]:
+						connect(f1, 1, 1, self.faces[i,j+1], 1, 0)
+
 	
 
 
@@ -760,9 +379,13 @@ def stitch(patch1, patch2):
 		ind1[pl1] = i1
 		ind2[pl2] = i2
 
-		patch1.faces[ind1[0],ind1[1]].nbrs[ol1,(sol1+1)/2] = patch2.faces[ind2[0],ind2[1]]
-		
-		patch2.faces[ind2[0],ind2[1]].nbrs[ol2,(sol2+1)/2] = patch1.faces[ind1[0],ind1[1]]
+		f1 = patch1.faces[ind1[0],ind1[1]]
+		f2 = patch2.faces[ind2[0],ind2[1]]
+
+		#f1.nbrs[ol1,(sol1+1)/2] = f2
+		#f2.nbrs[ol2,(sol2+1)/2] = f1
+
+		connect(f1, ol1, (sol1+1)/2, f2, ol2, (sol2+1)/2)
 
 def stitch_ortho(patch1, patch2):
 	ver = False
@@ -821,18 +444,19 @@ def stitch_ortho(patch1, patch2):
 		f1 = patch1.faces[ind1[0],ind1[1]]
 		f2 = patch2.faces[ind2[0],ind2[1]]
 		
-		if not f1.nbrs[o,(sol1+1)/2] is None:
+		if not f1.conns[o,(sol1+1)/2] is None:
 			print "face1", ind1
 			print "face2", ind2
 			raise ValueError('nbr not none')
-		if not f2.nbrs[o,(sol2+1)/2] is None:
-			
+		if not f2.conns[o,(sol2+1)/2] is None:
 			raise ValueError('nbr not none')
+		
+		connect(f1, o, (sol1+1)/2, f2, o, (sol2+1)/2)
+		#f1.nbrs[o,(sol1+1)/2] = f2
+		#f2.nbrs[o,(sol2+1)/2] = f1
+		
+	
 
-		
-		f1.nbrs[o,(sol1+1)/2] = f2
-		f2.nbrs[o,(sol2+1)/2] = f1
-		
 def test_localcoor(z):
 	lc = LocalCoor(z)
 
