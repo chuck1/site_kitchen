@@ -1,0 +1,15 @@
+\begin{thenomenclature} 
+
+ \nomgroup{A}
+
+  \item [{$\mathbf{F}$}]\begingroup force vector\nomeqref {0}\nompageref{1}
+  \item [{$\mathbf{x}$}]\begingroup  vector\nomeqref {0}\nompageref{1}
+  \item [{$\mathbf{x}$}]\begingroup position vector\nomeqref {0}\nompageref{1}
+
+ \nomgroup{B}
+
+  \item [{$B$}]\begingroup body frame\nomeqref {0}\nompageref{1}
+  \item [{$D$}]\begingroup drag\nomeqref {0}\nompageref{1}
+  \item [{$R$}]\begingroup rotor\nomeqref {0}\nompageref{1}
+
+\end{thenomenclature}
