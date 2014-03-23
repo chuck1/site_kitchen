@@ -1,0 +1,77 @@
+\subsection{Position}
+
+\[
+\mathbf{e}_5 = \mathbf{x}_{ref} - \mathbf{x}
+\]
+
+\[
+\dot{\mathbf{e}}_5 = \dot{\mathbf{x}}_{ref} - \dot{\mathbf{x}}
+\]
+
+\[
+\dot{\mathbf{e}}_5 = \dot{\mathbf{x}}_{ref} - \mathbf{v}
+\]
+
+\[
+\mathbf{v}_{ref} = \mathbf{C}_5 \mathbf{e}_5 + \dot{\mathbf{x}}_{ref} + \boldsymbol\Lambda_5 \boldsymbol\chi_5
+\]
+
+\[
+\dot{\mathbf{v}}_{ref} = \mathbf{C}_5 \dot{\mathbf{e}}_5 + \ddot{\mathbf{x}}_{ref} + \boldsymbol\Lambda_5 \mathbf{e}_5
+\]
+
+
+\[
+\mathbf{e}_6 = \mathbf{v}_{ref} - \mathbf{v}
+\]
+
+\[
+\dot{\mathbf{e}}_6 = \dot{\mathbf{v}}_{ref} - \dot{\mathbf{v}}
+\]
+
+\[
+\dot{\mathbf{e}}_6 = \mathbf{C}_5 \dot{\mathbf{e}}_5 + \ddot{\mathbf{x}}_{ref} + \boldsymbol\Lambda_5 \mathbf{e}_5 - \ddot{\mathbf{x}}
+\]
+
+\[
+\dot{\mathbf{x}}_{ref} = \mathbf{v}_{ref} - \mathbf{C}_5 \mathbf{e}_5 - \boldsymbol\Lambda_5 \boldsymbol\chi_5
+\]
+
+\[
+\dot{\mathbf{x}}_{ref} = \mathbf{e}_6 + \mathbf{v} - \mathbf{C}_5 \mathbf{e}_5 - \boldsymbol\Lambda_5 \boldsymbol\chi_5
+\]
+
+\[
+\dot{\mathbf{e}}_5 = \mathbf{e}_6 - \mathbf{C}_5 \mathbf{e}_5 - \boldsymbol\Lambda_5 \boldsymbol\chi_5
+\]
+
+\[
+\dot{\mathbf{e}}_6 = \mathbf{f}_6(\mathbf{e}_5,\mathbf{e}_6)
+\]
+
+\[
+\mathbf{f}_6(\mathbf{e}_5,\mathbf{e}_6)
+= \mathbf{C}_5 \left( \mathbf{e}_6 - \mathbf{C}_5 \mathbf{e}_5 - \boldsymbol\Lambda_5 \boldsymbol\chi_5 \right)
++ \ddot{\mathbf{x}}_{ref}
++ \boldsymbol\Lambda_5 \mathbf{e}_5
+- \left(
+\mathbf{g}
++ \frac{1}{m} \mathbf{F}_{R}
++ \frac{1}{m} \mathbf{F}_{D}
+\right)
+\]
+
+\[
+\mathbf{F}_{R}
+= m \left(
+-\mathbf{f}_6(\mathbf{e}_5,\mathbf{e}_6)
++ \mathbf{C}_5 \left( \mathbf{e}_6 - \mathbf{C}_5 \mathbf{e}_5 - \boldsymbol\Lambda_5 \boldsymbol\chi_5 \right)
++ \ddot{\mathbf{x}}_{ref}
++ \boldsymbol\Lambda_5 \mathbf{e}_5
+- \mathbf{g}
+- \frac{1}{m} \mathbf{F}_{D}
+\right)
+\]
+
+
+

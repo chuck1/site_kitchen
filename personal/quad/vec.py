@@ -3,6 +3,38 @@ import math
 
 e2 = np.array([0.,0.,1.])
 
+def sign(x):
+	return math.copysign(1.0,x)
+
+def clamp(x,minx,maxx):
+	if x > maxx:
+		print 'max',maxx
+		return maxx
+	elif x < minx:
+		print 'min',minx
+		return minx
+	else:
+		return x
+
+def clampz(x,v):
+	return clamp(x,-v,v)
+
+def magsq(a):
+	return np.sum(np.square(a))
+def mag(a):
+	return math.sqrt(magsq(a))
+
+def set_arb_comp(a,b):
+	am = mag(a)
+	ah = a / am
+
+	bm = mag(b)
+	bh = b / bm
+	
+	bm2 = am / np.dot(ah,bh)
+	
+	return bm2
+
 def angle(a,b,up,ver = False):
 	# rotation between a and b
 	a_norm = np.linalg.norm(a)	

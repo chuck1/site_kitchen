@@ -87,22 +87,25 @@ class Quat(object):
 		self._q = None
 		self._equatorial = None
 		self._T = None
+		
 		# checks to see if we've been passed a Quat 
-		if isinstance(attitude, Quat):
+		if attitude is None:
+			self._q = np.array([0,0,0,1])
+		elif isinstance(attitude, Quat):
 			self._set_q(attitude.q)
 		else:
 			# make it an array and check to see if it is a supported shape
 			attitude = np.array(attitude)
-		if len(attitude) == 4:
-			self._set_q(attitude)
-		elif attitude.shape == (3,3):
-			self._set_transform(attitude)
-		elif attitude.shape == (3,):
-			self._set_equatorial(attitude)
-		elif attitude.shape == (2,):
-			self._set_axis_angle(attitude[0],attitude[1])
-		else:
-			raise TypeError("attitude is not one of possible types (3 or 4 elements, Quat, or 3x3 matrix)")
+			if len(attitude) == 4:
+				self._set_q(attitude)
+			elif attitude.shape == (3,3):
+				self._set_transform(attitude)
+			elif attitude.shape == (3,):
+				self._set_equatorial(attitude)
+			elif attitude.shape == (2,):
+				self._set_axis_angle(attitude[0],attitude[1])
+			else:
+				raise TypeError("attitude is not one of possible types (3 or 4 elements, Quat, or 3x3 matrix)")
 		
 		
 	def _set_q(self, q):
@@ -130,7 +133,11 @@ class Quat(object):
 		
 		self._equatorial = None
 		self._T = None
-		
+	
+	def set_from_unit_vectors(self,a,b):
+		c = np.cross(a,b)
+		self._q = np.array([c[0], c[1], c[2], 1.0 + np.dot(a,b)])
+		self._q = normalize(self._q)
 	def _get_q(self):
 		"""
 		Retrieve 4-vector of quaternion elements in [x, y, z, w] form
@@ -442,6 +449,8 @@ class Quat(object):
 		"""
 
 		return m * vq2._q[0:3]
+	
+	
 
 def normalize(array):
 	""" 

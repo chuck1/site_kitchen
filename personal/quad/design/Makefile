@@ -1,7 +1,7 @@
 
 all:
-	latex main.tex
+	latex files/main.tex
 	makeindex main.nlo -s nomencl.ist -o main.nls
-	latex main.tex
-	dvipdfm main.dvi
+	pdflatex files/main.tex
+	#dvipdfm main.dvi
 
