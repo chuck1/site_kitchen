@@ -1,41 +1,3 @@
-"""
-Quaternion provides a class for manipulating quaternion objects.  This class provides:
-
-- a convenient constructor to convert to/from Euler Angles (RA,Dec,Roll) 
-to/from quaternions
-- class methods to multiply and divide quaternions 
-"""
-
-__copyright__ = """
-Copyright (c) 2009, Smithsonian Astrophysical Observatory
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
- * Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
-notice, this list of conditions and the following disclaimer in the
-documentation and/or other materials provided with the distribution.
- * Neither the name of the <organization> nor the
-names of its contributors may be used to endorse or promote products
-derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-"""
-
-
-
-
 import numpy as np
 from math import cos, sin, radians, degrees, atan2, sqrt
 
@@ -83,14 +45,14 @@ class Quat(object):
 	  * a 3x3 transform/rotation matrix
 	"""
 
-	def __init__(self, attitude):
+	def __init__(self, attitude=None):
 		self._q = None
 		self._equatorial = None
 		self._T = None
 		
 		# checks to see if we've been passed a Quat 
 		if attitude is None:
-			self._q = np.array([0,0,0,1])
+			self._set_q([0.,0.,0.,1.])
 		elif isinstance(attitude, Quat):
 			self._set_q(attitude.q)
 		else:
@@ -411,6 +373,14 @@ class Quat(object):
 		mult[2] = -q1[1]*q2[0] + q1[0]*q2[1] + q1[3]*q2[2] + q1[2]*q2[3]
 		mult[3] = -q1[0]*q2[0] - q1[1]*q2[1] - q1[2]*q2[2] + q1[3]*q2[3]
 		return Quat(mult)
+
+	
+
+	def rotation_to(self, quat2):
+		
+		res = quat2 * self.inv()
+		
+		return res
 	
 	def inv(self):
 		"""

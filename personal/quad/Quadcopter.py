@@ -1,6 +1,8 @@
 import numpy as np
 import math
 
+from Quaternion import *
+
 class Quad:
 	def __init__(self, t):
 		self.t = t
@@ -14,19 +16,24 @@ class Quad:
 		self.m = 1.
 		
 		# state variables
-		self.theta = np.zeros((self.N,3))
+		self.q = np.empty(self.N, dtype=Quat)
+		self.q[0] = Quat()
+
 		self.omega = np.zeros((self.N,3))
 		
 		self.x = np.zeros((self.N,3))
 		self.v = np.zeros((self.N,3))
 		
+		# constants
 		self.L = 0.5
 		
 		self.k = 1.0
 		self.b = 1.0
 
+		# motor speed
 		self.gamma = np.zeros((self.N,4))
 		
+		# matrices
 		self.A1 = np.array([
 				[self.L*self.k,		0,		-self.L*self.k,	0],
 				[0,			self.L*self.k,	0,		-self.L*self.k],
@@ -71,6 +78,18 @@ class Quad:
 				[ct * cs * sp + cp * ss,	cp * ct * cs - sp * ss,		-cs * st],
 				[sp * st,			cp * st,			ct]])
 		return R
+	def get_A3(self, ti):
+		q = self.q[ti]._q
+		x = q[0]
+		y = q[1]
+		z = q[2]
+		w = q[3]
+		A3 = np.array([
+			[-x,-y,-z],
+			[ w,-z, y],
+			[ z, w,-x],
+			[-y, x, w]])
+		return A3
 	def get_thetap(self, ti):
 		Sinv = self.get_Sinv(ti)
 		omega = self.get_omega(ti)
@@ -87,8 +106,10 @@ class Quad:
 		T = np.zeros(3)
 		T[2] = np.dot(self.A2, self.get_gamma(ti))
 		return T
-	def force_drag_body(self, ti):
+	def get_force_drag_body(self, ti):
 		return np.zeros(3)
+	def get_force_drag(self, ti):
+		return self.q[ti].rotate(self.get_force_drag_body(ti))
 	def force(self, ti):
 		F = self.gravity
 		
