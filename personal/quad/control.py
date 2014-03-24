@@ -1,6 +1,6 @@
 import numpy as np
 
-from Quaternion import *
+from vec import *
 
 class Control_Attitude:
 	def __init__(self, c):
@@ -10,97 +10,118 @@ class Control_Attitude:
 		C1_11 = 1.0
 		C1_22 = 1.0
 		C1_33 = 1.0
-		C1_44 = 1.0
+
 		C2_11 = 1.0
 		C2_22 = 1.0
 		C2_33 = 1.0
-		C2_44 = 1.0
+
 		L1_11 = 0.0
 		L1_22 = 0.0
 		L1_33 = 0.0
-		L1_44 = 0.0
 
 		self.C1 = np.array([
-				[C1_11,0,0,0],
-				[0,C1_22,0,0],
-				[0,0,C1_33,0],
-				[0,0,0,C1_44]])
+				[C1_11,0,0],
+				[0,C1_22,0],
+				[0,0,C1_33]])
 		
 		self.C2 = np.array([
 				[C2_11,0,0],
 				[0,C2_22,0],
-				[0,0,C2_33],
-				[0,0,0]])
+				[0,0,C2_33]])
 		
 		self.L1 = np.array([
-				[L1_11,0,0,0],
-				[0,L1_22,0,0],
-				[0,0,L1_33,0],
-				[0,0,0,L1_44]])
+				[L1_11,0,0],
+				[0,L1_22,0],
+				[0,0,L1_33]])
 		
 		# variables
-		self.e1 = np.zeros(c.N, dtype = Quat)
-		
-		self.chi1 = np.zeros(c.N, dtype=Quat)
+		self.e1 = np.zeros((c.N,3))
+		self.chi1 = np.zeros((c.N,3))
 
 		self.e2 = np.zeros((c.N, 3))
-		
-		self.qref = np.zeros(c.N, dtype=Quat)
-		
-		self.omega_ref = np.zeros((c.N,3))	
-	
-		# time derivative of a quaternion is represented as an angular velocity
-		self.qrefd = np.zeros((c.N,3))
-		self.qrefdd = np.zeros((c.N,3))
-		
-	def get_f2(self, ti, e1, e2):
-		A3 = self.c.get_A3(ti)
-		return -np.dot(A3,e2) - e1
+			
+		self.theta_ref = np.zeros((c.N,3))
+		self.theta_refd = np.zeros((c.N,3))
+		self.theta_refdd = np.zeros((c.N,3))
+
+		self.omega_ref = np.zeros((c.N,3))
+	def get_f2(self, e1, e2):
+		return -np.dot(self.C2,e2) - e1
 	def step(self, ti):
 		# refernce values must be set before stpping
-		dt = self.c.t[ti] - self.c.t[ti]
+		dt = self.c.t[ti] - self.c.t[ti-1]
 		
 		# reference
 		if ti > 0:
-			r = self.qref[ti] * self.qref[ti-1].inv()
-			self.qrefp[ti] = r._q[0:3] * 2.0 / dt
-		else:
-			self.qrefd[ti] = np.zeros(3)
+			self.theta_refd[ti] = (self.theta_refd[ti] - self.theta_refd[ti-1]) / dt
 			
 		if ti > 1:
-			self.qrefdd[ti] = (self.get_qrefp(ti) - self.get_qrefp(ti-1)) / dt
-		else:
-			self.qrefdd[ti] = np.zeros(3)
+			self.theta_refdd[ti] = (self.theta_refd[ti] - self.theta_refd[ti-1]) / dt
 		
 		# tracking error
-		self.e1[ti] = self.c.q[ti].rotation_to(self.qref[ti])
+		self.e1[ti] = self.theta_ref[ti] - self.c.theta[ti]
 		
 		self.e2[ti] = self.omega_ref[ti] - self.c.omega[ti]
 		
-		# what is the time integral of quaternion error?
-		self.chi1[ti] = Quat()#self.chi1[ti-1] + self.e1[ti] * dt
-
+		self.chi1[ti] = self.chi1[ti-1] + self.e1[ti] * dt
+		
+		ver = False
+		if ver:
+			print 'theta_ref',self.theta_ref[ti]
+			print 'theta    ',self.c.theta[ti]
+			print 'e1       ',self.e1[ti]
 	def get_tau_rotor_body(self, ti):
 		
 		e1 = self.e1[ti]
 		e2 = self.e2[ti]
 		
-		f2 = self.get_f2(e1,e2,ti)
+		f2 = self.get_f2(e1,e2)
 		
 		chi1 = self.chi1[ti]
 		
 		C1 = self.C1
 		L1 = self.L1
-		qrefdd = self.qrefdd[ti]
+		theta_refdd = self.theta_refdd[ti]
 		
-		A3 = self.c.get_A3(ti)
-		A3d = self.c.get_A3d(ti)
-		A3inv = self.c.get_A3inv(ti)
+		A5  = self.c.get_A5(ti)
+		A5d = self.c.get_A5d(ti)
+		A5inv = self.c.get_A5inv(ti)
 		
-		temp = -f2 + np.dot(np.dot(C1, A3), e2 - np.dot(C1,e1) - np.dot(L1,chi1)) + qrefdd + np.dot(L1,e1) - np.dot(A3d,omega)
+		omega = self.c.omega[ti]
 		
-		tau_RB = np.dot(np.dot(I, A3inv), temp) + np.cross(omega, np.dot(I, omega))
+		temp = np.dot(np.dot(C1, A5), e2 - np.dot(C1,e1) - np.dot(L1,chi1))
+		
+		temp2 = -f2 + temp + theta_refdd + np.dot(L1,e1) - np.dot(A5d,omega)
+			
+		temp3 = np.cross(omega, np.dot(self.c.I, omega))
 	
+		temp4 = np.dot(np.dot(self.c.I, A5inv), temp2)
+	
+		tau_RB = temp4 + temp3
+
+		ver = False
+		if ver:		
+			print 'A5    ',A5
+			print 'A5inv ',A5inv
+			print 'A5d   ',A5d
+
+			print 'theta_refdd',theta_refdd
+		
+			print 'temp  ',temp
+			print 'temp2 ',temp2
+			print 'temp3 ',temp3
+			print 'temp4 ',temp4
+			print 'e1    ',e1
+			print 'e2    ',e2
+			print 'A5    ',A5
+			print 'C1    ',C1
+			print 'f2    ',f2
+			print 'temp  ',temp
+			print 'tau_RB',tau_RB
+	
+		if any(np.isnan(tau_RB)):
+			raise ValueError('nan')
+		
 		return tau_RB
 
 class Control_Position:
@@ -109,10 +130,10 @@ class Control_Position:
 		
 		C5_11 = 2.0
 		C5_22 = 2.0
-		C5_33 = 3.5
+		C5_33 = 1.5
 		C6_11 = 0.5
 		C6_22 = 0.5
-		C6_33 = 1.5
+		C6_33 = 2.5
 		L5_11 = 0.0
 		L5_22 = 0.0
 		L5_33 = 0.0
@@ -140,6 +161,9 @@ class Control_Position:
 		self.xrefdd = np.zeros((c.N, 3))
 
 		self.vref = np.zeros((c.N, 3))
+
+		self.f_R = np.zeros((c.N, 3))
+		
 	def fill_xref(self, x):
 		for ti in range(np.size(self.xref,0)):
 			self.xref[ti] = x
@@ -175,8 +199,24 @@ class Control_Position:
 
 		xrefdd = self.xrefdd[ti]
 		
-		f_R = m * (-f6 + np.dot(C5, e6 - np.dot(C5, e5) - np.dot(L5, chi5))
-				+ xrefdd + np.dot(L5, e5) - g - f_D / m)
+		temp1 = np.dot(C5, e6 - np.dot(C5, e5) - np.dot(L5, chi5))
+		
+		temp2 = np.dot(L5, e5)
+		
+		f_R = m * (-f6 + temp1 + xrefdd + temp2 - g) - f_D
+		
+		self.f_R[ti] = f_R
+		
+			
+		ver = True
+		if ver:
+			print 'f6   ' ,f6
+			print 'temp1' ,temp1
+			print 'xrefdd',xrefdd
+			print 'temp2 ',temp2
+			print 'g     ',g
+			print 'f_D   ',f_D
+
 		return f_R
 
 		
@@ -190,10 +230,10 @@ class Brain:
 		self.ctrl_position = Control_Position(c)
 		self.ctrl_attitude = Control_Attitude(c)
 		
-	def get_force_rotor_body(self, f_R):
+	def get_force_rotor_body(self, ti, f_R):
 		
 		# transform desired rotor force from inertial to body frame
-		f_RB = self.c.q.rotate(f_R)
+		f_RB = np.dot(self.c.get_A6(ti), f_R)
 		
 		fz_RB = f_RB[2]
 		
@@ -208,21 +248,34 @@ class Brain:
 		
 		f_R = self.ctrl_position.get_force_rotor(ti)
 		
-		q = Quat()
-		q.set_from_unit_vectors(np.array([0,0,1]), normalize(f_R))
 		
+		
+		theta = vec_to_euler(f_R/mag(f_R))
+		
+			
 		# set attitude reference for previous step
-		self.ctrl_attitude.qref[ti] = q
+		self.ctrl_attitude.theta_ref[ti] = theta
 		
 		# require attitude error
 		self.ctrl_attitude.step(ti)
 		
 		tau_RB = self.ctrl_attitude.get_tau_rotor_body(ti)
 		
-		fz_RB = self.get_force_rotor_body(f_R)
+		fz_RB = self.get_force_rotor_body(ti, f_R)
 		
-		gamma = np.dot(self.A4inv, np.append(tau_RB, fz_RB))
 		
+				
+		gamma = np.dot(self.c.A4inv, np.append(tau_RB, fz_RB))
+	
+		ver = False
+		if ver:
+			print 'f_R',f_R
+			print 'theta',theta
+			print self.c.A4inv
+			print tau_RB
+			print np.append(tau_RB, fz_RB)
+		
+
 		return gamma
 	def step(self, ti):
 		

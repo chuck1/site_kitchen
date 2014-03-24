@@ -1,7 +1,12 @@
 import numpy as np
 import math
 
-from Quaternion import *
+#Inverse[{{1,0,-sin(y)}, {0, cos(x), cos(y)*sin(x)}, {0, -sin(x), cos(y)*cos(x)}}]
+#Inverse[{{1, 0, -Sin[y]}, {0, Cos[x], Cos[y] Sin[x]}, {0, -Sin[x], Cos[y] Cos[x]}}]
+
+#{{0, Cos[f[t]] Tan[g[t]] f'[t] + Sec[g[t]]^2 Sin[f[t]] g'[t], -(Sin[f[t]] Tan[g[t]] f'[t]) + Cos[f[t]] Sec[g[t]]^2 g'[t]},
+#{0, -(Sin[f[t]] f'[t]), -(Cos[f[t]] f'[t])},
+#{0, Cos[f[t]] Sec[g[t]] f'[t] + Sec[g[t]] Sin[f[t]] Tan[g[t]] g'[t], -(Sec[g[t]] Sin[f[t]] f'[t]) + Cos[f[t]] Sec[g[t]] Tan[g[t]] g'[t]}}
 
 class Quad:
 	def __init__(self, t):
@@ -46,36 +51,6 @@ class Quad:
 
 		#print 'q',self.q._q
 		#print 'w',self.w
-	def get_S(self, ti):
-		phi   = self.get_theta(ti)[0]
-		theta = self.get_theta(ti)[1]
-		
-		st = math.sin(theta)
-		ct = math.cos(theta)
-		sp = math.sin(phi)
-		cp = math.cos(phi)
-		S = np.array([
-				[1, 0, -st],
-				[0, cp, ct * sp],
-				[0, -sp, ct * cp]])
-		return S
-	def get_Sinv(self, ti):
-		S = self.get_S(ti)
-		Sinv = np.linalg.inv(S)
-		return Sinv
-	def get_R(self, ti):
-		theta  = self.get_theta(ti)
-		sp = math.sin(theta[0])
-		st = math.sin(theta[1])
-		ss = math.sin(theta[2])
-		cp = math.cos(theta[0])
-		ct = math.cos(theta[1])
-		cs = math.cos(theta[2])
-		R = np.array([
-				[cp * cs - ct * sp * ss,	-cs * sp - cp * ct * ss,	st * ss],
-				[ct * cs * sp + cp * ss,	cp * ct * cs - sp * ss,		-cs * st],
-				[sp * st,			cp * st,			ct]])
-		return R
 	def get_A3(self, ti):
 		q = self.q[ti]._q
 		x = q[0]
@@ -88,56 +63,109 @@ class Quad:
 			[ z, w,-x],
 			[-y, x, w]])
 		return A3
-	def get_thetap(self, ti):
-		Sinv = self.get_Sinv(ti)
-		omega = self.get_omega(ti)
-		thetap = np.dot(Sinv, omega)
+	def get_A5(self, ti):
+		return np.linalg.inv(self.get_A5inv(ti))
+	def get_A5inv(self, ti):
+		p = self.theta[ti,0]
+		t = self.theta[ti,1]
+		
+		st = math.sin(t)
+		ct = math.cos(t)
+		sp = math.sin(p)
+		cp = math.cos(p)
+		
+		A5inv = np.array([
+				[1, 0, -st],
+				[0, cp, ct * sp],
+				[0, -sp, ct * cp]])
+		return A5inv
+	def get_A5d(self, ti):
+		p = self.theta[ti,0]
+		t = self.theta[ti,1]
+		
+		thetad = self.get_thetad(ti)
+		
+		pd = thetad[0]
+		td = thetad[1]
+		
+		st = math.sin(t)
+		ct = math.cos(t)
+		sp = math.sin(p)
+		cp = math.cos(p)
+		
+		tant = math.tan(t)
+		sect = 1.0 / ct
+		
+		A5d = np.array([
+			[0,	cp * tant * pd + sect**2 * sp * td,		-sp * tant * pd + cp * sect**2 * td],
+			[0,	-sp * pd,					-cp * pd],
+			[0,	cp * sect * pd + sect * sp * tant * td,		-sect * sp * pd + cp * sect * tant * td]])
+		
+		return A5d
+	def get_A6(self, ti):
+		theta  = self.theta[ti]
+		sp = math.sin(theta[0])
+		st = math.sin(theta[1])
+		ss = math.sin(theta[2])
+		cp = math.cos(theta[0])
+		ct = math.cos(theta[1])
+		cs = math.cos(theta[2])
+		R = np.array([
+				[cp * cs - ct * sp * ss,	-cs * sp - cp * ct * ss,	st * ss],
+				[ct * cs * sp + cp * ss,	cp * ct * cs - sp * ss,		-cs * st],
+				[sp * st,			cp * st,			ct]])
+		return R
+	def get_thetad(self, ti):
+		A5 = self.get_A5(ti)
+		omega = self.omega[ti]
+		thetap = np.dot(A5, omega)
 		return thetap
 	def get_tau_body(self):
 		tau = self.get_tau_rotor_body()
 		return T
 	def get_tau_rotor_body(self, ti):
-		gamma = self.get_gamma(ti)
+		gamma = self.gamma[ti]
 		tau = np.dot(self.A1, gamma)
-		return tau	
-	def force_rotor_body(self, ti):
+		return tau
+	def get_force_rotor_body(self, ti):
 		T = np.zeros(3)
-		T[2] = np.dot(self.A2, self.get_gamma(ti))
+		T[2] = np.dot(self.A2, self.gamma[ti])
 		return T
 	def get_force_drag_body(self, ti):
 		return np.zeros(3)
 	def get_force_drag(self, ti):
-		return self.q[ti].rotate(self.get_force_drag_body(ti))
-	def force(self, ti):
-		F = self.gravity
+		return np.dot(self.get_A6(ti), self.get_force_drag_body(ti))
+	def get_force(self, ti):
+		f_g = self.gravity
 		
-		F = F + np.dot(self.get_R(ti), self.force_rotor_body(ti) + self.force_drag_body(ti))
+		f_B = self.get_force_rotor_body(ti) + self.get_force_drag_body(ti)
 		
-		return F
+		A6 = self.get_A6(ti)
 		
-	def position(self, ti):
-		return np.reshape(self.x[ti,:],(3,))
-	def velocity(self, ti):
-		return np.reshape(self.v[ti,:],(3,))
-	def get_omega(self, ti):
-		return np.reshape(self.omega[ti,:],(3,))
-	def get_theta(self, ti):
-		return np.reshape(self.theta[ti,:],(3,))
-	def get_gamma(self, ti):
-		return np.reshape(self.gamma[ti,:],(4,))
+		f = f_g + np.dot(A6, f_B)
+
+		ver = False
+		if ver:	
+			print 'A6 ',A6
+			print 'f_g',f_g
+			print 'f_B',f_B
+			print 'f  ',f
+		
+		return f
+		
 	
 	def step(self, ti):
 		dt = self.t[ti] - self.t[ti-1]
 		
 		# rotation
-		omega  = self.get_omega(ti-1)
+		omega  = self.omega[ti-1]
 		
 		tau = self.get_tau_rotor_body(ti-1)
 		
 		omegap = np.dot(self.Iinv, tau - np.cross(omega, np.dot(self.I, omega)))
 		
-		theta  = self.get_theta(ti-1)
-		thetap = self.get_thetap(ti-1)
+		theta  = self.theta[ti-1]
+		thetap = self.get_thetad(ti-1)
 		
 		self.omega[ti] = omega + omegap * dt
 		
@@ -145,11 +173,13 @@ class Quad:
 		
 		
 		# position
-		F = self.force(ti-1)
-		v = self.velocity(ti-1)
-		x = self.position(ti-1)
+		F = self.get_force(ti-1)
+		
+		x = self.x[ti-1]
+		v = self.v[ti-1]
 		
 		a = F / self.m
+		
 		
 		self.v[ti] = v + a * dt
 		

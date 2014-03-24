@@ -6,7 +6,6 @@ import numpy as np
 import math
 
 
-from Quaternion import *
 from Quadcopter import *
 from control import *
 from visual import *
@@ -23,10 +22,9 @@ t = np.arange(N) * dt
 c = Quad(t)
 b = Brain(c)
 
-b.ctrl_position.fill_xref([0.0, 0.0, 0.0])
+b.ctrl_position.fill_xref([0.0, 0.0, 1.0])
 
 
-c.v[0,0] = 0.0
 
 for ti in range(1,N):
 	
@@ -40,6 +38,8 @@ for ti in range(1,N):
 
 
 plot_quad(c)
+
+plot_ctrl_position(b.ctrl_position)
 
 b.plot()
 

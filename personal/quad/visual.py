@@ -58,10 +58,24 @@ def plot_quad_v(c):
 	ax.plot(c.t,c.v[:,2])
 
 
+def plot_ctrl_position(c):
+	fig = pl.figure()
+	
+	ax = fig.add_subplot(111)
+	ax.set_ylabel('f_R')
 
+	ax.plot(c.c.t, c.f_R)
+	
+	
+	fig = pl.figure()
+	
+	ax = fig.add_subplot(221)
+	ax.set_ylabel('e_5')
+	ax.plot(c.c.t, c.e5)
 
-
-
+	ax = fig.add_subplot(222)
+	ax.set_ylabel('e_6')
+	ax.plot(c.c.t, c.e6)
 
 
 

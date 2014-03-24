@@ -73,6 +73,26 @@ def angle(a,b,up,ver = False):
 	
 	return c, c_norm, c_angle, d_up
 
+def vec_to_euler(z, y = None):
+	a = math.sqrt(1.0 - z[2]**2)
+	
+	if a == 0.0:
+		if y:
+			phi = math.acos(-y[0])
+		else:
+			phi = 0.0
+		
+		theta = 0.0
+		psi = 0.0
+	else:
+		phi = math.acos(-z[1] / a)
+		theta = math.acos(z[2])
+		if y:
+			psi = math.acos(y[2] / a)
+		else:
+			psi = 0.0
+	
+	return np.array([phi, theta, psi])
 
 if __name__ == '__main__':
 	a = np.array([1.,0.,0.])
