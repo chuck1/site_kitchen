@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2014.3.22)  23 MAR 2014 12:23
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2014.3.22)  23 MAR 2014 19:23
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -218,6 +218,36 @@ Writing nomenclature file main.nlo
 
 LaTeX Warning: Label `eq:' multiply defined.
 
+
+LaTeX Warning: Label `eq:e1_dyn' multiply defined.
+
+
+LaTeX Warning: Label `eq:om_ref' multiply defined.
+
+
+LaTeX Warning: Label `eq:e2' multiply defined.
+
+
+LaTeX Warning: Label `eq:e2_dyn' multiply defined.
+
+
+LaTeX Warning: Label `eq:om_ref_2' multiply defined.
+
+
+LaTeX Warning: Label `eq:e2_2' multiply defined.
+
+
+LaTeX Warning: Label `eq:om_ref_3' multiply defined.
+
+
+LaTeX Warning: Label `eq:' multiply defined.
+
+
+LaTeX Warning: Label `eq:' multiply defined.
+
+
+LaTeX Warning: Label `eq:' multiply defined.
+
 )
 \openout1 = `main.aux'.
 
@@ -258,25 +288,26 @@ LaTeX Info: Redefining \nameref on input line 10.
 \openout5 = `main.toc'.
 
  (./main.nls) (./files/eom/eom.tex
-(./files/eom/translation.tex) (./files/eom/rotation.tex [1
+(./files/eom/translation.tex [1
 
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}])) (./files/control/control
-.tex
-(./files/control/attitude.tex [2] [3]
-Overfull \hbox (40.41905pt too wide) in paragraph at lines 137--137
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]) (./files/eom/rotation.tex
+)) (./files/control/control.tex
+(./files/control/attitude/attitude.tex [2] [3]
+Overfull \hbox (40.41905pt too wide) in paragraph at lines 139--139
 [] 
  []
 
-) (./files/control/altitude.tex [4]) (./files/control/position.tex)
-(./files/control/atitude_z.tex [5]))
+(./files/control/attitude/euler.tex [4])) (./files/control/altitude.tex
+[5]) (./files/control/position.tex [6]) (./files/control/atitude_z.tex))
 Package atveryend Info: Empty hook `BeforeClearDocument' on input line 19.
- [6]
+
+[7]
 Package atveryend Info: Empty hook `AfterLastShipout' on input line 19.
  (./main.aux)
 Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 19.
 Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 19.
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 9003427D55D5BFB3537FD818DB69BDF1;647.
+(rerunfilecheck)             Checksum: D1D2821C85822618CBD5FD00E400BB6C;782.
 
 
 LaTeX Warning: There were multiply-defined labels.
@@ -284,27 +315,28 @@ LaTeX Warning: There were multiply-defined labels.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 19.
  ) 
 Here is how much of TeX's memory you used:
- 5024 strings out of 495031
- 72869 string characters out of 6181531
- 153936 words of memory out of 5000000
- 8167 multiletter control sequences out of 15000+600000
+ 5043 strings out of 495031
+ 73197 string characters out of 6181531
+ 154926 words of memory out of 5000000
+ 8169 multiletter control sequences out of 15000+600000
  8061 words of font info for 29 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 29i,15n,28p,236b,334s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 29i,15n,28p,285b,332s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></us
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/shar
 e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texl
 ive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/te
 xmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dis
 t/fonts/type1/public/amsfonts/cm/cmmib10.pfb></usr/share/texlive/texmf-dist/fon
-ts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type
-1/public/amsfonts/cm/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public
-/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfo
-nts/cm/cmsy7.pfb>
-Output written on main.pdf (6 pages, 117250 bytes).
+ts/type1/public/amsfonts/cmextra/cmmib7.pfb></usr/share/texlive/texmf-dist/font
+s/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1
+/public/amsfonts/cm/cmr7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/
+amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfon
+ts/cm/cmsy7.pfb>
+Output written on main.pdf (7 pages, 127437 bytes).
 PDF statistics:
- 154 PDF objects out of 1000 (max. 8388607)
- 134 compressed objects within 2 object streams
- 29 named destinations out of 1000 (max. 500000)
- 89 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 196 PDF objects out of 1000 (max. 8388607)
+ 174 compressed objects within 2 object streams
+ 42 named destinations out of 1000 (max. 500000)
+ 105 words of extra memory for PDF output out of 10000 (max. 10000000)
 

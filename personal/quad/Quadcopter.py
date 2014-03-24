@@ -16,9 +16,7 @@ class Quad:
 		self.m = 1.
 		
 		# state variables
-		self.q = np.empty(self.N, dtype=Quat)
-		self.q[0] = Quat()
-
+		self.theta = np.zeros((self.N,3))
 		self.omega = np.zeros((self.N,3))
 		
 		self.x = np.zeros((self.N,3))
