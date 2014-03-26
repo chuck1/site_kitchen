@@ -67,8 +67,12 @@ class Quat:
 		m = vec.mag(self.v)
 		
 		#print self.s,s
-		omega = 2.0 * math.asin(m) / dt * vec.normalize(self.v)
-		
+
+		if m > 0.0:
+			omega = 2.0 * math.asin(m) / dt * vec.normalize(self.v)
+		else:
+			omega = np.zeros(3)
+			
 		ver = False
 		if ver:
 			print 'dt   ',dt
@@ -81,15 +85,20 @@ class Quat:
 		return omega
 		
 if __name__ == '__main__':
-	r = Quat(theta = math.pi/2.0, v = [0,1,0])
+	r = Quat(theta = math.pi/10.0, v = [0,1,0])
 	
-	v = np.array([1.0,0.0,0.0])
+	#v = np.array([1.0,0.0,0.0])
 	
-	print v
-	print r.rotate(v)
-	print r.conj().rotate(v)
-
+	#print v
+	#print r.rotate(v)
+	#print r.conj().rotate(v)
 	
+	q1 = Quat()
+	q2 = r * q1
 
-
+	print 'q1',q1.v
+	print 'q2',q2.v
+		
+	print 'om',r.to_omega(0.01)
+	
 

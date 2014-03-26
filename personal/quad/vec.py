@@ -8,7 +8,14 @@ e2 = np.array([0.,0.,1.])
 def sign(x):
 	return math.copysign(1.0,x)
 
+def clamparr(x,minx,maxx):
+	#x = np.array(x)
+	x[x > maxx] = maxx
+	x[x < minx] = minx
+	return x
+
 def clamp(x,minx,maxx):
+	#x = np.array(x)
 	if x > maxx:
 		print 'max',maxx
 		return maxx
@@ -121,7 +128,10 @@ def vec_to_euler(z, y = None):
 	return np.array([phi, theta, psi])
 
 def normalize(v):
-	return v / mag(v)
+	m = mag(v)
+	if m == 0.0:
+		raise ValueError('magnitude zero')
+	return v / m
 
 if __name__ == '__main__':
 	a = np.array([1.,0.,0.])

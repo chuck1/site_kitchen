@@ -1,6 +1,7 @@
 import numpy as np
 import pylab as pl
 
+import control
 import vec
 
 class Position1:
@@ -9,11 +10,11 @@ class Position1:
 		
 		C5_11 = 0.7
 		C5_22 = 0.7
-		C5_33 = 0.7
+		C5_33 = 0.3
 
-		C6_11 = 3.5
-		C6_22 = 3.5
-		C6_33 = 3.5
+		C6_11 =  3.5
+		C6_22 =  3.5
+		C6_33 = 10.0
 
 		L5_11 = 0.0
 		L5_22 = 0.0
@@ -53,11 +54,18 @@ class Position1:
 		self.f_R = np.zeros((c.N, 3))
 
 		self.flag_converged = False
-		self.move = None
 		
 	def fill_xref(self, ti1, x):
 		for ti in range(ti1, self.c.N):
 			self.x_ref[ti] = np.array(x)
+
+	def fill_xref_parametric(self, ti1, f):
+		for ti in range(ti1, self.c.N):
+			t = self.c.t[ti]
+			self.x_ref[ti] = np.array(f(t))
+		
+		#pl.plot(self.c.t, self.x_ref)
+		
 	def get_f6(self, e5, e6):
 		return -np.dot(self.C6,e6) - e5
 	def step(self, ti, ti_0):
@@ -86,36 +94,40 @@ class Position1:
 		
 		e5_mag = vec.mag(self.e5[ti])
 		
-		close = all(np.absolute(self.e5[ti]) < self.move.thresh)
-		
-		if ti_0 > 1:
-			if self.e5_mag_d[ti] < 0.0:
-				if self.e5_mag_d[ti-1] > 0.0:
-					# local maximum error
-					if e5_mag < self.e5_local_max:
-						# converging
-						if close:
-							# converged
-							self.flag_converged = True
+		if self.obj:
+			if self.obj.mode == control.ObjMode.normal:
+				close = all(np.absolute(self.e5[ti]) < self.obj.thresh)
+				if ti_0 > 1:
+					if self.e5_mag_d[ti] < 0.0:
+						if self.e5_mag_d[ti-1] > 0.0:
+							# local maximum error
+							if e5_mag < self.e5_local_max:
+								# converging
+								if close:
+									# converged
+									self.obj.flag_complete = True
+							
+							self.e5_local_max = e5_mag
 					
-					self.e5_local_max = e5_mag
+					if self.e5_mag_d[ti] > -0.01:
+						if self.e5_mag_d[ti] < 0.0:
+							if close:
+								print 'e5   ',self.e5[ti]
+								print 'x    ',self.c.x[ti]
+								print 'x_ref',self.x_ref[ti]
+								self.obj.flag_complete = True
 			
-			if self.e5_mag_d[ti] > -0.01:
-				if self.e5_mag_d[ti] < 0.0:
-					if close:
-						print 'e5   ',self.e5[ti]
-						print 'x    ',self.c.x[ti]
-						print 'x_ref',self.x_ref[ti]
-						self.flag_converged = True
-			
-	def new_move(self, ti):
+	def set_obj(self, ti, obj):
+		self.obj = obj
+		
 		# reset
 		self.e5_local_max = 0.0
 		self.flag_converged = False
 		
-		self.move = self.moves.pop(0)
-		
-		self.fill_xref(ti, self.move.x2)
+		if isinstance(obj, control.Move):
+			self.fill_xref(ti, self.obj.x2)
+		elif isinstance(obj, control.Path):
+			self.fill_xref_parametric(ti, self.obj.f) 
 		
 		
 	def get_force_rotor(self, ti, ti_0):

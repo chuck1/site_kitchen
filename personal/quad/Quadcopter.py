@@ -13,6 +13,37 @@ import quaternion as qt
 
 class Quad:
 	def __init__(self, t):
+
+		# physical constants
+		self.m	= 1.0	# mass (kg)
+		
+		self.L	= 0.25	# arm length (m)
+		
+		R 	= 0.05	# prop radius (m)
+		Asw	= math.pi * R**2
+		
+		
+		rho 	= 1.28	# (kg/m3) air density
+		
+
+		CD 	= 1.0	# dimensionless const
+		A	= 0.05 * 0.01	# prop cross-sectional area (m2)
+		
+				
+		Kv	= 1450	# back EMF (RPM / V)
+		
+		
+		Kv = 1.0 / Kv * 0.1047
+		
+		Kt	= Kv
+		
+		Ktau	= 0.5
+		
+		
+		self.k = Kv * Ktau * math.sqrt(rho * Asw)
+		self.b = 0.5 * R**3 * rho * CD * A
+		
+		
 		self.t = t
 		self.gravity = np.array([0,0,-9.81])
 		
@@ -21,8 +52,7 @@ class Quad:
 		self.I = np.identity(3)
 		self.Iinv = np.linalg.inv(self.I)
 		
-		self.m = 1.
-		
+			
 		# state variables
 		self.q = np.empty(self.N, dtype=object)
 		self.q[0] = qt.Quat()
@@ -34,10 +64,6 @@ class Quad:
 		self.v = np.zeros((self.N,3))
 		
 		# constants
-		self.L = 0.5
-		
-		self.k = 1.0
-		self.b = 1.0
 
 		# motor speed
 		self.gamma = np.zeros((self.N,4))
