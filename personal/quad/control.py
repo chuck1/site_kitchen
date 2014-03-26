@@ -6,26 +6,32 @@ import attitude
 import position
 
 class Move:
-	def __init__(self, c, ti, x1, x2):
-		self.c = c
+	def __init__(self, x2, thresh):
 		
-		self.t1 = self.c.t[ti]
-		
-		self.x1 = x1
 		self.x2 = x2
-		
-		self.d1 = vec.mag(x2 - x1)
 		
 		self.flag_rise = False
 		
 		self.flag_settle = False
 		self.flag_close = False
 		
-		self.thresh = 0.05
-	def step(self, ti):
-		d = self.x2 - self.c.x[ti]
+		self.thresh = thresh
+
+	def start(self, c, ti):
+		self.c = c
+		self.ti1 = ti
 		
-		d_mag = vec.mag(d)
+		self.x1 = c.x[ti]
+		
+		self.d_mag = np.zeros(c.N)
+		
+		self.d_mag1 = vec.mag(self.x2 - self.x1)
+		
+	def step(self, ti):
+		d_mag = vec.mag(self.d[ti])
+		
+		self.d_mag[ti] = self.x2 - self.c.x[ti]
+		
 		
 		if not self.flag_close:
 			if d_mag < (self.d1 * self.thresh):
@@ -76,11 +82,11 @@ class Brain:
 
 		return qn, thrust
 
-	def control_law_2(self, ti):
+	def control_law_2(self, ti, ti_0):
 		# require position error
-		self.ctrl_position.step(ti)
+		self.ctrl_position.step(ti, ti_0)
 		
-		f_R = self.ctrl_position.get_force_rotor(ti)
+		f_R = self.ctrl_position.get_force_rotor(ti, ti_0)
 		
 		f_R_mag = mag(f_R)
 	
@@ -93,7 +99,7 @@ class Brain:
 		self.ctrl_attitude.set_q_reference(ti, q)
 		
 		# get body torque
-		tau_RB = self.ctrl_attitude.get_tau_RB(ti)
+		tau_RB = self.ctrl_attitude.get_tau_RB(ti, ti_0)
 		
 		# calculate motor speed
 		gamma = np.dot(self.c.A4inv, np.append(tau_RB, thrust))
@@ -106,14 +112,23 @@ class Brain:
 			print tau_RB
 			print np.append(tau_RB, fz_RB)
 		
-
+		
 		return gamma
 	def step(self, ti):
 		
 		
-		gamma = self.control_law_2(ti)
+		if self.ctrl_position.flag_converged or (self.ctrl_position.move is None):
+			print 'new move'
+			self.ctrl_position.new_move(ti)
+			self.ti_0 = 0
+		
+		
+		
+		gamma = self.control_law_2(ti, self.ti_0)
 		
 		self.c.gamma[ti] = gamma
+		
+		self.ti_0 += 1
 		
 	def plot(self):
 		#self.ctrl_x.plot()

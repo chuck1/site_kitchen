@@ -232,7 +232,7 @@ class Attitude3:
 	def set_q_reference(self, ti, q):
 		self.q_ref[ti] = q
 
-	def step(self, ti):
+	def step(self, ti, ti_0):
 		dt = self.c.t[ti] - self.c.t[ti-1]
 		
 		q = self.c.q[ti]
@@ -242,7 +242,7 @@ class Attitude3:
 		
 		
 		# q_refd
-		if ti > 0:
+		if ti_0 > 1:
 			r = self.q_ref[ti] * self.q_ref[ti-1].conj()
 			q_refd_n = r.to_omega(dt)
 			#print 'r',r.s,r.v
@@ -261,9 +261,9 @@ class Attitude3:
 		if ver:		
 			print 'q_refd_n',q_refd_n
 		
-	def get_tau_RB(self, ti):
+	def get_tau_RB(self, ti, ti_0):
 		# require error values
-		self.step(ti)
+		self.step(ti, ti_0)
 		
 		q_ref = self.q_ref[ti]
 		

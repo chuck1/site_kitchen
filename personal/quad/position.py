@@ -1,6 +1,8 @@
 import numpy as np
 import pylab as pl
 
+import vec
+
 class Position1:
 	def __init__(self, c):
 		self.c = c
@@ -35,6 +37,13 @@ class Position1:
 		self.e6 = np.zeros((c.N, 3))
 		self.chi5 = np.zeros((c.N, 3))
 
+
+		
+		self.e5_mag_d = np.zeros(c.N)
+
+
+
+
 		self.x_ref = np.zeros((c.N, 3))
 		self.x_refd = np.zeros((c.N, 3))
 		self.x_refdd = np.zeros((c.N, 3))
@@ -42,32 +51,74 @@ class Position1:
 		self.v_ref = np.zeros((c.N, 3))
 
 		self.f_R = np.zeros((c.N, 3))
+
+		self.flag_converged = False
+		self.move = None
 		
-	def fill_xref(self, x):
-		for ti in range(np.size(self.x_ref,0)):
-			self.x_ref[ti] = x
+	def fill_xref(self, ti1, x):
+		for ti in range(ti1, self.c.N):
+			self.x_ref[ti] = np.array(x)
 	def get_f6(self, e5, e6):
 		return -np.dot(self.C6,e6) - e5
-	def step(self, ti):
+	def step(self, ti, ti_0):
 		dt = self.c.t[ti] - self.c.t[ti-1]
 		
 		# reference
 		self.x_refd[ti] = (self.x_ref[ti] - self.x_ref[ti-1]) / dt
 		
-		if ti > 1:
+		if ti_0 > 1:
 			self.x_refdd[ti] = (self.x_refd[ti] - self.x_refd[ti-1]) / dt
 		
-		# tracking error
+		# step position error
 		self.e5[ti] = self.x_ref[ti] - self.c.x[ti]
-		self.chi5[ti] = self.chi5[ti-1] + self.e5[ti] * dt
+		
+		if ti_0 > 0:
+			self.chi5[ti] = self.chi5[ti-1] + self.e5[ti] * dt
+		
+		if ti_0 > 0:
+			self.e5_mag_d[ti] = (vec.mag(self.e5[ti]) - vec.mag(self.e5[ti-1])) / dt
 		
 		# step v_ref before stepping e6
 		self.v_ref[ti] = np.dot(self.C5, self.e5[ti]) + self.x_refd[ti] + np.dot(self.L5, self.chi5[ti])
 		
 		# step velocity error
 		self.e6[ti] = self.v_ref[ti] - self.c.v[ti]
-		 
-	def get_force_rotor(self, ti):
+		
+		e5_mag = vec.mag(self.e5[ti])
+		
+		close = all(np.absolute(self.e5[ti]) < self.move.thresh)
+		
+		if ti_0 > 1:
+			if self.e5_mag_d[ti] < 0.0:
+				if self.e5_mag_d[ti-1] > 0.0:
+					# local maximum error
+					if e5_mag < self.e5_local_max:
+						# converging
+						if close:
+							# converged
+							self.flag_converged = True
+					
+					self.e5_local_max = e5_mag
+			
+			if self.e5_mag_d[ti] > -0.01:
+				if self.e5_mag_d[ti] < 0.0:
+					if close:
+						print 'e5   ',self.e5[ti]
+						print 'x    ',self.c.x[ti]
+						print 'x_ref',self.x_ref[ti]
+						self.flag_converged = True
+			
+	def new_move(self, ti):
+		# reset
+		self.e5_local_max = 0.0
+		self.flag_converged = False
+		
+		self.move = self.moves.pop(0)
+		
+		self.fill_xref(ti, self.move.x2)
+		
+		
+	def get_force_rotor(self, ti, ti_0):
 		e5 = self.e5[ti]
 		e6 = self.e6[ti]
 		chi5 = self.chi5[ti]
@@ -173,6 +224,12 @@ class Position1:
 		ax.set_ylabel('e_6')
 		ax.plot(t, self.e6)
 		
-	
+		# e5_mag_d
+		fig = pl.figure()
+		
+		ax = fig.add_subplot(111)
+		ax.set_ylabel('e5_mag_d')
+		ax.plot(t, self.e5_mag_d)
+		
 	
 	

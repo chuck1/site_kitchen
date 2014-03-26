@@ -7,23 +7,33 @@ import math
 
 
 from Quadcopter import *
-from control import *
+import control
 from visual import *
 import vec
 
 
 
 dt = 0.01
-N = 2000
+N = 5000
 
 t = np.arange(N) * dt
 
 
 c = Quad(t)
-b = Brain(c)
+b = control.Brain(c)
 
-b.ctrl_position.fill_xref([1.0, 1.0, 0.0])
+#b.ctrl_position.fill_xref([1.0, 1.0, 0.0])
 
+b.ctrl_position.moves = [
+		control.Move([1.0,0.0,0.0],[0.01,0.01,0.01]),
+		control.Move([1.0,1.0,0.0],[0.01,0.01,0.01]),
+		control.Move([0.0,1.0,0.0],[0.01,0.01,0.01]),
+		control.Move([0.0,0.0,0.0],[0.01,0.01,0.01]),
+		control.Move([0.0,0.0,1.0],[0.01,0.01,0.01]),
+		control.Move([1.0,0.0,1.0],[0.01,0.01,0.01]),
+		control.Move([1.0,1.0,1.0],[0.01,0.01,0.01]),
+		control.Move([0.0,1.0,1.0],[0.01,0.01,0.01]),
+		control.Move([0.0,0.0,1.0],[0.01,0.01,0.01])]
 
 
 for ti in range(1,N):
