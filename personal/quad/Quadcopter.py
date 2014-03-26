@@ -1,5 +1,8 @@
+import pylab as pl
 import numpy as np
 import math
+import vec
+import quaternion as qt
 
 #Inverse[{{1,0,-sin(y)}, {0, cos(x), cos(y)*sin(x)}, {0, -sin(x), cos(y)*cos(x)}}]
 #Inverse[{{1, 0, -Sin[y]}, {0, Cos[x], Cos[y] Sin[x]}, {0, -Sin[x], Cos[y] Cos[x]}}]
@@ -21,6 +24,9 @@ class Quad:
 		self.m = 1.
 		
 		# state variables
+		self.q = np.empty(self.N, dtype=object)
+		self.q[0] = qt.Quat()
+		
 		self.theta = np.zeros((self.N,3))
 		self.omega = np.zeros((self.N,3))
 		
@@ -125,6 +131,10 @@ class Quad:
 		return T
 	def get_tau_rotor_body(self, ti):
 		gamma = self.gamma[ti]
+
+		if any(np.isnan(gamma)):
+			raise ValueError('gamma nan')
+
 		tau = np.dot(self.A1, gamma)
 		return tau
 	def get_force_rotor_body(self, ti):
@@ -136,14 +146,17 @@ class Quad:
 	def get_force_drag(self, ti):
 		return np.dot(self.get_A6(ti), self.get_force_drag_body(ti))
 	def get_force(self, ti):
+		q = self.q[ti]
+		
 		f_g = self.gravity
 		
 		f_B = self.get_force_rotor_body(ti) + self.get_force_drag_body(ti)
 		
-		A6 = self.get_A6(ti)
+		if any(np.isnan(f_B)):
+			raise ValueError('f_B nan')
 		
-		f = f_g + np.dot(A6, f_B)
-
+		f = f_g + q.conj().rotate(f_B)
+		
 		ver = False
 		if ver:	
 			print 'A6 ',A6
@@ -159,35 +172,130 @@ class Quad:
 		
 		# rotation
 		omega  = self.omega[ti-1]
-		
+		q = self.q[ti-1]		
+
 		tau = self.get_tau_rotor_body(ti-1)
+				
+		omegad = np.dot(self.Iinv, tau - np.cross(omega, np.dot(self.I, omega)))
+
+		#theta  = self.theta[ti-1]
+		#thetap = self.get_thetad(ti-1)
 		
-		omegap = np.dot(self.Iinv, tau - np.cross(omega, np.dot(self.I, omega)))
+		omega_n = omega + omegad * dt
 		
-		theta  = self.theta[ti-1]
-		thetap = self.get_thetad(ti-1)
+		#self.theta[ti] = theta + thetap * dt
 		
-		self.omega[ti] = omega + omegap * dt
+		omega_n_magn = vec.mag(omega_n)
 		
-		self.theta[ti] = theta + thetap * dt
+		#print omega_magn
+		if omega_n_magn == 0.0:
+			r = qt.Quat()
+		else:
+			omega_n_norm = omega_n / omega_n_magn
+			r = qt.Quat(theta = omega_n_magn * dt, v = omega_n_norm)
+		
+		qn = r * q
 		
 		
+		self.omega[ti] = omega_n
+		self.q[ti] = qn
+
+		ver = False
+		if ver:		
+			print 'tau    ',tau
+			print 'omegad ',omegad
+			print 'omega_n',omega_n
+			print 'r      ',r.s,r.v
+
 		# position
-		F = self.get_force(ti-1)
+		f = self.get_force(ti-1)
+		
+		if any(np.isnan(f)):
+			raise ValueError('f nan')
 		
 		x = self.x[ti-1]
 		v = self.v[ti-1]
 		
-		a = F / self.m
+		a = f / self.m
 		
 		
-		self.v[ti] = v + a * dt
+		vn = v + a * dt
+		xn = x + vn * dt
 		
-		self.x[ti] = x + self.v[ti] * dt
+		self.x[ti] = xn 
+		self.v[ti] = vn
 		
-
+		
+		if any(np.isnan(vn)):
+			raise ValueError('v nan')
+		if any(np.isnan(xn)):
+			raise ValueError('x nan')
 
 		#print self.x
 
+	def plot3(c):
+		fig = pl.figure()
+		ax = fig.gca(projection='3d')
+		
+		x = c.x[:,0]
+		y = c.x[:,1]
+		z = c.x[:,2]
+		
+		s = (np.max(np.max(c.x)) - np.min(np.min(c.x))) / 2.0
+		
+		ax.plot(x,y,z,'o')
+		
+		rx = (np.max(x)+np.min(x))/2.0
+		ry = (np.max(y)+np.min(y))/2.0
+		rz = (np.max(z)+np.min(z))/2.0
+	
+		ax.set_xlim3d(rx-s,rx+s)
+		ax.set_ylim3d(ry-s,ry+s)
+		ax.set_zlim3d(rz-s,rz+s)
+		
+	def plot(self):
+		#self.plot_x()
+		#self.plot_v()
+		pass
+	def plot_x(self):
+		fig = pl.figure()
 
+		t = self.t
+		x = self.x[:,0]
+		y = self.x[:,1]
+		z = self.x[:,2]
+		
+		#print np.shape(t)
+		#print np.shape(x)
 
+		#print t
+		#print x
+
+		ax = fig.add_subplot(111)
+		ax.set_xlabel('t')
+		ax.set_ylabel('x')
+		ax.plot(t,x,'b')#,t,y,'g',t,z,'r')
+		ax.plot(t,y,'g')
+		ax.plot(t,z,'r')
+		
+		ax.legend(['x','y','z'])
+		
+	def plot_theta(self):
+		fig = pl.figure()
+		
+		ax = fig.add_subplot(111)
+		ax.set_xlabel('t')
+		ax.set_ylabel('theta')
+		ax.plot(self.t,self.theta)
+		
+		ax.legend(['phi','theta','psi'])
+	
+	def plot_v(self):
+		fig = pl.figure()
+	
+		ax = fig.add_subplot(111)
+		ax.set_xlabel('t')
+		ax.set_ylabel('v')
+		ax.plot(self.t,self.v)
+		ax.legend(['x','y','z'])
+	

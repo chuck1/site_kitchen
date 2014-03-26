@@ -14,7 +14,7 @@ import vec
 
 
 dt = 0.01
-N = 1000
+N = 2000
 
 t = np.arange(N) * dt
 
@@ -22,7 +22,7 @@ t = np.arange(N) * dt
 c = Quad(t)
 b = Brain(c)
 
-b.ctrl_position.fill_xref([0.0, 0.0, 1.0])
+b.ctrl_position.fill_xref([1.0, 1.0, 0.0])
 
 
 
@@ -37,13 +37,16 @@ for ti in range(1,N):
 	
 
 
-plot_quad(c)
+c.plot()
 
-plot_ctrl_position(b.ctrl_position)
+
+b.ctrl_position.plot()
+b.ctrl_attitude.plot()
+
 
 b.plot()
 
-plot_quad_3(c)
+c.plot3()
 
 pl.show()
 

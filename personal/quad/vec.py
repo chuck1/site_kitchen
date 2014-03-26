@@ -1,6 +1,8 @@
 import numpy as np
 import math
 
+tol = 1e-6
+
 e2 = np.array([0.,0.,1.])
 
 def sign(x):
@@ -73,10 +75,13 @@ def angle(a,b,up,ver = False):
 	
 	return c, c_norm, c_angle, d_up
 
+def equal(a,b):
+	return math.fabs(a-b) < tol
+
 def vec_to_euler(z, y = None):
 	a = math.sqrt(1.0 - z[2]**2)
 	
-	if a == 0.0:
+	if equal(a,0.0):
 		if y:
 			phi = math.acos(-y[0])
 		else:
@@ -85,14 +90,38 @@ def vec_to_euler(z, y = None):
 		theta = 0.0
 		psi = 0.0
 	else:
-		phi = math.acos(-z[1] / a)
+		b = -z[1]/a
+		
+		if math.fabs(b) > 1.0:
+			if equal(b, 1.0):
+				phi = 0
+			elif equal(b, -1.0):
+				phi = math.pi
+			else:
+				print 'z',z
+				print 'a',a
+				print 'b',b
+				raise ValueError('math domain error')
+		else:
+			phi = math.acos(b)
+		
 		theta = math.acos(z[2])
 		if y:
 			psi = math.acos(y[2] / a)
 		else:
 			psi = 0.0
+
+
+	if phi > (math.pi / 2.0):
+		phi = phi - math.pi
+		theta = -theta
+		#psi = math.pi + psi
+
 	
 	return np.array([phi, theta, psi])
+
+def normalize(v):
+	return v / mag(v)
 
 if __name__ == '__main__':
 	a = np.array([1.,0.,0.])

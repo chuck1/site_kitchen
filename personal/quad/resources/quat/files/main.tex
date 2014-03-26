@@ -1,0 +1,69 @@
+\documentclass{article}
+
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{nomencl}
+\RequirePackage{ifthen}
+
+\makenomenclature
+
+\begin{document}
+
+\section{Multiplication}
+
+\[
+q_1 q_2 = A_1 q_2
+\]
+
+\[
+A_1
+= \begin{bmatrix}
+ a &  b &  c &  d \\
+-b &  a & -d &  c \\
+-c &  d &  a & -b \\
+-d & -c &  b &  a
+\end{bmatrix}
+\]
+
+\section{Quaternions as Rotations in ${R}^3$}
+
+\subsection{Time Derivative}
+
+\[
+\dot{q} = \frac{1}{2} B \omega
+\]
+
+\[
+\omega = 2 B^T \dot{q}
+\]
+
+\[
+B
+= \begin{bmatrix}
+-b & -c & -d \\
+ a & -d &  c \\
+ d &  a & -b \\
+-c &  b &  a
+\end{bmatrix}
+\]
+
+\subsubsection{Time Derivative of Conjugate}
+
+\[
+\dot{q}^* = C \omega
+\]
+
+\[
+C
+= \begin{bmatrix}
+-b & -c & -d \\
+-a &  d & -c \\
+-d & -a &  b \\
+ c & -b & -a
+\end{bmatrix}
+\]
+
+\end{document}
+
+
+
