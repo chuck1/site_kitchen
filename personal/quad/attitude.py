@@ -327,7 +327,7 @@ class Attitude3:
 		omega = self.c.omega[ti]
 		I = self.c.I
 		
-		omegad = np.dot(self.C1, e1.v) + np.dot(self.C2, self.e2[ti])
+		omegad = np.dot(self.C1, e1.v) + np.dot(self.C2, self.e2[ti]) + self.q_refdd[ti]
 		#tau_RB = omegad
 		tau_RB = np.dot(I, omegad) + np.cross(omega, np.dot(I, omega))
 		
