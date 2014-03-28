@@ -42,7 +42,7 @@ class Move(Objective):
 		self.ti_1 = ti
 		
 		self.flag_settled = True
-
+		
 		self.ts = self.c.t[self.ti_1] - self.c.t[self.ti_0]
 
 class Path(Objective):

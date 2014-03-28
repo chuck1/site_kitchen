@@ -350,7 +350,9 @@ class Attitude3:
 	def plot_q(self):
 		fig = pl.figure()
 
-		t = self.c.t
+		N = self.c.ti
+
+		t = self.c.t[:N]
 		
 		ax = fig.add_subplot(111)
 		ax.plot(self.c.t, self.tau_RB)
@@ -359,7 +361,7 @@ class Attitude3:
 		ax.legend(['x','y','z'])
 		
 		# orientation
-		N = self.c.N
+		
 		q = np.zeros((N,4))
 		q_ref = np.zeros((N,4))
 		
@@ -379,14 +381,14 @@ class Attitude3:
 		print np.shape(q[:,0])
 
 		#ax.plot(self.c.t, q[:,0],'b-')
-		ax.plot(self.c.t, q[:,1],'g-')
-		ax.plot(self.c.t, q[:,2],'r-')
-		ax.plot(self.c.t, q[:,3],'c-')
+		ax.plot(t, q[:N,1],'g-')
+		ax.plot(t, q[:N,2],'r-')
+		ax.plot(t, q[:N,3],'c-')
 		
 		#ax.plot(self.c.t, q_ref[:,0],'b--')
-		ax.plot(self.c.t, q_ref[:,1],'g--')
-		ax.plot(self.c.t, q_ref[:,2],'r--')
-		ax.plot(self.c.t, q_ref[:,3],'c--')
+		ax.plot(t, q_ref[:N,1],'g--')
+		ax.plot(t, q_ref[:N,2],'r--')
+		ax.plot(t, q_ref[:N,3],'c--')
 		
 		ax.set_xlabel('t')
 		ax.set_ylabel('q')

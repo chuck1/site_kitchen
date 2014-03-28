@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2013.9.14)  27 MAR 2014 22:42
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2013.9.14)  28 MAR 2014 10:49
 entering extended mode
  %&-line parsing enabled.
 **files/main.tex
@@ -211,14 +211,7 @@ Package: ifthen 2001/05/26 v1.1c Standard LaTeX ifthen package (DPC)
 
 
 Writing nomenclature file main.nlo
-(./main.aux
-
-LaTeX Warning: Label `eq:' multiply defined.
-
-
-LaTeX Warning: Label `eq:' multiply defined.
-
-)
+(./main.aux)
 \openout1 = `main.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 10.
@@ -257,52 +250,43 @@ LaTeX Info: Redefining \pageref on input line 10.
 \openout5 = `main.toc'.
 
  (./main.nls) (./files/eom/eom.tex
-(./files/eom/translation.tex [1
+(./files/eom/translation.tex) (./files/eom/rotation.tex [1
 
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]) (./files/eom/rotation.tex
-)) (./files/control/control.tex
-(./files/control/attitude/attitude.tex (./files/control/attitude/euler.tex
-[2] [3]
-Overfull \hbox (6.88438pt too wide) in paragraph at lines 148--148
-[] 
- []
-
-)) (./files/control/altitude.tex [4]) (./files/control/position.tex [5]
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}])) (./files/control/control
+.tex
+(./files/control/attitude/attitude.tex (./files/control/attitude/quat.tex
+[2])) (./files/control/position/position.tex
 Overfull \hbox (9.5545pt too wide) detected at line 90
 \OT1/cmr/bx/n/10 F[] \OT1/cmr/m/n/10 = \OML/cmm/m/it/10 m []
  []
 
-
+[3]
 Overfull \hbox (3.90866pt too wide) detected at line 102
 \OT1/cmr/bx/n/10 F[] \OT1/cmr/m/n/10 = \OML/cmm/m/it/10 m []
  []
 
-[6]) (./files/control/atitude_z.tex)) [7] (./main.aux)
-
-LaTeX Warning: There were multiply-defined labels.
-
- ) 
+[4])) [5] (./main.aux) ) 
 Here is how much of TeX's memory you used:
- 4280 strings out of 495061
- 61127 string characters out of 1182621
- 136799 words of memory out of 3000000
- 7356 multiletter control sequences out of 15000+50000
+ 4251 strings out of 495061
+ 60764 string characters out of 1182621
+ 136502 words of memory out of 3000000
+ 7346 multiletter control sequences out of 15000+50000
  8061 words of font info for 29 fonts, out of 3000000 for 9000
  28 hyphenation exceptions out of 8191
- 38i,15n,36p,285b,310s stack positions out of 5000i,500n,10000p,200000b,50000s
-</usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/sha
-re/texmf-texlive/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/texmf-te
-xlive/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texmf-texlive/fonts
-/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texmf-texlive/fonts/type1/publ
-ic/amsfonts/cm/cmmi7.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/
-cm/cmmib10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cmextra/cm
-mib7.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmr10.pfb></u
-sr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/texm
-f-texlive/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texmf-texlive/f
-onts/type1/public/amsfonts/cm/cmsy7.pfb>
-Output written on main.pdf (7 pages, 147037 bytes).
+ 38i,13n,36p,275b,308s stack positions out of 5000i,500n,10000p,200000b,50000s
+</usr/share/texmf-texlive/fonts/type1/public/amsfonts/c
+m/cmbx10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmbx12.pf
+b></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/sha
+re/texmf-texlive/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texmf-te
+xlive/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texmf-texlive/fonts/
+type1/public/amsfonts/cm/cmmib10.pfb></usr/share/texmf-texlive/fonts/type1/publ
+ic/amsfonts/cmextra/cmmib7.pfb></usr/share/texmf-texlive/fonts/type1/public/ams
+fonts/cm/cmr10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmr
+7.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr
+/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmsy7.pfb>
+Output written on main.pdf (5 pages, 133480 bytes).
 PDF statistics:
- 173 PDF objects out of 1000 (max. 8388607)
- 33 named destinations out of 1000 (max. 500000)
- 105 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 133 PDF objects out of 1000 (max. 8388607)
+ 19 named destinations out of 1000 (max. 500000)
+ 89 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -96,6 +96,7 @@ class Position1:
 		
 		if self.obj:
 			close = all(np.absolute(self.e5[ti]) < self.obj.thresh)
+			slow = all(np.absolute(self.e6[ti]) < self.obj.thresh)
 			if ti_0 > 1:
 				"""
 				if self.e5_mag_d[ti] < 0.0:
@@ -109,14 +110,11 @@ class Position1:
 						
 						self.e5_local_max = e5_mag
 				"""
-				if close:
+				if close and slow:
 					if self.obj.flag_settled == False:
 						if self.e5_mag_d[ti] > -0.01:
 							if self.e5_mag_d[ti] < 0.0:
 								# settled
-								#print 'e5   ',self.e5[ti]
-								#print 'x    ',self.c.x[ti]
-								#print 'x_ref',self.x_ref[ti]
 								self.obj.settle(ti)
 								if self.obj.mode == 0: #control.ObjMode.normal:
 									self.obj.flag_complete = True

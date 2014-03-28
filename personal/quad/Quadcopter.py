@@ -194,6 +194,8 @@ class Quad:
 		
 	
 	def step(self, ti):
+		self.ti = ti
+
 		dt = self.t[ti] - self.t[ti-1]
 		
 		# rotation
@@ -315,21 +317,21 @@ class Quad:
 		ax.plot(self.t,self.theta)
 		
 		ax.legend(['phi','theta','psi'])
-	
+		
 	def plot_v(self):
 		fig = pl.figure()
-	
+		
 		ax = fig.add_subplot(111)
 		ax.set_xlabel('t')
 		ax.set_ylabel('v')
 		ax.plot(self.t,self.v)
 		ax.legend(['x','y','z'])
-
+		
 	def write(self,stride = 1):
 		f1 = open("q.txt","w")
 		f2 = open("x.txt","w")
 		
-		for ti in range(0,self.N,stride):
+		for ti in range(0,self.ti,stride):
 			q = self.q[ti]
 			f1.write("{0},{1},{2},{3}\n".format(q.s,q.v[0],q.v[1],q.v[2]))
 

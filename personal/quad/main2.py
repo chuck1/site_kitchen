@@ -2,7 +2,7 @@ import pylab as pl
 from mpl_toolkits.mplot3d import Axes3D
 
 import numpy as np
-
+import itertools
 import math
 
 
@@ -37,92 +37,119 @@ class Sim:
 
 
 
+def sub1(p, param, ts, N):
+
+	a, b, c, d = p
+
+	if ts[a,b,c,d] != 0.0:
+		return ts, N
+	
+	s = Sim(0.01,N)
+			
+	s.b.ctrl_position.C5[0,0] = param[0,a]
+	s.b.ctrl_position.C5[1,1] = param[0,a]
+	
+	s.b.ctrl_position.C6[0,0] = param[1,b]
+	s.b.ctrl_position.C6[1,1] = param[1,b]
+					
+	
+	s.b.ctrl_attitude.C1[0,0] = param[2,c]
+	s.b.ctrl_attitude.C1[1,1] = param[2,c]
+	s.b.ctrl_attitude.C1[2,2] = param[2,c]
+	
+	s.b.ctrl_attitude.C2[0,0] = param[3,d]
+	s.b.ctrl_attitude.C2[1,1] = param[3,d]
+	s.b.ctrl_attitude.C2[2,2] = param[3,d]
+	
+	s.b.objs = [control.Move([1.0,0.0,0.0],[0.01,0.01,0.01])]
+					
+	s.run()
+	
+	ti = s.b.obj.ti_1
+	if ti > -1:
+		if ti < N:
+			N = ti
+			index = [a,b,c,d]
+				
+	ts[a,b,c,d] = s.b.obj.ts
+				
+	ind[a,b,c,d] = [a,b,c,d]
+					
+	print "{0:0.2e} {1:0.2e} {2:0.2e} {3:0.2e} {4}".format(
+			param[0,a],
+			param[1,b],
+			param[2,c],
+			param[3,d],
+			s.b.obj.ts)
+
+
+	return ts, N
+
+
+
+
+
 # parameter space
 NP = 4 # num params
-NG = 4 # num grid points
+NG = 13 # num grid points
 
-center = [10.0]*NP
-length = 10.0
+# force odd
+NG += (NG+1) % 2
+
+center = np.array([20.5, 20.5, 40.5, 40.5])
+length = np.array([20.0, 20.0, 40.0, 40.0])
+
+index = None
 
 for it in range(10):
 	param = np.zeros((NP,NG))
 	
 	for a in range(NP):
 		for b in range(NG):
-			param[a,b] = center[a] + length * (float(b) * 2.0 / (NG - 1.0)  - 1.0)
+			param[a,b] = center[a] + length[a] * (float(b) * 2.0 / (NG - 1.0)  - 1.0)
 	
 	print param
 
 	#ts = np.zeros((2,2,2,2))
 	ts = np.zeros([NG]*NP)
+	ind = np.zeros([NG]*NP + [NP])
 
 	print np.shape(ts)
-
-	ind = np.zeros((2,2,2,2,4))
+	print np.shape(ind)
 	
 	N = 2000
+	print range(NG)
+	prod = list(itertools.product(range(NG), repeat = NP))
+
+
+
+	print 'center',center
+	print 'param'
+	print param
+
+	p = [(NG-1)/2] * NP
+
+	print 'center index',p
+
+	ts, N = sub1(p, param, ts, N)
 	
-	for a in range(2):
-		for b in range(2):
-			for c in range(2):
-				for d in range(2):
-					#choice[a,b,c,d] = 
-					
-					s = Sim(0.01,N)
-					
-					s.b.ctrl_position.C5[0,0] = param[0,a]
-					s.b.ctrl_position.C5[1,1] = param[0,a]
-	
-					s.b.ctrl_position.C6[0,0] = param[1,b]
-					s.b.ctrl_position.C6[1,1] = param[1,b]
-					
-	
-					s.b.ctrl_attitude.C1[0,0] = param[2,c]
-					s.b.ctrl_attitude.C1[1,1] = param[2,c]
-					s.b.ctrl_attitude.C1[2,2] = param[2,c]
-	
-					s.b.ctrl_attitude.C2[0,0] = param[3,d]
-					s.b.ctrl_attitude.C2[1,1] = param[3,d]
-					s.b.ctrl_attitude.C2[2,2] = param[3,d]
-	
-					s.b.objs = [control.Move([1.0,0.0,0.0],[0.01,0.01,0.01])]
-					
-					s.run()
-					
-					ti = s.b.obj.ti_1
-					if ti > -1:
-						if ti < N:
-							N = ti
-							index = [a,b,c,d]
-					
-					ts[a,b,c,d] = s.b.obj.ts
-					
-					ind[a,b,c,d] = [a,b,c,d]
-					
-					print "{0:0.2e} {1:0.2e} {2:0.2e} {3:0.2e} {4}".format(
-							param[0,a],
-							param[1,b],
-							param[2,c],
-							param[3,d],
-							s.b.obj.ts)
-	
+	for p in prod:
+		ts, N = sub1(p, param, ts, N)
 	
 	ts_min = np.min(ts[(ts > -1.0)])
 	
-	index = ind[ts == ts_min]
-	index = index[0]
-	
-	print ts_min
-	print index
-	
-	length *= 0.5
-	
-	print center
+	index = ind[ts == ts_min][0]
 	
 	for a in range(4):
 		center[a] = param[a,index[a]]
 	
-	print center
+	
+	print 'ts',ts_min
+	
+	length *= 0.5
+	
+	
+		
 	
 
 

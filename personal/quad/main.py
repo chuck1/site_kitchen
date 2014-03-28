@@ -47,11 +47,11 @@ class Sim:
 			
 s = Sim(0.01,400)
 
-C5 =  2.09
-C6 = 12.60
+C5 = 4.7#6.75# 2.09
+C6 = 5.5#7.06#12.60
 
-C1 = 18.07
-C2 = 10.80
+C1 = 79.0#11.59#18.07
+C2 = 91.0#15.81#10.80
 
 s.b.ctrl_position.C5[0,0] = C5
 s.b.ctrl_position.C5[1,1] = C5
@@ -68,7 +68,7 @@ s.b.ctrl_attitude.C2[0,0] = C2
 s.b.ctrl_attitude.C2[1,1] = C2
 s.b.ctrl_attitude.C2[2,2] = C2
 	
-s.b.objs = [control.Move([1.0,0.0,0.0],[0.01,0.01,0.01], mode = 1)]
+s.b.objs = [control.Move([1.0,0.0,0.0],[0.01,0.01,0.01], mode = 0)]
 
 s.run()
 
