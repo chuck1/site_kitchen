@@ -12,63 +12,67 @@ import quaternion as qt
 from visual import *
 import vec
 
+class Sim:
+	def __init__(self, dt, N):
+		self.dt = dt
+		self.N = N
+
+		self.t = np.arange(self.N) * dt
+
+		self.c = Quadcopter.Quad(self.t)
+		self.b = control.Brain(self.c)
+
+	def run(self):
+		for ti in range(1,self.N):
+			#if (ti % (self.N / 100)) == 0:
+			#	print ti
+			try:
+				self.b.step(ti-1)
+			except control.ErrorListEmpty:
+				break
+			
+			self.c.step(ti)
+		
+		self.c.write(2)
+
+	def plot(self):
+		self.c.plot()
+		self.b.ctrl_position.plot()
+		self.b.ctrl_attitude.plot()
+		self.b.plot()
+		#self.c.plot3()
+		pl.show()
 
 
-dt = 0.01
-N = 2000
+			
+s = Sim(0.01,400)
 
-t = np.arange(N) * dt
+C5 =  2.09
+C6 = 12.60
 
+C1 = 18.07
+C2 = 10.80
 
-c = Quadcopter.Quad(t)
-b = control.Brain(c)
-
-#b.ctrl_position.fill_xref([1.0, 1.0, 0.0])
-
-"""
-b.objs = [
-		control.Move([1.0,0.0,0.0],[0.01,0.01,0.01]),
-		control.Move([1.0,1.0,0.0],[0.01,0.01,0.01]),
-		control.Move([0.0,1.0,0.0],[0.01,0.01,0.01]),
-		control.Move([0.0,0.0,0.0],[0.01,0.01,0.01]),
-		control.Move([0.0,0.0,1.0],[0.01,0.01,0.01]),
-		control.Move([1.0,0.0,1.0],[0.01,0.01,0.01]),
-		control.Move([1.0,1.0,1.0],[0.01,0.01,0.01]),
-		control.Move([0.0,1.0,1.0],[0.01,0.01,0.01]),
-		control.Move([0.0,0.0,1.0],[0.01,0.01,0.01])]
-"""
-"""
-b.objs = [
-		control.Orient(qt.Quat(theta = math.pi, v = [1.0, 0.0, 0.0]), mode = control.ObjMode.hold)]
-"""
-
-b.objs = [
-		control.Path(lambda t: np.array([math.sin(t * 4.0 / math.pi),t,0.0]))]
-
-
-for ti in range(1,N):
+s.b.ctrl_position.C5[0,0] = C5
+s.b.ctrl_position.C5[1,1] = C5
 	
-	if (ti % (N / 100)) == 0:
-		print ti
+s.b.ctrl_position.C6[0,0] = C6
+s.b.ctrl_position.C6[1,1] = C6
 
-	b.step(ti-1)
-	c.step(ti)
 	
+s.b.ctrl_attitude.C1[0,0] = C1
+s.b.ctrl_attitude.C1[1,1] = C1
+s.b.ctrl_attitude.C1[2,2] = C1
 	
+s.b.ctrl_attitude.C2[0,0] = C2
+s.b.ctrl_attitude.C2[1,1] = C2
+s.b.ctrl_attitude.C2[2,2] = C2
+	
+s.b.objs = [control.Move([1.0,0.0,0.0],[0.01,0.01,0.01], mode = 1)]
 
+s.run()
 
-c.plot()
-
-
-b.ctrl_position.plot()
-b.ctrl_attitude.plot()
-
-
-b.plot()
-
-c.plot3()
-
-pl.show()
+s.plot()
 
 
 

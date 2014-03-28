@@ -1,5 +1,5 @@
 import numpy as np
-import enum
+#import enum
 import math
 
 import vec
@@ -7,22 +7,43 @@ import quaternion as qt
 import attitude
 import position
 
-class ObjMode(enum.Enum):
-	normal = 0
-	hold = 1
+#class ObjMode(enum.Enum):
+#	normal = 0
+#	hold = 1
 
+class ErrorListEmpty(Exception):
+	pass
 
 class Objective:
 	def __init__(self):
 		self.flag_complete = False
+		self.flag_settled = False
+		
+		self.ts = -1.0
+		self.ti_1 = -1
+	def start(self, c, ti):
+		pass
+	def settle(self, ti):
+		pass
 		
 class Move(Objective):
-	def __init__(self, x2, thresh = None, mode = ObjMode.normal):
+	def __init__(self, x2, thresh = None, mode = 0):#ObjMode.normal):
 		Objective.__init__(self)
 		
 		self.x2 = x2
 		self.thresh = thresh		
 		self.mode = mode
+
+	def start(self, c, ti):
+		self.c = c
+		
+		self.ti_0 = ti
+	def settle(self, ti):
+		self.ti_1 = ti
+		
+		self.flag_settled = True
+
+		self.ts = self.c.t[self.ti_1] - self.c.t[self.ti_0]
 
 class Path(Objective):
 	def __init__(self, f):
@@ -30,11 +51,11 @@ class Path(Objective):
 		
 		self.f = f
 
-		self.mode = ObjMode.hold
+		self.mode = 1#ObjMode.hold
 
 
 class Orient(Objective):
-	def __init__(self, q, thresh = None, mode = ObjMode.normal):
+	def __init__(self, q, thresh = None, mode = 0):#ObjMode.normal):
 		Objective.__init__(self)
 
 		self.q = q
@@ -50,7 +71,7 @@ class Brain:
 		self.ctrl_attitude = attitude.Attitude3(c)
 
 		self.obj = None
-	
+
 	def control_law_1(self, ti):
 		gamma = np.zeros(4)
 		
@@ -74,9 +95,13 @@ class Brain:
 			r = qt.Quat()
 		else:
 			r = qt.Quat(v1 = f_RB, v2 = qt.e2)
-			
 		
+		# calcualte reference orientation
 		qn = r * q
+		
+		# eliminate z-component of orientation
+		qn.v[2] = 0.0
+		qn = qn.normalize()
 		
 		
 		z_I = q.rotate(vec.e2)
@@ -95,6 +120,8 @@ class Brain:
 		return qn, thrust
 		
 	def process_force_reference2(self, f_R, ti):
+		# used in orientation control and altitude control
+
 		# input:
 		# target force in inertial frame
 		
@@ -110,11 +137,7 @@ class Brain:
 		# transform desired rotor force from inertial to body frame
 		f_RB = q.rotate(f_R)
 		
-				
-		
 		z_I = q.rotate(vec.e2)
-		
-		
 		
 		# match inertial z-component	
 		thrust = np.dot(f_RB, z_I) / np.dot(vec.e2, z_I)
@@ -190,8 +213,11 @@ class Brain:
 		
 		
 		if (self.obj is None) or self.obj.flag_complete:
-			print 'new move'
-			self.obj = self.objs.pop(0)
+			#print 'new move'
+			if self.objs:
+				self.obj = self.objs.pop(0)
+			else:
+				raise ErrorListEmpty
 			
 			if isinstance(self.obj, Move):
 				self.ctrl_position.set_obj(ti, self.obj)

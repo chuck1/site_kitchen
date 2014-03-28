@@ -210,14 +210,14 @@ class Attitude3:
 		
 		self.q_ref = np.empty(c.N, dtype=object)
 	
-		C1 = 3.0
+		C1 = 4.0
 	
 		self.C1 = np.array([
 				[C1,0.0,0.0],
 				[0.0,C1,0.0],
 				[0.0,0.0,C1]])
 		
-		C2 = 2.0
+		C2 = 3.0
 		
 		self.C2 = np.array([
 				[C2,0.0,0.0],
@@ -362,9 +362,9 @@ class Attitude3:
 		N = self.c.N
 		q = np.zeros((N,4))
 		q_ref = np.zeros((N,4))
-
+		
 		print np.shape(q)
-
+		
 		for i in range(N):
 			q[i,1:4] = self.c.q[i].v
 			q[i,0] = self.c.q[i].s
@@ -378,20 +378,21 @@ class Attitude3:
 
 		print np.shape(q[:,0])
 
-		ax.plot(self.c.t, q[:,0],'b-')
+		#ax.plot(self.c.t, q[:,0],'b-')
 		ax.plot(self.c.t, q[:,1],'g-')
 		ax.plot(self.c.t, q[:,2],'r-')
 		ax.plot(self.c.t, q[:,3],'c-')
 		
-		ax.plot(self.c.t, q_ref[:,0],'b--')
+		#ax.plot(self.c.t, q_ref[:,0],'b--')
 		ax.plot(self.c.t, q_ref[:,1],'g--')
 		ax.plot(self.c.t, q_ref[:,2],'r--')
 		ax.plot(self.c.t, q_ref[:,3],'c--')
 		
 		ax.set_xlabel('t')
 		ax.set_ylabel('q')
-		ax.legend(['a','b','c','d','a','b','c','d'])
-	
+		#ax.legend(['a','b','c','d','a','b','c','d'])
+		ax.legend(['b','c','d','b_ref','c_ref','d_ref'])
+
 	def plot_omega(self):
 		t = self.c.t
 		

@@ -8,12 +8,12 @@ class Position1:
 	def __init__(self, c):
 		self.c = c
 		
-		C5_11 = 0.7
-		C5_22 = 0.7
-		C5_33 = 0.3
+		C5_11 = 3.1
+		C5_22 = 3.1
+		C5_33 = 0.15
 
-		C6_11 =  3.5
-		C6_22 =  3.5
+		C6_11 =  3.0
+		C6_22 =  3.0
 		C6_33 = 10.0
 
 		L5_11 = 0.0
@@ -95,28 +95,33 @@ class Position1:
 		e5_mag = vec.mag(self.e5[ti])
 		
 		if self.obj:
-			if self.obj.mode == control.ObjMode.normal:
-				close = all(np.absolute(self.e5[ti]) < self.obj.thresh)
-				if ti_0 > 1:
-					if self.e5_mag_d[ti] < 0.0:
-						if self.e5_mag_d[ti-1] > 0.0:
-							# local maximum error
-							if e5_mag < self.e5_local_max:
-								# converging
-								if close:
-									# converged
-									self.obj.flag_complete = True
-							
-							self.e5_local_max = e5_mag
-					
-					if self.e5_mag_d[ti] > -0.01:
-						if self.e5_mag_d[ti] < 0.0:
+			close = all(np.absolute(self.e5[ti]) < self.obj.thresh)
+			if ti_0 > 1:
+				"""
+				if self.e5_mag_d[ti] < 0.0:
+					if self.e5_mag_d[ti-1] > 0.0:
+						# local maximum error
+						if e5_mag < self.e5_local_max:
+							# converging
 							if close:
-								print 'e5   ',self.e5[ti]
-								print 'x    ',self.c.x[ti]
-								print 'x_ref',self.x_ref[ti]
+								# converged
 								self.obj.flag_complete = True
-			
+						
+						self.e5_local_max = e5_mag
+				"""
+				if close:
+					if self.obj.flag_settled == False:
+						if self.e5_mag_d[ti] > -0.01:
+							if self.e5_mag_d[ti] < 0.0:
+								# settled
+								#print 'e5   ',self.e5[ti]
+								#print 'x    ',self.c.x[ti]
+								#print 'x_ref',self.x_ref[ti]
+								self.obj.settle(ti)
+								if self.obj.mode == 0: #control.ObjMode.normal:
+									self.obj.flag_complete = True
+
+
 	def set_obj(self, ti, obj):
 		self.obj = obj
 		
@@ -128,6 +133,8 @@ class Position1:
 			self.fill_xref(ti, self.obj.x2)
 		elif isinstance(obj, control.Path):
 			self.fill_xref_parametric(ti, self.obj.f) 
+		
+		self.obj.start(self.c, ti)
 		
 		
 	def get_force_rotor(self, ti, ti_0):

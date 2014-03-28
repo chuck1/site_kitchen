@@ -78,7 +78,7 @@ class Quad:
 		
 		self.A4 = np.append(self.A1, np.reshape(self.A2,(1,4)), 0)
 
-		print self.A4
+		#print self.A4
 		self.A4inv = np.linalg.inv(self.A4)
 
 		#print 'q',self.q._q
@@ -324,4 +324,20 @@ class Quad:
 		ax.set_ylabel('v')
 		ax.plot(self.t,self.v)
 		ax.legend(['x','y','z'])
-	
+
+	def write(self,stride = 1):
+		f1 = open("q.txt","w")
+		f2 = open("x.txt","w")
+		
+		for ti in range(0,self.N,stride):
+			q = self.q[ti]
+			f1.write("{0},{1},{2},{3}\n".format(q.s,q.v[0],q.v[1],q.v[2]))
+
+			x = self.x[ti]
+			f2.write("{0},{1},{2}\n".format(x[0],x[1],x[2]))
+
+		f1.close()
+		f2.close()
+
+
+		
