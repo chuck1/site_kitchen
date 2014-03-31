@@ -189,7 +189,6 @@ class Face(LocalCoor):
 		# returns lambda:
 		# function of positive parallel index of neighbor
 		# returns the index of my cell
-	
 				
 		if not isinstance(nbr, Face):
 			raise ValueError('nbr is not a Face')
@@ -198,16 +197,14 @@ class Face(LocalCoor):
 		PG = nbr.get_loc_pos_par_index(self)
 		
 		PL = self.glo_to_loc(PG)
-		
 		OL = self.nbr_to_loc(nbr)
-		
-		#print "PAR,ORT",PAR,ORT
-		
-		l = [0,0]
 		
 		pl,spl = v2is(PL)
 		ol,sol = v2is(OL)
 		
+		d = self.d[ol]
+		
+		l = [None,None]
 		l[pl] = lambda p, pl=pl, spl=spl: p if (spl > 0) else self.n[pl] - p - 1
 		l[ol] = lambda p, ol=ol, sol=sol: 0 if (sol < 0) else (self.n[ol] - 1)
 		
