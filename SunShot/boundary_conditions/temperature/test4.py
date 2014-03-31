@@ -35,11 +35,11 @@ p3 = None
 p4 = None
 p5 = None
 
-p0 = prob.createPatch(1,	[1,	[0,1],	[0,1]],	x, n)
-p1 = prob.createPatch(2,	[[0,1],	1,	[0,1]],	x, n)
+#p0 = prob.createPatch(1,	[1,	[0,1],	[0,1]],	x, n)
+#p1 = prob.createPatch(2,	[[0,1],	1,	[0,1]],	x, n)
 p2 = prob.createPatch(3,	[[0,1],	[0,1],	1],	x, n)
-#p3 = prob.createPatch(-1,	[0,	[1,0],	[1,0]],	x, n)
-#p4 = prob.createPatch(-2,	[[1,0],	0,	[1,0]],	x, n)
+p3 = prob.createPatch(-1,	[0,	[1,0],	[1,0]],	x, n)
+p4 = prob.createPatch(-2,	[[1,0],	0,	[1,0]],	x, n)
 #p5 = prob.createPatch(-3,	[[1,0],	[1,0],	0],	x, n)
 
 
@@ -61,6 +61,7 @@ stitch(p3,p5)
 
 stitch(p4,p5)
 
+sys.exit(0)
 
 
 f0 = p0.faces[0,0]

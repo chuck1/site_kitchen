@@ -1,4 +1,5 @@
 import math
+import inspect
 import numpy as np
 import multiprocessing
 from matplotlib import cm
@@ -11,14 +12,14 @@ def source_spreader(x,y,a,b,m,n):
 	return u
 
 class Conn:
-	# information concerning connection between face and nbr
+	# information concerning connection between face and conn
 	# from perspective of face
 	def __init__(self, face, conn):
 		self.face = face
 		self.conn = conn
 		
 		self.MP = False
-
+		
 	def refresh(self):
 		self.OL = self.face.nbr_to_loc(self.twin.face)
 		
@@ -29,8 +30,15 @@ class Conn:
 
 		self.PG = self.face.loc_to_glo(self.PL)
 		
-		self.li, self.lj, self.d = self.face.index_lambda(self.twin.face, self.PG)
+		self.li, self.lj, self.d = self.face.index_lambda(self.twin.face)
 		
+		self.printinfo()
+	def printinfo(self):
+		print "face",self.face.Z
+		print "nbr ",self.twin.face.Z
+		print "li lj"
+		print inspect.getsource(self.li)
+		print inspect.getsource(self.lj)
 	def send(self, T):
 		if self.MP:
 			self.conn.send(T)
@@ -107,7 +115,14 @@ class Face(LocalCoor):
 		LocalCoor.__init__(self, normal)
 
 		self.Tmean = []
-
+	def get_loc_pos_par_index(self, nbr):
+		OL = self.nbr_to_loc(nbr)
+		
+		PL = abs(cross(3, OL))
+		
+		PG = self.loc_to_glo(PL)
+		return PG
+		
 	def x(self, i):
 		return (i + 0.5) * self.d[0]
 		
@@ -170,51 +185,37 @@ class Face(LocalCoor):
 		v,sv = v2is(V)
 		return self.conns[v, (sv+1)/2]
 
-	def index_lambda(self, nbr, par):
+	def index_lambda(self, nbr):
 		# returns lambda:
 		# function of positive parallel index of neighbor
 		# returns the index of my cell
-		
+	
+				
 		if not isinstance(nbr, Face):
 			raise ValueError('nbr is not a Face')
 		
-		# par = global direction equal to the neighbors positiove local parallel
+		# PG global index of neighbor's positive parallel local index
+		PG = nbr.get_loc_pos_par_index(self)
 		
-		PAR = self.glo_to_loc(par)
+		PL = self.glo_to_loc(PG)
 		
-		ORT = self.nbr_to_loc(nbr)
+		OL = self.nbr_to_loc(nbr)
 		
 		#print "PAR,ORT",PAR,ORT
-
-		if PAR == 1:
-			i = lambda p: p
-			d = self.d[1]
-		elif PAR == -1:
-			i = lambda p: self.n[0] - p - 1
-			d = self.d[1]
-		else:
-			if ORT < 0:
-				i = lambda p: 0
-			else:
-				i = lambda p: self.n[0] - 1
 		
+		l = [0,0]
 		
-		if PAR == 2:
-			j = lambda p: p
-			d = self.d[0]
-		elif PAR == -2:
-			j = lambda p: self.n[1] - p - 1
-			d = self.d[0]
-		else:
-			if ORT < 0:
-				j = lambda p: 0
-			else:
-				j = lambda p: self.n[1] - 1
+		pl,spl = v2is(PL)
+		ol,sol = v2is(OL)
+		
+		l[pl] = lambda p, pl=pl, spl=spl: p if (spl > 0) else self.n[pl] - p - 1
+		l[ol] = lambda p, ol=ol, sol=sol: 0 if (sol < 0) else (self.n[ol] - 1)
 		
 		#print inspect.getsource(i)
 		#print inspect.getsource(j)
+		#print l
 
-		return i,j,d
+		return l[0],l[1],d
 	
 	def send_array(self, conn):
 		T = np.ones(self.n[conn.pl])
@@ -228,7 +229,7 @@ class Face(LocalCoor):
 		T = conn.recv()
 		
 		ind = [0,0]
-		ind[conn.ol] = -1 if conn.sol < 1 else self.n[conn.ol]
+		ind[conn.ol] = -1 if conn.sol < 0 else self.n[conn.ol]
 		
 		for a in range(self.n[conn.pl]):
 			ind[conn.pl] = a
