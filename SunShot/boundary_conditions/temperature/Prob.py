@@ -14,11 +14,15 @@ from Face import *
 from Patch import *
 
 class Problem:
-	def __init__(self, name, k, alpha, alpha_src, it_max_1 = 100, it_max_2 = 100):
+	def __init__(self, name, x, nx, k, alpha, alpha_src,
+			it_max_1 = 100, it_max_2 = 100):
 		self.name = name
+		
+		self.x = x
+		self.nx = nx
 
 		self.k = k
-
+		
 		self.alpha = alpha
 		self.alpha_src = alpha_src
 
@@ -27,8 +31,16 @@ class Problem:
 
 		self.faces = []
 		signal.signal(signal.SIGINT, self)
-	def createPatch(self, normal, indices, x, nx):
-		p = Patch(normal, indices, x, nx, self.k, self.alpha, self.alpha_src)
+
+	def createPatch(self, normal, indices,
+			T_bou = [[0,0],[0,0]],
+			T_tar = 1.0):
+	
+		print 'T_tar',T_tar
+
+		p = Patch(normal, indices, self.x, self.nx, self.k, self.alpha, self.alpha_src,
+				T_bou = T_bou, T_tar = T_tar)
+		
 		self.faces += list(p.faces.flatten())
 		return p
 	def __call__(self, signal, frame):
@@ -74,6 +86,31 @@ class Problem:
 			#f.plot_grad(Vg)
 		
 		pl.show()
+	def get_3d_axes(self):
+		x = self.x
+
+		x_mean = np.zeros(3)
+		x_min = np.zeros(3)
+		x_max = np.zeros(3)
+		
+		for a in range(3):
+			x_mean[a] = np.mean(x[a])
+			x_min[a] = min(x[a])
+			x_max[a] = max(x[a])
+			
+		
+		x_rng = x_max - x_min
+		
+		x_rng_max = max(x_rng) * 0.5
+		
+		#print x_mean
+		#print x_rng
+		#print x_rng_max
+		
+		l = x_mean - x_rng_max
+		u = x_mean + x_rng_max
+		
+		return l,u
 
 	def plot3(self):
 		T_max = self.temp_max()
@@ -81,9 +118,17 @@ class Problem:
 		fig = pl.figure()
 		ax = Axes3D(fig)
 		
+
+
 		for f in self.faces:
 			f.plot3(ax, T_max)
 		
+		l,u = self.get_3d_axes()
+		
+		ax.set_xlim3d(l[0], u[0])
+		ax.set_ylim3d(l[1], u[1])
+		ax.set_zlim3d(l[2], u[2])
+
 		return ax
 	
 	def solve(self, cond, ver=True, R_outer=0.0):

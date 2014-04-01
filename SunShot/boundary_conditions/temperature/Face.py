@@ -308,9 +308,9 @@ class Face(LocalCoor):
 				
 				#ver = True
 				#print "source =",self.s(To)
+				num = aW*TW + aE*TE + aS*TS + aN*TN + self.s[i,j] * self.Src / self.k
+				Ts = num / (aW + aE + aS + aN)
 				
-				Ts = (aW*TW + aE*TE + aS*TS + aN*TN + self.s[i,j] * self.Src / self.k) / (aW + aE + aS + aN)
-
 				dT = self.alpha * (Ts - To)
 
 				def debug():
@@ -336,10 +336,11 @@ class Face(LocalCoor):
 			 
 				self.T[i,j] += dT
 				
+				
 				R = max(math.fabs(dT/To), R)
 				
 				if math.isnan(R):
-					print dT, To
+					print 'dT',dT,'To',To
 					raise ValueError('nan')
 		return R
 
@@ -361,13 +362,12 @@ class Face(LocalCoor):
 		Ydir = abs(self.loc_to_glo(2)) - 1
 		Zdir = abs(self.loc_to_glo(3)) - 1
 		
-		print "glo", Xdir, Ydir, Zdir
-		
 		x[Xdir] = np.linspace(self.ext[0,0],self.ext[0,1],self.n[0])
 		x[Ydir] = np.linspace(self.ext[1,0],self.ext[1,1],self.n[1])
-		
-		print "x", x[Xdir]
-		print "y", x[Ydir]
+
+		#print "glo", Xdir, Ydir, Zdir
+		#print "x", x[Xdir]
+		#print "y", x[Ydir]
 		
 		# x and y
 		#x[Ydir],x[Xdir] = np.meshgrid(x[Ydir], x[Xdir])
@@ -406,10 +406,10 @@ class Face(LocalCoor):
 
 		FC = cm.jet(T/T_max)
 
-		print np.shape(x[0])
-		print np.shape(x[1])
-		print np.shape(x[2])
-		print np.shape(FC)
+		#print np.shape(x[0])
+		#print np.shape(x[1])
+		#print np.shape(x[2])
+		#print np.shape(FC)
 
 		ax.plot_surface(x[0], x[1], x[2], rstride=1, cstride=1, facecolors=FC, shade=False)
 		
