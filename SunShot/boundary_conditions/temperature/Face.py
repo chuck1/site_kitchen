@@ -54,6 +54,32 @@ class Conn:
 		
 		return T
 
+class Equ:
+	# diffusion equation variable set
+
+	def __init__(self, n, v_0, v_bou, k, alpha = 1.0, alpha_src = 1.0):
+		self.n = n
+		self.v_0 = v_0
+		
+		n_extended = self.n + np.array([2, 2])
+		
+		self.v = np.ones(n_extended) * self.v_0
+		
+		if np.any(self.d < 0):
+			print self.d
+			raise ValueError('bad')
+		
+		self.v_bou = np.array(v_bou)
+
+		#self.S = 0
+		self.s = np.zeros(n)
+		
+		self.k = k
+		self.alpha = alpha
+		self.alpha_src = alpha_src
+	
+
+
 class Face(LocalCoor):
 	def __init__(self, normal, ext, pos_z, n, T_bou, mean_target, k, alpha, alpha_src):
 		
@@ -74,6 +100,8 @@ class Face(LocalCoor):
 
 		
 		# temperature array
+		
+		
 		self.T = np.ones(n_extended) * mean_target
 		
 		if np.any(self.d < 0):
@@ -85,15 +113,8 @@ class Face(LocalCoor):
 		self.conns = np.empty((2,2), dtype=object)
 		
 		
-		self.S = 0
-		self.s = np.zeros(n)
-		
-		
 		self.mean_target = mean_target
-		self.k = k
-		self.alpha = alpha
-		self.alpha_src = alpha_src
-
+	
 		# source
 		self.l = np.array([
 			(self.ext[0,1] - self.ext[0,0]) / 2.0,
@@ -285,7 +306,9 @@ class Face(LocalCoor):
 			self.step_pre_cell([i,           0], -2)
 			self.step_pre_cell([i, self.n[1]-1],  2)
 		
-	def step(self):
+	def step(self, equ):
+		# solve diffusion equation for equ
+		
 		R = 0.0
 		
 		ver1 = False
