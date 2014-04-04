@@ -49,36 +49,40 @@ class Problem:
 		#self.save()
 		sys.exit(0)
 		
-	def temp_max(self):
+	def temp_max(self, equ_name):
 		T = float("-inf")
 		for f in self.faces:
-			T = max(f.temp_max(), T)
+			e = f.equs[equ_name]
+			T = max(e.temp_max(), T)
 		
 		return T
-	def temp_min(self):
+	def temp_min(self, equ_name):
 		T = float("inf")
 		for f in self.faces:
-			T = min(f.temp_min(), T)
+			e = f.equs[equ_name]
+			T = min(e.temp_min(), T)
 		
 		return T
-	def grad_max(self):
+	def grad_max(self, equ_name):
 		T = float("-inf")
 		for f in self.faces:
-			T = max(f.grad_max(), T)
+			e = f.equs[equ_name]
+			T = max(e.grad_max(), T)
 		
 		return T
-	def grad_min(self):
+	def grad_min(self, equ_name):
 		T = float("inf")
 		for f in self.faces:
-			T = min(f.grad_min(), T)
+			e = f.equs[equ_name]
+			T = min(e.grad_min(), T)
 		
 		return T
 
-	def plot(self):
-		a, b = nice_axes(self.temp_min(), self.temp_max())
+	def plot(self, equ_name):
+		a, b = nice_axes(self.temp_min(equ_name), self.temp_max(equ_name))
 		V = np.linspace(a, b, 21)
 		
-		a, b = nice_axes(self.grad_min(), self.grad_max())
+		a, b = nice_axes(self.grad_min(equ_name), self.grad_max(equ_name))
 		Vg = np.linspace(a, b, 21)
 		
 		
@@ -113,7 +117,7 @@ class Problem:
 		
 		return l,u
 
-	def plot3(self):
+	def plot3(self, equ_name):
 		T_max = self.temp_max()
 		
 		fig = pl.figure()
@@ -144,10 +148,10 @@ class Problem:
 			
 			for face in self.faces:
 				R[-1] = max(face.step(name), R[-1])
-				face.send()
+				face.send(name)
 			
 			for face in self.faces:
-				face.recv()
+				face.recv(name)
 			
 			
 			if ver:

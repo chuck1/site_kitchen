@@ -65,22 +65,22 @@ f5 = p5.faces[0,0]
 
 #f1.create_equ('T', 0., [[30.,0.],[0.,0.]], k, al)
 
-f2.create_equ('T', 0., [[30.,0.],[0.,0.]], k, al)
+f2.create_equ('T', 0., [[30.,30.],[30.,30.]], k, al)
 
-f3.create_equ('T', 0., [[30.,0.],[0.,0.]], k, al)
+f3.create_equ('T', 0., [[30.,30.],[30.,30.]], k, al)
 
-f4.create_equ('T', 0., [[30.,0.],[0.,0.]], k, al)
+f4.create_equ('T', 0., [[30.,30.],[30.,30.]], k, al)
 
-f5.create_equ('T', 0., [[30.,0.],[0.,0.]], k, al)
+f5.create_equ('T', 0., [[30.,30.],[30.,30.]], k, al)
 
 
 
 #prob.solve2(1e-2, 1e-4, True)
-prob.solve('T', 1e-4)
+prob.solve('T', 1e-1)
 
-prob.plot3()
+#prob.plot3()
 
-#pl.plot(f0.Tmean)
+prob.plot('T')
 
 pl.show()
 

@@ -30,7 +30,7 @@
 \]
 
 \[
-\dot{\mathbf{e}}_6 = \dot{\mathbf{v}}_{ref} - \dot{\mathbf{v}}
+\dot{\mathbf{e}}_6 = \dot{\mathbf{v}}_{ref} - \dot{\mathbf{v}} = \Vd{v}_{ref} - \V{a}
 \]
 
 \[
@@ -58,23 +58,15 @@
 = \mathbf{C}_5 \left( \mathbf{e}_6 - \mathbf{C}_5 \mathbf{e}_5 - \boldsymbol\Lambda_5 \boldsymbol\chi_5 \right)
 + \ddot{\mathbf{x}}_{ref}
 + \boldsymbol\Lambda_5 \mathbf{e}_5
-- \left(
-\mathbf{g}
-+ \frac{1}{m} \mathbf{F}_{R}
-+ \frac{1}{m} \mathbf{F}_{D}
-\right)
+- \ddot{\mathbf{x}}
 \]
 
 \[
-\mathbf{F}_{R}
-= m \left(
-	-\mathbf{f}_6(\mathbf{e}_5,\mathbf{e}_6)
-	+ \mathbf{C}_5 \left( \mathbf{e}_6 - \mathbf{C}_5 \mathbf{e}_5 - \boldsymbol\Lambda_5 \boldsymbol\chi_5 \right)
-	+ \ddot{\mathbf{x}}_{ref}
-	+ \boldsymbol\Lambda_5 \mathbf{e}_5
-	- \mathbf{g}
-	- \frac{1}{m} \mathbf{F}_{D}
-\right)
+\Vdd{x}
+= -\mathbf{f}_6(\mathbf{e}_5,\mathbf{e}_6)
++ \mathbf{C}_5 \left( \mathbf{e}_6 - \mathbf{C}_5 \mathbf{e}_5 - \boldsymbol\Lambda_5 \boldsymbol\chi_5 \right)
++ \ddot{\mathbf{x}}_{ref}
++ \boldsymbol\Lambda_5 \mathbf{e}_5
 \]
 
 \[
@@ -123,10 +115,41 @@
 \end{align}
 
 \begin{align}\nonumber
-\frac{1}{m} \mathbf{F}_{R}
-= & \mathbf{C}_9 \mathbf{x}_{ref} - \mathbf{C}_9 \mathbf{x} + \mathbf{C}_{10} \dot{\mathbf{x}}_{ref} - \mathbf{C}_{10} \mathbf{v} \\\nonumber
-& + \mathbf{C}_{11} \boldsymbol\chi_5 + \ddot{\mathbf{x}}_{ref} - \mathbf{g} - \frac{1}{m} \mathbf{F}_{D}
+0 = + &~ \mathbf{C}_{11} \boldsymbol\chi_5 \\\nonumber
++ &~ \mathbf{C}_9 (\mathbf{x}_{ref} - \mathbf{x}) \\\nonumber
++ &~ \mathbf{C}_{10} (\dot{\mathbf{x}}_{ref} - \mathbf{v}) \\\nonumber
++ &~ \Vdd{x}_{ref} - \Vdd{x}
 \end{align}
+
+\subsection{Dynamics of Acceleration}
+
+Instead of assuming $\Vdd{x}$ is our control input, we can continue the above process. We guess that the result will be
+
+\begin{align}\nonumber
+0 = + &~ \mathbf{C}_{9} \boldsymbol\chi_5 \\\nonumber
++ &~ \mathbf{C}_{10} (\mathbf{x}_{ref} - \mathbf{x}) \\\nonumber
++ &~ \mathbf{C}_{11} (\dot{\mathbf{x}}_{ref} - \mathbf{v}) \\\nonumber
++ &~ \V{C}_{12} ( \Vdd{x}_{ref} - \V{a} ) \\\nonumber
++ &~ \Vddd{x}_{ref} - \Vd{a}
+\end{align}
+
+\[
+\V{a} = \V{a}_{g} + \V{a}_{R}
+\]
+
+\[
+\Vd{a} = \Vd{a}_{R}
+\]
+
+\[
+\V{a}_R = \V{A}_{\V{q}^*} \V{B}_{\V{q}^*} \V{a}_{RB}
+\]
+
+\[
+\Vd{a}_R = \V{A}_{\Vd{q}^*} \V{B}_{\V{q}^*} \V{a}_{RB} + \V{A}_{\V{q}^*} \V{B}_{\Vd{q}^*} \V{a}_{RB} + \V{A}_{\V{q}^*} \V{B}_{\V{q}^*} \Vd{a}_{RB}
+\]
+
+
 
 \subsubsection{Transfer Function}
 
@@ -143,7 +166,6 @@
 	& + c_{11} \frac{Y}{s} - c_{11} \int x \\\nonumber
 	& + \left. \ddot{y} - g - \frac{F_D}{m} \right)
 \end{align}
-
 
 
 

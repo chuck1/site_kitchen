@@ -14,12 +14,14 @@ def source_spreader(x,y,a,b,m,n):
 class Conn:
 	# information concerning connection between face and conn
 	# from perspective of face
-	def __init__(self, face, conn):
+	def __init__(self, face, conns):
 		self.face = face
-		self.conn = conn
+		self.conns = conns
 		
 		self.MP = False
 		
+		self.equs = {}
+
 	def refresh(self):
 		self.OL = self.face.nbr_to_loc(self.twin.face)
 		
@@ -32,32 +34,36 @@ class Conn:
 		
 		self.li, self.lj, self.d = self.face.index_lambda(self.twin.face)
 		
-		self.printinfo()
+		#self.printinfo()
+
 	def printinfo(self):
 		print "face",self.face.Z
 		print "nbr ",self.twin.face.Z
 		print "li lj"
 		print inspect.getsource(self.li)
 		print inspect.getsource(self.lj)
-	def send(self, T):
+	def send(self, name, v):
 		if self.MP:
-			self.conn.send(T)
+			self.conns[name].send(v)
 		else:
-			self.T = T
+			self.equs[name] = v
 	
-	def recv(self):
+	def recv(self, name):
 		
 		if self.MP:
-			T = self.conn.recv()
+			v = self.conns[name].recv()
 		else:
-			T = self.twin.T
+			v = self.twin.equs[name]
 		
-		return T
+		return v
 
 class Equ:
 	# diffusion equation variable set
 
-	def __init__(self, n, v_0, v_bou, k, alpha = 1.0):
+	def __init__(self, name, face, n, v_0, v_bou, k, al = 1.0):
+		self.name = name
+		self.face = face
+
 		self.n = n
 		self.v_0 = v_0
 		
@@ -67,12 +73,29 @@ class Equ:
 		
 		self.v_bou = np.array(v_bou)
 
-		#self.S = 0
+		self.Src = 0
 		self.s = np.zeros(n)
 		
 		self.k = k
-		self.alpha = alpha
-		
+		self.al = al
+
+	def grad(self):
+		return np.gradient(self.v, face.d[0,0,0], face.d[0,0,1])
+	def grad_mag(self):
+		return np.sqrt(np.sum(np.square(self.grad()),0))
+	
+	def temp_min(self):
+		return np.min(self.v[:-2,:-2])
+	def temp_max(self):
+		return np.max(self.v[:-2,:-2])
+	def grad_min(self):
+		return np.min(self.grad_mag()[:-2,:-2])
+	def grad_max(self):
+		return np.max(self.grad_mag()[:-2,:-2])
+	
+	def mean(self):
+		return np.mean(self.v[:-2,:-2])
+	
 	
 
 
@@ -131,7 +154,7 @@ class Face(LocalCoor):
 		self.equs = {}
 
 	def create_equ(self, name, v_0, v_bou, k, alpha):
-		self.equs[name] = Equ(self.n, v_0, v_bou, k, alpha)
+		self.equs[name] = Equ(name, self, self.n, v_0, v_bou, k, alpha)
 		
 	def get_loc_pos_par_index(self, nbr):
 		OL = self.nbr_to_loc(nbr)
@@ -232,16 +255,17 @@ class Face(LocalCoor):
 
 		return l[0],l[1],d
 	
-	def send_array(self, conn):
-		T = np.ones(self.n[conn.pl])
+	def send_array(self, equ, conn):
+		
+		v = np.ones(self.n[conn.pl])
 		
 		for a in range(self.n[conn.pl]):
-			T[a] = self.T[conn.li(a), conn.lj(a)]
+			v[a] = equ.v[conn.li(a), conn.lj(a)]
 		
-		conn.send(T)
+		conn.send(equ.name, v)
 		
-	def recv_array(self, conn):
-		T = conn.recv()
+	def recv_array(self, equ, conn):
+		v = conn.recv(equ.name)
 		
 		ind = [0,0]
 		ind[conn.ol] = -1 if conn.sol < 0 else self.n[conn.ol]
@@ -249,7 +273,7 @@ class Face(LocalCoor):
 		for a in range(self.n[conn.pl]):
 			ind[conn.pl] = a
 			
-			self.T[ind[0],ind[1]] = T[a]
+			equ.v[ind[0],ind[1]] = v[a]
 		
 	def term(self, equ, ind, V, To):
 		
@@ -265,7 +289,7 @@ class Face(LocalCoor):
 		indnbr = np.array(ind)
 		indnbr[v] += sv
 			
-		T = self.T[indnbr[0],indnbr[1]]
+		T = equ.v[indnbr[0],indnbr[1]]
 
 		#print ind,indnbr
 		#print "T",T,"To",To
@@ -334,10 +358,10 @@ class Face(LocalCoor):
 				
 				#ver = True
 				#print "source =",self.s(To)
-				num = aW*TW + aE*TE + aS*TS + aN*TN + self.s[i,j] * self.Src / equ.k
+				num = aW*vW + aE*vE + aS*vS + aN*vN + equ.s[i,j] * equ.Src / equ.k
 				Ts = num / (aW + aE + aS + aN)
 				
-				dT = self.alpha * (Ts - To)
+				dT = equ.al * (Ts - vo)
 
 				def debug():
 					print "aW aE aS aN"
@@ -352,7 +376,7 @@ class Face(LocalCoor):
 
 				if ver1: debug()
 
-				if math.isnan(To):
+				if math.isnan(vo):
 					raise ValueError('nan')
 				if math.isnan(Ts) or math.isinf(Ts):
 					debug()
@@ -360,26 +384,32 @@ class Face(LocalCoor):
 				if math.isnan(dT):
 					raise ValueError('nan')
 			 
-				self.T[i,j] += dT
+				equ.v[i,j] += dT
 				
-				
-				R = max(math.fabs(dT/To), R)
+				if dT == 0.0:
+					pass
+				else:
+					R = max(math.fabs(dT/vo), R)
 				
 				if math.isnan(R):
-					print 'dT',dT,'To',To
+					print 'dT',dT,'To',vo
 					raise ValueError('nan')
 		return R
 
-	def send(self):
+	def send(self, equ_name):
 		# send/recv neighbor values
+		equ = self.equs[equ_name]
+		
 		for con in self.conns.flatten():
 			if con:
-				self.send_array(con)
+				self.send_array(equ, con)
 	
-	def recv(self):
+	def recv(self, equ_name):
+		equ = self.equs[equ_name]
+
 		for con in self.conns.flatten():
 			if con:
-				self.recv_array(con)	
+				self.recv_array(equ, con)
 		
 	def plot3(self, ax, T_max):
 		x = [0]*3
@@ -517,22 +547,6 @@ class Face(LocalCoor):
 
 		return con
 
-	def grad(self):
-		return np.gradient(self.T, self.d[0,0,0], self.d[0,0,1])
-	def grad_mag(self):
-		return np.sqrt(np.sum(np.square(self.grad()),0))
-	
-	def temp_min(self):
-		return np.min(self.T[:-2,:-2])
-	def temp_max(self):
-		return np.max(self.T[:-2,:-2])
-	def grad_min(self):
-		return np.min(self.grad_mag()[:-2,:-2])
-	def grad_max(self):
-		return np.max(self.grad_mag()[:-2,:-2])
-	
-	def mean(self):
-		return np.mean(self.T[:-2,:-2])
 
 def connect(f1, a1, b1, f2, a2, b2, multi = False):
 	if multi:
