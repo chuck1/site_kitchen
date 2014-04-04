@@ -57,17 +57,13 @@ class Conn:
 class Equ:
 	# diffusion equation variable set
 
-	def __init__(self, n, v_0, v_bou, k, alpha = 1.0, alpha_src = 1.0):
+	def __init__(self, n, v_0, v_bou, k, alpha = 1.0):
 		self.n = n
 		self.v_0 = v_0
 		
 		n_extended = self.n + np.array([2, 2])
 		
 		self.v = np.ones(n_extended) * self.v_0
-		
-		if np.any(self.d < 0):
-			print self.d
-			raise ValueError('bad')
 		
 		self.v_bou = np.array(v_bou)
 
@@ -76,19 +72,19 @@ class Equ:
 		
 		self.k = k
 		self.alpha = alpha
-		self.alpha_src = alpha_src
+		
 	
 
 
 class Face(LocalCoor):
-	def __init__(self, normal, ext, pos_z, n, T_bou, mean_target, k, alpha, alpha_src):
+	def __init__(self, normal, ext, pos_z, n, alpha_src):
 		
 		self.ext = np.array(ext)
 		
 		self.pos_z = pos_z
 		
 		self.n = np.array(n)
-
+		
 		# the extra 2 rows/cols are for storing neighbor values
 		n_extended = self.n + np.array([2, 2])
 		
@@ -97,24 +93,19 @@ class Face(LocalCoor):
 		for i in range(n_extended[0]):
 			for j in range(n_extended[1]):
 				self.d[i,j,:] = (self.ext[:,1] - self.ext[:,0]) / np.float32(self.n)
+		
+		
+		# temperature
+		
 
-		
-		# temperature array
-		
-		
-		self.T = np.ones(n_extended) * mean_target
+		self.alpha_src = alpha_src
 		
 		if np.any(self.d < 0):
 			print self.d
 			raise ValueError('bad')
 		
-		self.T_bou = np.array(T_bou)
-
 		self.conns = np.empty((2,2), dtype=object)
 		
-		
-		self.mean_target = mean_target
-	
 		# source
 		self.l = np.array([
 			(self.ext[0,1] - self.ext[0,0]) / 2.0,
@@ -136,6 +127,12 @@ class Face(LocalCoor):
 		LocalCoor.__init__(self, normal)
 
 		self.Tmean = []
+
+		self.equs = {}
+
+	def create_equ(self, name, v_0, v_bou, k, alpha):
+		self.equs[name] = Equ(self.n, v_0, v_bou, k, alpha)
+		
 	def get_loc_pos_par_index(self, nbr):
 		OL = self.nbr_to_loc(nbr)
 		
@@ -254,13 +251,14 @@ class Face(LocalCoor):
 			
 			self.T[ind[0],ind[1]] = T[a]
 		
-	def term(self, ind, V, To):
+	def term(self, equ, ind, V, To):
 		
 		v,sv = v2is(V)
 		
 		isInterior = (ind[v] > 0 and sv < 0) or (ind[v] < (self.n[v] - 1) and sv > 0)
 		
-		conn = self.loc_to_conn(V)
+		#conn = self.loc_to_conn(V)
+
 		d = self.d[ind[0],ind[1],v]
 
 		# interior cells and boundary cells with Face neighbors
@@ -278,35 +276,40 @@ class Face(LocalCoor):
 
 		return a,T
 
-	def step_pre_cell(self, ind, V):
+	def step_pre_cell(self, equ, ind, V):
 		v,sv = v2is(V)
 		conn = self.loc_to_conn(V)
 		if not conn:
 			# constant temperature boundary
 			indn = np.array(ind)
 			indn[v] += sv
-
-			Tb = self.T_bou[v,(sv+1)/2]
-
-			if Tb == 0.0:
-				# insulated
-				self.T[tuple(indn)] = self.T[tuple(ind)]
-			else:
-				self.T[tuple(indn)] = 2.0 * Tb - self.T[tuple(ind)]
 			
-	def step_pre(self):
+			v_bou = equ.v_bou[v,(sv+1)/2]
+			
+			if v_bou == 0.0:
+				# insulated
+				equ.v[tuple(indn)] = equ.v[tuple(ind)]
+			else:
+				equ.v[tuple(indn)] = 2.0 * v_bou - equ.v[tuple(ind)]
+			
+	def step_pre(self, equ):
 		# for boundaries, load boundary temperature cells with proper value
 		# west/east
 		for j in range(self.n[1]):
-			self.step_pre_cell([          0, j], -1)
-			self.step_pre_cell([self.n[0]-1, j],  1)
+			self.step_pre_cell(equ, [          0, j], -1)
+			self.step_pre_cell(equ, [self.n[0]-1, j],  1)
 		
 		# north/south
 		for i in range(self.n[0]):
-			self.step_pre_cell([i,           0], -2)
-			self.step_pre_cell([i, self.n[1]-1],  2)
+			self.step_pre_cell(equ, [i,           0], -2)
+			self.step_pre_cell(equ, [i, self.n[1]-1],  2)
 		
-	def step(self, equ):
+	def step(self, equ_name):
+		equ = self.equs[equ_name]
+
+		if not isinstance(equ, Equ):
+			raise ValueError('not Equ')
+
 		# solve diffusion equation for equ
 		
 		R = 0.0
@@ -318,20 +321,20 @@ class Face(LocalCoor):
 		
 		# solve equation
 
-		self.step_pre()
+		self.step_pre(equ)
 
 		for i in range(self.n[0]):
 			for j in range(self.n[1]):
-				To = self.T[i,j]
+				vo = equ.v[i,j]
 
-				aW, TW = self.term([i,j],-1, To)
-				aE, TE = self.term([i,j], 1, To)
-				aS, TS = self.term([i,j],-2, To)
-				aN, TN = self.term([i,j], 2, To)
+				aW, vW = self.term(equ, [i,j],-1, vo)
+				aE, vE = self.term(equ, [i,j], 1, vo)
+				aS, vS = self.term(equ, [i,j],-2, vo)
+				aN, vN = self.term(equ, [i,j], 2, vo)
 				
 				#ver = True
 				#print "source =",self.s(To)
-				num = aW*TW + aE*TE + aS*TS + aN*TN + self.s[i,j] * self.Src / self.k
+				num = aW*TW + aE*TE + aS*TS + aN*TN + self.s[i,j] * self.Src / equ.k
 				Ts = num / (aW + aE + aS + aN)
 				
 				dT = self.alpha * (Ts - To)

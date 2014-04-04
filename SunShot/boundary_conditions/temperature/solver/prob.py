@@ -10,12 +10,13 @@ import pickle
 import signal
 import sys
 
-from Face import *
-from Patch import *
+from face import *
+from patch import *
 
 class Problem:
 	def __init__(self, name, x, nx, k, alpha, alpha_src,
-			it_max_1 = 100, it_max_2 = 100):
+			it_max_1 = 100,
+			it_max_2 = 100):
 		self.name = name
 		
 		self.x = x
@@ -34,12 +35,12 @@ class Problem:
 
 	def createPatch(self, normal, indices,
 			T_bou = [[0,0],[0,0]],
-			T_tar = 1.0):
+			T_0 = 1.0):
 	
-		print 'T_tar',T_tar
+		#print 'T_0',T_0
 
 		p = Patch(normal, indices, self.x, self.nx, self.k, self.alpha, self.alpha_src,
-				T_bou = T_bou, T_tar = T_tar)
+				T_bou = T_bou, T_0 = T_0)
 		
 		self.faces += list(p.faces.flatten())
 		return p
@@ -131,18 +132,18 @@ class Problem:
 
 		return ax
 	
-	def solve(self, cond, ver=True, R_outer=0.0):
-		return self.solve_serial(cond, ver, R_outer)
-
-	def solve_serial(self, cond, ver=True, R_outer=0.0):
+	def solve(self, name, cond, ver = True, R_outer = 0.0):
+		return self.solve_serial(name, cond, ver, R_outer)
+		
+	def solve_serial(self, name, cond = 1e-4, ver = True, R_outer = 0.0):
 		
 		R = np.array([])
-	
+		
 		for it in range(self.it_max_1):
 			R = np.append(R, 0.0)
 			
 			for face in self.faces:
-				R[-1] = max(face.step(), R[-1])
+				R[-1] = max(face.step(name), R[-1])
 				face.send()
 			
 			for face in self.faces:
