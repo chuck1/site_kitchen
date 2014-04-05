@@ -1,15 +1,15 @@
-from Face import *
-from Util import *
+from face import *
+from util import *
 
 class Patch(LocalCoor):
 	def __init__(self,
 			normal, indices, x, nx, k, alpha, alpha_src,
 			T_bou = [[0.,0.], [0.,0.]],
-			T_tar = 30.0):
+			T_0 = 30.0):
 		
 		LocalCoor.__init__(self, normal)
 		
-		print 'T_tar',T_tar
+		print 'T_0',T_0
 
 		self.k = k
 		self.alpha = alpha
@@ -43,11 +43,10 @@ class Patch(LocalCoor):
 				pos_z = x[self.z][indices[self.z]]
 				
 				
-				faces[i,j] = Face(
-						normal, ext, pos_z, [numx, numy],
-						T_bou, T_tar,
-						k, alpha, alpha_src)
-		
+				faces[i,j] = Face(normal, ext, pos_z, [numx, numy], alpha_src)
+				
+				faces[i,j].create_equ('T', T_0, T_bou, k, alpha)
+
 		self.npatch = np.array([NX,NY])
 
 		self.faces = faces;

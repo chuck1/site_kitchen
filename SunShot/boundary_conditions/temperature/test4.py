@@ -1,22 +1,10 @@
 
-#import time
-#import numpy as np
-#import itertools
-#from pylab import plot, show, figure, contour
-#import pylab as pl
-#from mpl_toolkits.mplot3d import Axes3D
-#from matplotlib import cm
-#from sympy import *
-#import math
-#import inspect
-
-#spreader_test()
-
-from solver import *
-
+#from solver import *
+import solver.prob
+from solver.patch import stitch
 
 k = 10.0
-alpha = 1.3
+al = 1.3
 alpha_src = 1.0
 
 n = 10
@@ -24,9 +12,7 @@ n = 10
 x = [[0., 1.], [0., 1.], [0., 1.]]
 n = [[n+0],[n+2],[n+4]]
 
-prob = Problem('test4', x, n, k, alpha, alpha_src,
-		it_max_1 = 1000,
-		it_max_2 = 500)
+prob = solver.prob.Problem('test4', x, n, k, al, alpha_src, it_max_1 = 1000, it_max_2 = 500)
 
 #prob.get_3d_axes()
 #sys.exit(0)
@@ -75,28 +61,26 @@ f5 = p5.faces[0,0]
 
 
 
-#f0.T_bou[1,0] = 10.
+#f0.create_equ('T', 0., [[30.,0.],[0.,0.]], k, al)
 
-#f1.T_bou[0,0] = 10.
+#f1.create_equ('T', 0., [[30.,0.],[0.,0.]], k, al)
 
-f2.T_bou[0,0] = 30.
-f2.T_bou[1,0] = 30.
+f2.create_equ('T', 0., [[30.,30.],[30.,30.]], k, al)
 
-f3.T_bou[0,1] = 30.
+f3.create_equ('T', 0., [[30.,30.],[30.,30.]], k, al)
 
-f4.T_bou[0,0] = 10.
+f4.create_equ('T', 0., [[30.,30.],[30.,30.]], k, al)
 
-f5.T_bou[0,0] = 30.
-f5.T_bou[1,0] = 30.
+f5.create_equ('T', 0., [[30.,30.],[30.,30.]], k, al)
 
 
 
 #prob.solve2(1e-2, 1e-4, True)
-prob.solve(1e-4)
+prob.solve('T', 1e-1)
 
-prob.plot3()
+#prob.plot3()
 
-#pl.plot(f0.Tmean)
+prob.plot('T')
 
 pl.show()
 

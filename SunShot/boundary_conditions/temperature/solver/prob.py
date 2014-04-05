@@ -10,12 +10,13 @@ import pickle
 import signal
 import sys
 
-from Face import *
-from Patch import *
+from face import *
+from patch import *
 
 class Problem:
 	def __init__(self, name, x, nx, k, alpha, alpha_src,
-			it_max_1 = 100, it_max_2 = 100):
+			it_max_1 = 100,
+			it_max_2 = 100):
 		self.name = name
 		
 		self.x = x
@@ -34,12 +35,12 @@ class Problem:
 
 	def createPatch(self, normal, indices,
 			T_bou = [[0,0],[0,0]],
-			T_tar = 1.0):
+			T_0 = 1.0):
 	
-		print 'T_tar',T_tar
+		#print 'T_0',T_0
 
 		p = Patch(normal, indices, self.x, self.nx, self.k, self.alpha, self.alpha_src,
-				T_bou = T_bou, T_tar = T_tar)
+				T_bou = T_bou, T_0 = T_0)
 		
 		self.faces += list(p.faces.flatten())
 		return p
@@ -48,36 +49,40 @@ class Problem:
 		#self.save()
 		sys.exit(0)
 		
-	def temp_max(self):
+	def temp_max(self, equ_name):
 		T = float("-inf")
 		for f in self.faces:
-			T = max(f.temp_max(), T)
+			e = f.equs[equ_name]
+			T = max(e.temp_max(), T)
 		
 		return T
-	def temp_min(self):
+	def temp_min(self, equ_name):
 		T = float("inf")
 		for f in self.faces:
-			T = min(f.temp_min(), T)
+			e = f.equs[equ_name]
+			T = min(e.temp_min(), T)
 		
 		return T
-	def grad_max(self):
+	def grad_max(self, equ_name):
 		T = float("-inf")
 		for f in self.faces:
-			T = max(f.grad_max(), T)
+			e = f.equs[equ_name]
+			T = max(e.grad_max(), T)
 		
 		return T
-	def grad_min(self):
+	def grad_min(self, equ_name):
 		T = float("inf")
 		for f in self.faces:
-			T = min(f.grad_min(), T)
+			e = f.equs[equ_name]
+			T = min(e.grad_min(), T)
 		
 		return T
 
-	def plot(self):
-		a, b = nice_axes(self.temp_min(), self.temp_max())
+	def plot(self, equ_name):
+		a, b = nice_axes(self.temp_min(equ_name), self.temp_max(equ_name))
 		V = np.linspace(a, b, 21)
 		
-		a, b = nice_axes(self.grad_min(), self.grad_max())
+		a, b = nice_axes(self.grad_min(equ_name), self.grad_max(equ_name))
 		Vg = np.linspace(a, b, 21)
 		
 		
@@ -112,7 +117,7 @@ class Problem:
 		
 		return l,u
 
-	def plot3(self):
+	def plot3(self, equ_name):
 		T_max = self.temp_max()
 		
 		fig = pl.figure()
@@ -131,22 +136,22 @@ class Problem:
 
 		return ax
 	
-	def solve(self, cond, ver=True, R_outer=0.0):
-		return self.solve_serial(cond, ver, R_outer)
-
-	def solve_serial(self, cond, ver=True, R_outer=0.0):
+	def solve(self, name, cond, ver = True, R_outer = 0.0):
+		return self.solve_serial(name, cond, ver, R_outer)
+		
+	def solve_serial(self, name, cond = 1e-4, ver = True, R_outer = 0.0):
 		
 		R = np.array([])
-	
+		
 		for it in range(self.it_max_1):
 			R = np.append(R, 0.0)
 			
 			for face in self.faces:
-				R[-1] = max(face.step(), R[-1])
-				face.send()
+				R[-1] = max(face.step(name), R[-1])
+				face.send(name)
 			
 			for face in self.faces:
-				face.recv()
+				face.recv(name)
 			
 			
 			if ver:
