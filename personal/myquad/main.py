@@ -112,12 +112,24 @@ u = quat([1,0,0,0])
 # A(a*) = B(a)
 #test(mul((A(conj(a)), a)),mul((B(a), a)))
 
+
+test(
+		B(
+			mul((A(a),b))
+			),
+		mul((
+			A(a),B(b)
+			))
+		)
+
+
+
+"""
 test(
 		quatmul(a,b),
 		np.transpose(mul((np.transpose(b),B(conj(a)))))
 		)
-
-
+"""
 
 """
 test(
