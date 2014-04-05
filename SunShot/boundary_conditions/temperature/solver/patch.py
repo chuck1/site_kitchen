@@ -3,13 +3,15 @@ from util import *
 
 class Patch(LocalCoor):
 	def __init__(self,
-			normal, indices, x, nx, k, alpha, alpha_src,
+			name, normal, indices, x, nx, k, alpha, alpha_src,
 			T_bou = [[0.,0.], [0.,0.]],
 			T_0 = 30.0):
 		
 		LocalCoor.__init__(self, normal)
 		
-		print 'T_0',T_0
+		self.name = name
+
+		#print 'T_0',T_0
 
 		self.k = k
 		self.alpha = alpha
@@ -52,8 +54,15 @@ class Patch(LocalCoor):
 		self.faces = faces;
 
 		self.grid_nbrs()
+
+	def create_equ(self, name, v0, v_bou, k, al):
+		for f in self.faces.flatten():
+			f.create_equ(name, v0, v_bou, k, al)
 	
-		
+	def set_v_bou(self, equ_name, v_bou):
+		for f in self.faces.flatten():
+			f.equs[equ_name].v_bou = np.array(v_bou)
+			
 	def grid_nbrs(self):
 		nx,ny = np.shape(self.faces)
 	
@@ -73,7 +82,21 @@ class Patch(LocalCoor):
 					if not f1.conns[1,1]:
 						connect(f1, 1, 1, self.faces[i,j+1], 1, 0)
 
-	
+	def plot(self, equ_name, V, Vg):
+		fig = pl.figure()
+		ax1 = fig.add_subplot(121)
+		ax2 = fig.add_subplot(122)
+		
+		for f in self.faces.flatten():
+			con1, con2 = f.plot(equ_name, ax1, ax2, V, Vg)
+		
+		pl.colorbar(con1, ax=ax1)
+		pl.colorbar(con2, ax=ax2)
+		
+		ax1.axis('equal')
+		ax2.axis('equal')
+		
+		fig.suptitle(self.name)
 
 
 def stitch(patch1, patch2):

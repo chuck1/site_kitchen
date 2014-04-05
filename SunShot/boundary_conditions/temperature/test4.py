@@ -26,10 +26,10 @@ p5 = None
 
 #p0 = prob.createPatch(1,	[1,	[0,1],	[0,1]])
 #p1 = prob.createPatch(2,	[[0,1],	1,	[0,1]])
-p2 = prob.createPatch(3,	[[0,1],	[0,1],	1])
-p3 = prob.createPatch(-1,	[0,	[1,0],	[1,0]])
-p4 = prob.createPatch(-2,	[[1,0],	0,	[1,0]])
-p5 = prob.createPatch(-3,	[[1,0],	[1,0],	0])
+p2 = prob.createPatch('2',3,	[[0,1],	[0,1],	1])
+p3 = prob.createPatch('3',-1,	[0,	[1,0],	[1,0]])
+p4 = prob.createPatch('4',-2,	[[1,0],	0,	[1,0]])
+p5 = prob.createPatch('5',-3,	[[1,0],	[1,0],	0])
 
 
 

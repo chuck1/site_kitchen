@@ -72,7 +72,11 @@ class Equ:
 		self.v = np.ones(n_extended) * self.v_0
 		
 		self.v_bou = np.array(v_bou)
-
+		
+		if not np.shape(self.v_bou) == (2,2):
+			print self.v_bou
+			raise ValueError('')
+		
 		self.Src = 0
 		self.s = np.zeros(n)
 		
@@ -80,7 +84,7 @@ class Equ:
 		self.al = al
 
 	def grad(self):
-		return np.gradient(self.v, face.d[0,0,0], face.d[0,0,1])
+		return np.gradient(self.v, self.face.d[0,0,0], self.face.d[0,0,1])
 	def grad_mag(self):
 		return np.sqrt(np.sum(np.square(self.grad()),0))
 	
@@ -469,55 +473,59 @@ class Face(LocalCoor):
 
 		ax.plot_surface(x[0], x[1], x[2], rstride=1, cstride=1, facecolors=FC, shade=False)
 		
-	def plot(self, V = None, Vg = None):
-		fig = pl.figure()
-		ax = fig.add_subplot(121)
+	def plot(self, equ_name, ax1, ax2, V = None, Vg = None):
+		equ = self.equs[equ_name]
 		
-		self.plot_temp_sub(ax, V)
+		self.plot_temp_sub(equ, ax1, V)
 		
-		# gradient
-		ax = fig.add_subplot(122)
-		
-		self.plot_grad_sub(ax, Vg)
+		self.plot_grad_sub(equ, ax2, Vg)
 		
 		return
-	def plot_temp_sub(self, ax, V = None):
+	def plot_temp_sub(self, equ, ax, V = None):
 		x = np.linspace(self.ext[0,0], self.ext[0,1], self.n[0])
 		y = np.linspace(self.ext[1,0], self.ext[1,1], self.n[1])
 		
 		X,Y = np.meshgrid(x, y)
 		
-		T = np.transpose(self.T[:-2,:-2])
+		T = np.transpose(equ.v[:-2,:-2])
 		
-		print np.shape(X)
-		print np.shape(Y)
-		print np.shape(T)
+		ver = False
+		if ver:
+			print np.shape(X)
+			print np.shape(Y)
+			print np.shape(T)
 		
 		if not V is None:
 			con = ax.contourf(X, Y, T, V)
 		else:
 			con = ax.contourf(X, Y, T)
 		
-		pl.colorbar(con)
+		pl.colorbar(con, ax=ax)
 		pl.axis('equal')
 		
-	def plot_grad_sub(self, ax, V = None):
+	def plot_grad_sub(self, equ, ax, V = None):
 		x = np.linspace(self.ext[0,0], self.ext[0,1], self.n[0])
 		y = np.linspace(self.ext[1,0], self.ext[1,1], self.n[1])
+
+		Y,X = np.meshgrid(y, x)
 		
-		X,Y = np.meshgrid(x, y)
-		
-		Z = self.grad_mag()
+			
+		Z = equ.grad_mag()
 		Z = Z[:-2,:-2]
-		
+
+		ver = False
+		if ver:
+			print "plot_grad_sub"
+			print np.shape(X)
+			print np.shape(Y)
+			print np.shape(Z)
+
 		if not V is None:
 			con = ax.contourf(X, Y, Z, V)
 		else:
 			con = ax.contourf(X, Y, Z)
-		
-		pl.colorbar(con)
-		pl.axis('equal')
 
+		return con
 
 	def plot_grad(self, V = None):
 		x = np.linspace(self.ext[0,0], self.ext[0,1], self.n[0])

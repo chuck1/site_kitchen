@@ -1,6 +1,6 @@
-
+import numpy as np
 #import time
-#import numpy as np
+#
 #import itertools
 #from pylab import plot, show, figure, contour
 #import pylab as pl
@@ -12,8 +12,8 @@
 
 #spreader_test()
 
-from solver import *
-
+import solver.prob
+from solver.patch import stitch
 
 x = [0.002,  0.008, 0.005]
 
@@ -32,69 +32,71 @@ nz = [16,  8,  6,  4,  20, 4,  6,  8, 16]
 X = [x,y,z]
 N = [nx,ny,nz]
 
-prob = Problem('opt1', X, N,
-		k = 10.,
-		alpha = 1.4,
+k = 10.
+al = 1.4
+
+prob = solver.prob.Problem('opt1', X, N,
+		k = k,
+		alpha = al,
 		alpha_src = 1.4,
 		it_max_2 = 20)
 
 
 # inlet
-f_hi_xp   = prob.createPatch( 1, [3,		[0,1,2,3],	[0,1,2,3]])
+f_hi_xp   = prob.createPatch('f_hi_xp', 1, [3,		[0,1,2,3],	[0,1,2,3]])
 
-f_hi_yp_1 = prob.createPatch( 2, [[1,2,3],	3,		[0,1,2,3]])
-f_hi_yp_o = prob.createPatch( 2, [[0,1],	3,		[0,1]])
-f_hi_yp_i = prob.createPatch( 2, [[0,1],	3,		[2,3]])
+f_hi_yp_1 = prob.createPatch('f_hi_yp_1', 2, [[1,2,3],	3,		[0,1,2,3]])
+f_hi_yp_o = prob.createPatch('f_hi_yp_o', 2, [[0,1],	3,		[0,1]])
+f_hi_yp_i = prob.createPatch('f_hi_yp_i', 2, [[0,1],	3,		[2,3]])
 
-f_hi_ym   = prob.createPatch(-2, [[3,2,1,0],	0,		[3,2,1,0]])
+f_hi_ym   = prob.createPatch('f_hi_ym',-2, [[3,2,1,0],	0,		[3,2,1,0]])
 
-f_hi_zo   = prob.createPatch(-3, [[3,2,1,0],	[3,2,1,0],	0])
+f_hi_zo   = prob.createPatch('f_hi_zo',-3, [[3,2,1,0],	[3,2,1,0],	0])
 
-f_hi_zi_1 = prob.createPatch( 3, [[2,3],	[0,1,2,3],	3])
-f_hi_zi_2 = prob.createPatch( 3, [[0,1,2],	[0,1],		3])
-f_hi_zi_3 = prob.createPatch( 3, [[0,1,2],	[2,3],		3])
+f_hi_zi_1 = prob.createPatch('f_hi_zi_1', 3, [[2,3],	[0,1,2,3],	3])
+f_hi_zi_2 = prob.createPatch('f_hi_zi_2', 3, [[0,1,2],	[0,1],		3])
+f_hi_zi_3 = prob.createPatch('f_hi_zi_3', 3, [[0,1,2],	[2,3],		3])
 
 # outlet
-f_ho_xp   = prob.createPatch( 1, [3,		[0,1,2,3],	[6,7,8,9]],	)
+f_ho_xp   = prob.createPatch('f_ho_xp', 1, [3,		[0,1,2,3],	[6,7,8,9]],	)
 
-f_ho_yp_1 = prob.createPatch( 2, [[1,2,3],	3,		[6,7,8,9]],	)
-f_ho_yp_o = prob.createPatch( 2, [[0,1],	3,		[8,9]],		)
-f_ho_yp_i = prob.createPatch( 2, [[0,1],	3,		[6,7]],		)
+f_ho_yp_1 = prob.createPatch('f_ho_yp_1', 2, [[1,2,3],	3,		[6,7,8,9]],	)
+f_ho_yp_o = prob.createPatch('f_ho_yp_o', 2, [[0,1],	3,		[8,9]],		)
+f_ho_yp_i = prob.createPatch('f_ho_yp_i', 2, [[0,1],	3,		[6,7]],		)
 
-f_ho_ym   = prob.createPatch(-2, [[3,2,1,0],	0,		[9,8,7,6]],	)
+f_ho_ym   = prob.createPatch('f_ho_ym',-2, [[3,2,1,0],	0,		[9,8,7,6]],	)
 
-f_ho_zo   = prob.createPatch( 3, [[0,1,2,3],	[0,1,2,3],	9],		)
+f_ho_zo   = prob.createPatch('f_ho_zo', 3, [[0,1,2,3],	[0,1,2,3],	9],		)
 
-f_ho_zi_1 = prob.createPatch(-3, [[3,2],	[3,2,1,0],	6],		)
-f_ho_zi_2 = prob.createPatch(-3, [[2,1,0],	[1,0],		6],		)
-f_ho_zi_3 = prob.createPatch(-3, [[2,1,0],	[3,2],		6],		)
+f_ho_zi_1 = prob.createPatch('f_ho_zi_1',-3, [[3,2],	[3,2,1,0],	6],		)
+f_ho_zi_2 = prob.createPatch('f_ho_zi_2',-3, [[2,1,0],	[1,0],		6],		)
+f_ho_zi_3 = prob.createPatch('f_ho_zi_3',-3, [[2,1,0],	[3,2],		6],		)
 
 # channel
 # need bc with heated!!!
-f_ch_xp   = prob.createPatch( 1, [2,		[1,2],	[3,4,5,6]],
-		T_bou = [[2.0,2.0],[4.0,4.0]], T_tar = 10.0)
+f_ch_xp   = prob.createPatch('f_ch_xp', 1, [2,		[1,2],	[3,4,5,6]])
 
-f_ch_yp   = prob.createPatch( 2, [[0,1,2],	2,	[3,4,5,6]])
+f_ch_xp.set_v_bou('T', [[2.0,2.0],[4.0,4.0]])
 
-f_ch_i_ym = prob.createPatch(-2, [[2,1,0],	1,	[4,3]],
-		T_bou = [[],[]])
+f_ch_yp   = prob.createPatch('f_ch_yp', 2, [[0,1,2],	2,	[3,4,5,6]])
 
-f_ch_o_ym = prob.createPatch(-2, [[2,1,0],	1,	[6,5]],
-		T_bou = [[],[]])
+f_ch_i_ym = prob.createPatch('f_ch_i_ym',-2, [[2,1,0],	1,	[4,3]])
+
+f_ch_o_ym = prob.createPatch('f_ch_o_ym',-2, [[2,1,0],	1,	[6,5]])
 
 # pipe
-f_pi_xp = prob.createPatch( 1, [1,	[3,4],	[1,2]])
+f_pi_xp = prob.createPatch('f_pi_xp', 1, [1,	[3,4],	[1,2]])
 
-f_pi_zi = prob.createPatch( 3, [[0,1],	[3,4],	2])
+f_pi_zi = prob.createPatch('f_pi_zi', 3, [[0,1],	[3,4],	2])
 
-f_pi_zo = prob.createPatch(-3, [[1,0],	[4,3],	1])
+f_pi_zo = prob.createPatch('f_pi_zo',-3, [[1,0],	[4,3],	1])
 
 
-f_po_xp = prob.createPatch( 1, [1,	[3,4],	[7,8]])
+f_po_xp = prob.createPatch('f_po_xp', 1, [1,	[3,4],	[7,8]])
 
-f_po_zi = prob.createPatch(-3, [[1,0],	[4,3],	7])
+f_po_zi = prob.createPatch('f_po_zi',-3, [[1,0],	[4,3],	7])
 
-f_po_zo = prob.createPatch( 3, [[0,1],	[3,4],	8])
+f_po_zo = prob.createPatch('f_po_zo', 3, [[0,1],	[3,4],	8])
 
 
 # stitching
@@ -110,7 +112,7 @@ stitch(f_hi_yp_1, f_hi_zo)
 stitch(f_hi_yp_1, f_hi_zi_1)
 stitch(f_hi_yp_1, f_hi_zi_3)
 
-stitch(f_hi_yp_2, f_hi_zo)
+stitch(f_hi_yp_o, f_hi_zo)
 
 stitch(f_hi_ym,   f_hi_zo)
 
@@ -129,7 +131,7 @@ stitch(f_ho_yp_1, f_ho_zo)
 stitch(f_ho_yp_1, f_ho_zi_1)
 stitch(f_ho_yp_1, f_ho_zi_3)
 
-stitch(f_ho_yp_2, f_ho_zo)
+stitch(f_ho_yp_o, f_ho_zo)
 
 stitch(f_ho_ym,   f_ho_zo)
 
@@ -165,19 +167,12 @@ stitch(f_po_zi, f_ho_yp_i)
 
 
 #prob.solve2(1e-4, 1e-2, True)
-prob.solve(1e-3)
+prob.solve('T',1e-1)
 
-"""
 #prob.save()
 
-
-"""
-ax = prob.plot3()
-
+ax = prob.plot('T')
 
 pl.show()
-
-
-
 
 

@@ -30,19 +30,24 @@ class Problem:
 		self.it_max_1 = it_max_1
 		self.it_max_2 = it_max_2
 
+		self.patches = []
 		self.faces = []
-		signal.signal(signal.SIGINT, self)
 
-	def createPatch(self, normal, indices,
+		#signal.signal(signal.SIGINT, self)
+
+	def createPatch(self, name, normal, indices,
 			T_bou = [[0,0],[0,0]],
 			T_0 = 1.0):
 	
 		#print 'T_0',T_0
 
-		p = Patch(normal, indices, self.x, self.nx, self.k, self.alpha, self.alpha_src,
+		p = Patch(name, normal, indices, self.x, self.nx, self.k, self.alpha, self.alpha_src,
 				T_bou = T_bou, T_0 = T_0)
 		
 		self.faces += list(p.faces.flatten())
+
+		self.patches.append(p)
+
 		return p
 	def __call__(self, signal, frame):
 		print "saving"
@@ -86,8 +91,8 @@ class Problem:
 		Vg = np.linspace(a, b, 21)
 		
 		
-		for f in self.faces:
-			f.plot(V, Vg)
+		for p in self.patches:
+			p.plot(equ_name, V, Vg)
 			#f.plot_grad(Vg)
 		
 		pl.show()
