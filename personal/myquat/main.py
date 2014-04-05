@@ -1,5 +1,6 @@
 from sympy import *
-import numpy as np
+#import numpy as np
+
 
 def matsim(A):
 	for a in range(np.size(A,0)):
@@ -32,29 +33,29 @@ def test(a,b):
 
 		
 def A(q):
-	q = np.array(np.reshape(q,(4)))
-	return np.array([
+	#q = np.array(np.reshape(q,(4)))
+	return Matrix([
 		[ q[0],  q[1],  q[2],  q[3]],
 		[-q[1],  q[0], -q[3],  q[2]],
 		[-q[2],  q[3],  q[0], -q[1]],
 		[-q[3], -q[2],  q[1],  q[0]]])
 
 def B(q):
-	q = np.reshape(q,(4))
-	return np.array([
+	#q = np.reshape(q,(4))
+	return Matrix([
 		[ q[0], -q[1], -q[2], -q[3]],
 		[ q[1],  q[0], -q[3],  q[2]],
 		[ q[2],  q[3],  q[0], -q[1]],
 		[ q[3], -q[2],  q[1],  q[0]]])
 
 def quat(q):
-	q = np.array([[q[0], q[1], q[2], q[3]]])
-	q = np.reshape(q, (4,1))
+	q = Matrix([[q[0], q[1], q[2], q[3]]])
+	#q = np.reshape(q, (4,1))
 	return q
 
 def conj(q):
-	q = np.array([[q[0], -q[1], -q[2], -q[3]]])
-	q = np.reshape(q, (4,1))
+	q = Matrix([[q[0], -q[1], -q[2], -q[3]]])
+	#q = np.reshape(q, (4,1))
 	return q
 
 def mul(X):
@@ -65,11 +66,9 @@ def mul(X):
 	return Y
 
 def quatmul(a,b):
-	a = np.reshape(a,4)
-	b = np.reshape(b,4)
-
-	va = np.reshape(a[1:],3)
-	vb = np.reshape(b[1:],3)
+	
+	va = Matrix(a[1:])
+	vb = Matrix(b[1:])
 	
 	#print np.shape(va)
 	#print np.shape(vb)
@@ -78,25 +77,29 @@ def quatmul(a,b):
 	#print np.dot(va,vb)
 	
 	#print type(a[0]*b[0])
-
-	c = np.empty(4,dtype=object)
-
-	c[0] = a[0]*b[0] - np.dot(va,vb)
 	
-	vc = a[0]*vb + b[0]*va + np.cross(va,vb)
-
-	c[1:] = vc
+	c = Matrix(4,1,a)
 	
+	c[0] = a[0]*b[0] - va.dot(vb)
 	
-	
-	return np.reshape(c,(4,1))
+	vc = a[0]*vb + b[0]*va + va.cross(vb)
 
 
-a = quat(symbols('a0:4'))
-b = quat(symbols('b0:4'))
-c = quat(symbols('c0:4'))
+	c[1] = vc[0]
+	c[2] = vc[1]
+	c[3] = vc[2]
+	
+	return c
+
+
+asym = quat(symbols('a0:4'))
+bsym = quat(symbols('b0:4'))
+csym = quat(symbols('c0:4'))
 
 u = quat([1,0,0,0])
+
+a = quat(asym)
+b = quat(bsym)
 
 #test(mul((B(a), b)), mul((A(conj(b)), a)))
 #test(mul((A(a), b)), mul((B(b), conj(a))))
@@ -112,7 +115,7 @@ u = quat([1,0,0,0])
 # A(a*) = B(a)
 #test(mul((A(conj(a)), a)),mul((B(a), a)))
 
-
+"""
 test(
 		B(
 			mul((A(a),b))
@@ -121,7 +124,7 @@ test(
 			A(a),B(b)
 			))
 		)
-
+"""
 
 
 """
@@ -157,7 +160,9 @@ test(
 		mul((
 			B(c),
 			mul((A(b),a)))))
+"""
 
+"""
 test(
 		mul((
 			A(mul((A(a),b))),
@@ -166,10 +171,20 @@ test(
 			B(c),
 			A(b),
 			a)))
-"""
 
 
-"""
+test(
+		conj(
+			mul((A(a),b))
+			),
+		mul((
+			A(b),
+			a))
+		)
+
+
+
+
 d = matsim(
 		mul((
 			A(a),
@@ -243,6 +258,44 @@ print mul((B(conj(o)), t))
 
 print mul((B(t), o)) + mul((B(conj(o)), t)) + tp
 """
+
+"""
+
+
+c = A(a)
+
+d = c.det()
+d = expand(d)
+
+e = (a.dot(a))**2
+e = expand(e)
+
+pprint(d)
+pprint(e)
+
+print d==e
+"""
+
+#e = c**(-1)
+#e = expand(e)
+
+#e = simplify(e)
+
+#pprint(e)
+
+"""
+c = B(conj(a))*B(a)
+pprint(c)
+c = B(a)*B(conj(a))
+pprint(c)
+"""
+
+c = quatmul(a,b)
+d = quatmul(b,a)
+
+
+pprint(c)
+pprint(d)
 
 
 
