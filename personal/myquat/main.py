@@ -49,7 +49,7 @@ def B(q):
 		[ q[3], -q[2],  q[1],  q[0]]])
 
 def quat(q):
-	q = Matrix([[q[0], q[1], q[2], q[3]]])
+	q = Matrix(4,1,[q[0], q[1], q[2], q[3]])
 	#q = np.reshape(q, (4,1))
 	return q
 
@@ -252,16 +252,18 @@ t3, t3p = symbols('t, tp')
 t = quat([0, 0, 0, t3])
 tp = quat([0, 0, 0, t3p])
 
+c = quatmul(conj(o),t) + tp + quatmul(t,o)
 
-print mul((B(t), o))
-print mul((B(conj(o)), t))
+pprint(c)
 
-print mul((B(t), o)) + mul((B(conj(o)), t)) + tp
+#print mul((B(t), o))
+#print mul((B(conj(o)), t))
+#print mul((B(t), o)) + mul((B(conj(o)), t)) + tp
 """
 
+
+
 """
-
-
 c = A(a)
 
 d = c.det()
@@ -288,15 +290,15 @@ c = B(conj(a))*B(a)
 pprint(c)
 c = B(a)*B(conj(a))
 pprint(c)
-"""
 
 c = quatmul(a,b)
 d = quatmul(b,a)
 
-
 pprint(c)
 pprint(d)
+"""
 
 
-
+pprint(quatmul(a,b))
+pprint(quatmul(conj(b),a))
 
