@@ -13,6 +13,18 @@ import sys
 from face import *
 from patch import *
 
+class Fig:
+	def __init__(self):
+		self.fig = pl.figure()
+		
+		self.ax1 = self.fig.add_subplot(121)
+		self.ax2 = self.fig.add_subplot(122)
+		
+		self.cb1 = None
+		self.cb2 = None
+		
+		self.text = pl.figtext(0,0,'')
+
 class Problem:
 	def __init__(self, name, x, nx, k, alpha, alpha_src,
 			it_max_1 = 100,
@@ -30,6 +42,7 @@ class Problem:
 		self.it_max_1 = it_max_1
 		self.it_max_2 = it_max_2
 
+		self.patch_groups = []
 		self.patches = []
 		self.faces = []
 
@@ -58,14 +71,14 @@ class Problem:
 		T = float("-inf")
 		for f in self.faces:
 			e = f.equs[equ_name]
-			T = max(e.temp_max(), T)
+			T = max(e.max(), T)
 		
 		return T
 	def temp_min(self, equ_name):
 		T = float("inf")
 		for f in self.faces:
 			e = f.equs[equ_name]
-			T = min(e.temp_min(), T)
+			T = min(e.min(), T)
 		
 		return T
 	def grad_max(self, equ_name):
@@ -82,7 +95,46 @@ class Problem:
 			T = min(e.grad_min(), T)
 		
 		return T
+	
+	# value manipulation
+	def value_add(self, equ_name, v):
+		for p in self.patches:
+			for f in p.faces.flatten():
+				equ = f.equs[equ_name]
+				equ.v = equ.v + v
+	
+	def value_normalize(self, equ_name):
+		for pg in self.patch_groups:
+			# max value in patch group
+			v_max = float("-inf")
+			for p in pg:
+				p_v_max = p.max(equ_name)
+				v_max = max(v_max, p_v_max)
+			
+			# normalize
+			for p in pg:
+				for f in p.faces.flatten():
+					equ = f.equs[equ_name]
+					equ.v = equ.v / v_max
+	
+	def copy_value_to_source(self,equ_name_from,equ_name_to):
 
+		for p in self.patches:
+			for f in p.faces.flatten():
+				e1 = f.equs[equ_name_from]
+				e2 = f.equs[equ_name_to]
+				
+				s1 = tuple(a-2 for a in np.shape(e1.v))
+				s2 = np.shape(e2.s)
+				
+				if s1 == s2:
+					e2.s = e1.v[:-2,:-2]
+				else:
+					print s1, s2
+					raise ValueError('size mismatch')
+
+	
+	# plotting
 	def plot(self, equ_name):
 		a, b = nice_axes(self.temp_min(equ_name), self.temp_max(equ_name))
 		V = np.linspace(a, b, 21)
@@ -90,11 +142,26 @@ class Problem:
 		a, b = nice_axes(self.grad_min(equ_name), self.grad_max(equ_name))
 		Vg = np.linspace(a, b, 21)
 		
+		figs = {}
 		
 		for p in self.patches:
-			p.plot(equ_name, V, Vg)
-			#f.plot_grad(Vg)
+			key = (p.Z, p.indices[p.z])
+			try:
+				f = figs[key]
+			except:
+				f = Fig()
+				figs[key] = f
+			
+			con1, con2 = p.plot(equ_name, f, V, Vg)
 		
+			f.ax1.axis('equal')
+			f.ax2.axis('equal')
+			
+			if f.cb1 is None:
+				f.cb1 = pl.colorbar(con1, ax = f.ax1)
+				f.cb2 = pl.colorbar(con2, ax = f.ax2)
+		
+
 		pl.show()
 	def get_3d_axes(self):
 		x = self.x
@@ -203,6 +270,6 @@ class Problem:
 	def save(self):
 		f = open('case_' + self.name, 'w')
 		pickle.dump(self, f)
-
-
+	
+	
 

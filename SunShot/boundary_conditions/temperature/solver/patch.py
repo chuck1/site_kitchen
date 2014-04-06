@@ -46,9 +46,14 @@ class Patch(LocalCoor):
 				
 				
 				faces[i,j] = Face(normal, ext, pos_z, [numx, numy], alpha_src)
-				
+			
+				# unique to current setup
+				# create temperature and source spreader equations
 				faces[i,j].create_equ('T', T_0, T_bou, k, alpha)
+				faces[i,j].create_equ('s', 2.0, [[1.,1.],[1.,1.]], 10.0, 1.0)
+				faces[i,j].equs['s'].flag['only_parallel_faces'] = True
 
+				
 		self.npatch = np.array([NX,NY])
 
 		self.faces = faces;
@@ -62,7 +67,17 @@ class Patch(LocalCoor):
 	def set_v_bou(self, equ_name, v_bou):
 		for f in self.faces.flatten():
 			f.equs[equ_name].v_bou = np.array(v_bou)
-			
+
+	# value statistics
+	def max(self, equ_name):
+		v = float("-inf")
+
+		for f in self.faces.flatten():
+			a = f.equs[equ_name].max()
+			v = max(v,a)
+		
+		return v
+
 	def grid_nbrs(self):
 		nx,ny = np.shape(self.faces)
 	
@@ -82,22 +97,16 @@ class Patch(LocalCoor):
 					if not f1.conns[1,1]:
 						connect(f1, 1, 1, self.faces[i,j+1], 1, 0)
 
-	def plot(self, equ_name, V, Vg):
-		fig = pl.figure()
-		ax1 = fig.add_subplot(121)
-		ax2 = fig.add_subplot(122)
+	def plot(self, equ_name, fig, V, Vg):
+		ax1 = fig.ax1
+		ax2 = fig.ax2
 		
 		for f in self.faces.flatten():
 			con1, con2 = f.plot(equ_name, ax1, ax2, V, Vg)
 		
-		pl.colorbar(con1, ax=ax1)
-		pl.colorbar(con2, ax=ax2)
+		fig.text.set_text(fig.text.get_text() + ' ' + self.name)
 		
-		ax1.axis('equal')
-		ax2.axis('equal')
-		
-		fig.suptitle(self.name)
-
+		return con1, con2
 
 def stitch(patch1, patch2):
 	if patch1 is None:

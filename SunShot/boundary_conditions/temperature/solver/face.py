@@ -20,6 +20,7 @@ class Conn:
 		
 		self.MP = False
 		
+		# needed to store boundary values for multiple equs
 		self.equs = {}
 
 	def refresh(self):
@@ -49,56 +50,19 @@ class Conn:
 			self.equs[name] = v
 	
 	def recv(self, name):
-		
+		n = self.face.n[self.pl]
+
 		if self.MP:
 			v = self.conns[name].recv()
 		else:
-			v = self.twin.equs[name]
+			try:
+				v = self.twin.equs[name]
+			except:
+				print "warning: array not available"
+				v = np.zeros(n)
 		
 		return v
 
-class Equ:
-	# diffusion equation variable set
-
-	def __init__(self, name, face, n, v_0, v_bou, k, al = 1.0):
-		self.name = name
-		self.face = face
-
-		self.n = n
-		self.v_0 = v_0
-		
-		n_extended = self.n + np.array([2, 2])
-		
-		self.v = np.ones(n_extended) * self.v_0
-		
-		self.v_bou = np.array(v_bou)
-		
-		if not np.shape(self.v_bou) == (2,2):
-			print self.v_bou
-			raise ValueError('')
-		
-		self.Src = 0
-		self.s = np.zeros(n)
-		
-		self.k = k
-		self.al = al
-
-	def grad(self):
-		return np.gradient(self.v, self.face.d[0,0,0], self.face.d[0,0,1])
-	def grad_mag(self):
-		return np.sqrt(np.sum(np.square(self.grad()),0))
-	
-	def temp_min(self):
-		return np.min(self.v[:-2,:-2])
-	def temp_max(self):
-		return np.max(self.v[:-2,:-2])
-	def grad_min(self):
-		return np.min(self.grad_mag()[:-2,:-2])
-	def grad_max(self):
-		return np.max(self.grad_mag()[:-2,:-2])
-	
-	def mean(self):
-		return np.mean(self.v[:-2,:-2])
 	
 	
 
@@ -146,9 +110,8 @@ class Face(LocalCoor):
 		y = np.linspace(self.d[0,0,1] / 2. - b, b - self.d[0,0,1] / 2., self.n[1])
 		Y,X = np.meshgrid(y,x)
 		
-		self.s = source_spreader(X,Y,a,b,2,2)
-
-		self.Src = 0
+		#self.s = source_spreader(X,Y,a,b,2,2)
+		#self.Src = 0
 
 		# coordinates
 		LocalCoor.__init__(self, normal)
@@ -279,47 +242,59 @@ class Face(LocalCoor):
 			
 			equ.v[ind[0],ind[1]] = v[a]
 		
-	def term(self, equ, ind, V, To):
-		
-		v,sv = v2is(V)
-		
-		isInterior = (ind[v] > 0 and sv < 0) or (ind[v] < (self.n[v] - 1) and sv > 0)
-		
-		#conn = self.loc_to_conn(V)
+	def term(self, equ, ind, v, sv, To):
+		# get the value and coefficienct for the cell adjacent to ind in the direction V
 
 		d = self.d[ind[0],ind[1],v]
 
 		# interior cells and boundary cells with Face neighbors
-		indnbr = np.array(ind)
+		indnbr = list(ind)
 		indnbr[v] += sv
-			
-		T = equ.v[indnbr[0],indnbr[1]]
-
+		
+		y = equ.v[indnbr[0],indnbr[1]]
+		
 		#print ind,indnbr
 		#print "T",T,"To",To
-			
+		
 		d_nbr = self.d[indnbr[0],indnbr[1],v]
-			
+		
 		a = 2.0 / (d + d_nbr)
-
-		return a,T
+		
+		return a,y
 
 	def step_pre_cell(self, equ, ind, V):
+		# set the v-array value for the boundary value at ind+V
+		
 		v,sv = v2is(V)
+		
 		conn = self.loc_to_conn(V)
-		if not conn:
-			# constant temperature boundary
-			indn = np.array(ind)
-			indn[v] += sv
-			
-			v_bou = equ.v_bou[v,(sv+1)/2]
-			
-			if v_bou == 0.0:
-				# insulated
-				equ.v[tuple(indn)] = equ.v[tuple(ind)]
+		if conn:
+			if equ.flag["only_parallel_faces"] == True:
+				if conn.twin.face.Z == self.Z:
+					self.recv_array(equ, conn)
+				else:
+					self.step_pre_cell_open_bou(equ, ind, V)
 			else:
-				equ.v[tuple(indn)] = 2.0 * v_bou - equ.v[tuple(ind)]
-			
+				self.recv_array(equ, conn)
+		else:
+			self.step_pre_cell_open_bou(equ, ind, V)
+
+	def step_pre_cell_open_bou(self, equ, ind, V):
+		v,sv = v2is(V)
+		indn = np.array(ind)
+		indn[v] += sv
+		
+		v_bou = equ.v_bou[v,(sv+1)/2]
+		
+		if v_bou == 0.0:
+			# insulated
+			equ.v[tuple(indn)] = equ.v[tuple(ind)]
+		else:
+			# constant temperature
+			equ.v[tuple(indn)] = 2.0 * v_bou - equ.v[tuple(ind)]
+		
+
+
 	def step_pre(self, equ):
 		# for boundaries, load boundary temperature cells with proper value
 		# west/east
@@ -347,32 +322,36 @@ class Face(LocalCoor):
 		
 		ver2 = False
 		
+		
 		# solve equation
 
 		self.step_pre(equ)
 
 		for i in range(self.n[0]):
 			for j in range(self.n[1]):
-				vo = equ.v[i,j]
+				A = self.d[i,j,0] * self.d[i,j,1]
+				
+				yo = equ.v[i,j]
 
-				aW, vW = self.term(equ, [i,j],-1, vo)
-				aE, vE = self.term(equ, [i,j], 1, vo)
-				aS, vS = self.term(equ, [i,j],-2, vo)
-				aN, vN = self.term(equ, [i,j], 2, vo)
+				aW, yW = self.term(equ, [i,j],0,-1, yo)
+				aE, yE = self.term(equ, [i,j],0, 1, yo)
+				aS, yS = self.term(equ, [i,j],1,-1, yo)
+				aN, yN = self.term(equ, [i,j],1, 1, yo)
 				
 				#ver = True
 				#print "source =",self.s(To)
-				num = aW*vW + aE*vE + aS*vS + aN*vN + equ.s[i,j] * equ.Src / equ.k
-				Ts = num / (aW + aE + aS + aN)
+				num = aW*yW + aE*yE + aS*yS + aN*yN + equ.s[i,j] * equ.Src * A / equ.k
+				ys = num / (aW + aE + aS + aN)
 				
-				dT = equ.al * (Ts - vo)
+				dy = equ.al * (ys - yo)
 
 				def debug():
 					print "aW aE aS aN"
 					print aW, aE, aS, aN
-					print "TW TE TS TN To Ts dT"
-					print TW, TE, TS, TN, To, Ts, dT
+					print "yW yE yS yN yo ys dy"
+					print yW, yE, yS, yN, yo, ys, dy
 				
+				#debug()
 				
 				if aW < 0 or aE < 0 or aS < 0 or aN < 0:
 					debug()
@@ -380,23 +359,23 @@ class Face(LocalCoor):
 
 				if ver1: debug()
 
-				if math.isnan(vo):
+				if math.isnan(yo):
 					raise ValueError('nan')
-				if math.isnan(Ts) or math.isinf(Ts):
+				if math.isnan(ys) or math.isinf(ys):
 					debug()
 					raise ValueError('bad')
-				if math.isnan(dT):
+				if math.isnan(dy):
 					raise ValueError('nan')
 			 
-				equ.v[i,j] += dT
+				equ.v[i,j] += dy
 				
-				if dT == 0.0:
+				if dy == 0.0:
 					pass
 				else:
-					R = max(math.fabs(dT/vo), R)
+					R = max(math.fabs(dy/yo), R)
 				
 				if math.isnan(R):
-					print 'dT',dT,'To',vo
+					print 'dy',dy,'yo',yo
 					raise ValueError('nan')
 		return R
 
@@ -439,30 +418,14 @@ class Face(LocalCoor):
 
 		# T
 		T = self.T[:-2,:-2]
+
 		if self.zs > 0:
 			T = np.transpose(T)
 		else:
-			pass
-		
-
-		if self.Z == -1:
-			T = np.rot90(T,1)
-			T = np.fliplr(T)
-		elif self.Z == -2:
-			#T = np.rot90(T,3)
-			#T = np.flipud(T)
-			T = np.rot90(T,1)
-			T = np.fliplr(T)
-		elif self.Z == -3:
 			T = np.rot90(T,1)
 			T = np.fliplr(T)
 		
-
-		# negative faces
-		if self.zs < 0:
-			#T = np.flipud(T)
-			#T = np.fliplr(T)
-			pass
+		
 
 		FC = cm.jet(T/T_max)
 
@@ -476,19 +439,27 @@ class Face(LocalCoor):
 	def plot(self, equ_name, ax1, ax2, V = None, Vg = None):
 		equ = self.equs[equ_name]
 		
-		self.plot_temp_sub(equ, ax1, V)
+		con1 = self.plot_temp_sub(equ, ax1, V)
 		
-		self.plot_grad_sub(equ, ax2, Vg)
-		
-		return
+		con2 = self.plot_grad_sub(equ, ax2, Vg)
+
+		return con1, con2
 	def plot_temp_sub(self, equ, ax, V = None):
 		x = np.linspace(self.ext[0,0], self.ext[0,1], self.n[0])
 		y = np.linspace(self.ext[1,0], self.ext[1,1], self.n[1])
 		
 		X,Y = np.meshgrid(x, y)
 		
-		T = np.transpose(equ.v[:-2,:-2])
+		# values
+		Z = equ.v[:-2,:-2]
 		
+		if self.zs > 0:
+			Z = np.transpose(Z)
+		else:
+			Z = np.rot90(Z,1)
+			Z = np.fliplr(Z)
+		
+
 		ver = False
 		if ver:
 			print np.shape(X)
@@ -496,22 +467,28 @@ class Face(LocalCoor):
 			print np.shape(T)
 		
 		if not V is None:
-			con = ax.contourf(X, Y, T, V)
+			con = ax.contourf(X, Y, Z, V)
 		else:
-			con = ax.contourf(X, Y, T)
+			con = ax.contourf(X, Y, Z)
 		
-		pl.colorbar(con, ax=ax)
-		pl.axis('equal')
-		
+		return con
+
 	def plot_grad_sub(self, equ, ax, V = None):
 		x = np.linspace(self.ext[0,0], self.ext[0,1], self.n[0])
 		y = np.linspace(self.ext[1,0], self.ext[1,1], self.n[1])
 
-		Y,X = np.meshgrid(y, x)
+		X,Y = np.meshgrid(x,y)
 		
-			
+		# values	
 		Z = equ.grad_mag()
-		Z = Z[:-2,:-2]
+			
+		if self.zs > 0:
+			Z = np.transpose(Z)
+		else:
+			Z = np.rot90(Z,1)
+			Z = np.fliplr(Z)
+
+
 
 		ver = False
 		if ver:
