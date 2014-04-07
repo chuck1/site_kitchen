@@ -7,9 +7,7 @@ import pylab as pl
 
 from unit_vec import *
 
-def source_spreader(x,y,a,b,m,n):
-	u = (1 - np.power(x / a, m)) * (1 - np.power(y / b, n)) * (m + 1) / m * (n + 1) / n
-	return u
+import equation
 
 class Conn:
 	# information concerning connection between face and conn
@@ -68,8 +66,11 @@ class Conn:
 
 
 class Face(LocalCoor):
-	def __init__(self, normal, ext, pos_z, n, alpha_src):
-		
+	def __init__(self, patch, normal, ext, pos_z, n, alpha_src):
+		LocalCoor.__init__(self, normal)
+	
+		self.patch = patch
+
 		self.ext = np.array(ext)
 		
 		self.pos_z = pos_z
@@ -110,19 +111,14 @@ class Face(LocalCoor):
 		y = np.linspace(self.d[0,0,1] / 2. - b, b - self.d[0,0,1] / 2., self.n[1])
 		Y,X = np.meshgrid(y,x)
 		
-		#self.s = source_spreader(X,Y,a,b,2,2)
-		#self.Src = 0
-
-		# coordinates
-		LocalCoor.__init__(self, normal)
-
+	
 		self.Tmean = []
 
 		self.equs = {}
 
-	def create_equ(self, name, v_0, v_bou, k, alpha):
-		self.equs[name] = Equ(name, self, self.n, v_0, v_bou, k, alpha)
-		
+	def create_equ(self, name, v_bou, k, al):
+		self.equs[name] = equation.Equ(name, self, self.n, v_bou, k, al)
+	
 	def get_loc_pos_par_index(self, nbr):
 		OL = self.nbr_to_loc(nbr)
 		
@@ -137,40 +133,8 @@ class Face(LocalCoor):
 	def y(self, j):
 		return (j + 0.5) * self.d[1]
 	
-
-	def reset_s(self):
-		TW = self.T_boundary(-2)
-		TE = self.T_boundary(2)
-		TS = self.T_boundary(-3)
-		TN = self.T_boundary(3)
-		
-		dx = (self.ext[0,1] - self.ext[0,0]) / 2.0
-		dy = (self.ext[1,1] - self.ext[1,0]) / 2.0
-			
-		Tm = self.mean()
-
-		dT = self.mean_target - Tm
-		
-		dSrc = self.k * dT / 1000.
-		
-		self.Src += self.alpha_src * dSrc
-		
-		self.Tmean.append(Tm)
-		
-		return math.fabs(dT/self.mean_target)
-
-	def T_boundary(self, V):
-		if V == -2:
-			return np.mean(self.T[0,:])
-		if V == 2:
-			return np.mean(self.T[-1,:])
-		if V == -3:
-			return np.mean(self.T[:,0])
-		if V == 3:
-			return np.mean(self.T[:,-1])
-		
-		raise
-
+	def area(self):
+		return (self.ext[0,1] - self.ext[0,0]) * (self.ext[1,1] - self.ext[1,0])
 
 	def nbr_to_loc(self, nbr):
 		if not isinstance(nbr, Face):
@@ -281,10 +245,10 @@ class Face(LocalCoor):
 
 	def step_pre_cell_open_bou(self, equ, ind, V):
 		v,sv = v2is(V)
-		indn = np.array(ind)
+		indn = list(ind)
 		indn[v] += sv
 		
-		v_bou = equ.v_bou[v,(sv+1)/2]
+		v_bou = equ.v_bou[v][(sv+1)/2]
 		
 		if v_bou == 0.0:
 			# insulated
@@ -310,7 +274,7 @@ class Face(LocalCoor):
 	def step(self, equ_name):
 		equ = self.equs[equ_name]
 
-		if not isinstance(equ, Equ):
+		if not isinstance(equ, equation.Equ):
 			raise ValueError('not Equ')
 
 		# solve diffusion equation for equ
@@ -327,6 +291,17 @@ class Face(LocalCoor):
 
 		self.step_pre(equ)
 
+		g = self.patch.group
+		S = g.S[equ.name]
+
+		#print "face S",S
+
+		def debug_s():
+			print "face s",s
+			print "s",equ.s[i,j]
+			print "A",A
+			print "k",equ.k
+
 		for i in range(self.n[0]):
 			for j in range(self.n[1]):
 				A = self.d[i,j,0] * self.d[i,j,1]
@@ -340,7 +315,15 @@ class Face(LocalCoor):
 				
 				#ver = True
 				#print "source =",self.s(To)
-				num = aW*yW + aE*yE + aS*yS + aN*yN + equ.s[i,j] * equ.Src * A / equ.k
+				
+				# source term
+				s = equ.s[i,j] * S * A / equ.k
+
+				#if s < 0:
+				#debug_s()
+				
+				
+				num = aW*yW + aE*yE + aS*yS + aN*yN + s
 				ys = num / (aW + aE + aS + aN)
 				
 				dy = equ.al * (ys - yo)
@@ -444,11 +427,15 @@ class Face(LocalCoor):
 		con2 = self.plot_grad_sub(equ, ax2, Vg)
 
 		return con1, con2
-	def plot_temp_sub(self, equ, ax, V = None):
+	def grid(self):
 		x = np.linspace(self.ext[0,0], self.ext[0,1], self.n[0])
 		y = np.linspace(self.ext[1,0], self.ext[1,1], self.n[1])
 		
 		X,Y = np.meshgrid(x, y)
+
+		return X,Y
+	def plot_temp_sub(self, equ, ax, V = None):
+		X,Y = self.grid()
 		
 		# values
 		Z = equ.v[:-2,:-2]

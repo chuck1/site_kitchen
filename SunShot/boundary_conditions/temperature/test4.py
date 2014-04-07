@@ -1,4 +1,6 @@
 import profile
+import pylab as pl
+
 #from solver import *
 import solver.prob
 from solver.patch import stitch
@@ -12,7 +14,7 @@ n = 10
 x = [[0.0, 1.0, 2.0, 3.0], [0.0, 1.0, 2.0, 3.0], [0.0, 1.0, 2.0, 3.0]]
 n = [[n+0]*2,[n+2]*2,[n+4]*2]
 
-prob = solver.prob.Problem('test4', x, n, k, al, alpha_src, it_max_1 = 1000, it_max_2 = 500)
+prob = solver.prob.Problem('test4', x, n, k, al, alpha_src, it_max_1 = 1000, it_max_2 = 1000)
 
 #prob.get_3d_axes()
 #sys.exit(0)
@@ -24,17 +26,18 @@ p3 = None
 p4 = None
 p5 = None
 
+g2 = prob.create_patch_group(v_0 = {'T':10.0,'s':2.0}, S = {'T':0.0,'s':10.0})
+g3 = prob.create_patch_group(v_0 = {'T': 0.0,'s':2.0}, S = {'T':0.0,'s':10.0})
+g4 = prob.create_patch_group(v_0 = {'T': 0.0,'s':2.0}, S = {'T':0.0,'s':10.0})
+g5 = prob.create_patch_group(v_0 = {'T': 0.0,'s':2.0}, S = {'T':0.0,'s':10.0})
+
 #p0 = prob.createPatch(1,	[1,	[0,1],	[0,1]])
 #p1 = prob.createPatch(2,	[[0,1],	1,	[0,1]])
-p2 = prob.createPatch('2',3,	[[0,1,2],	[0,1,2],	2])
-p3 = prob.createPatch('3',-1,	[0,		[2,1,0],	[2,1,0]])
-p4 = prob.createPatch('4',-2,	[[2,1,0],	0,		[2,1,0]])
-p5 = prob.createPatch('5',-3,	[[2,1,0],	[2,1,0],	0])
+p2 = g2.create_patch('2',3,	[[0,1,2],	[0,1,2],	2])
+p3 = g3.create_patch('3',-1,	[0,		[2,1,0],	[2,1,0]])
+p4 = g4.create_patch('4',-2,	[[2,1,0],	0,		[2,1,0]])
+p5 = g5.create_patch('5',-3,	[[2,1,0],	[2,1,0],	0])
 
-prob.patch_groups.append([p2])
-prob.patch_groups.append([p3])
-prob.patch_groups.append([p4])
-prob.patch_groups.append([p5])
 
 stitch(p0,p1)
 stitch(p0,p2)
@@ -68,20 +71,17 @@ f5 = p5.faces[0,0]
 
 #f1.create_equ('T', 0., [[30.,0.],[0.,0.]], k, al)
 
-f2.create_equ('T', 0., [[30.,30.],[30.,30.]], k, al)
-
-f3.create_equ('T', 0., [[30.,30.],[30.,30.]], k, al)
-
-f4.create_equ('T', 0., [[30.,30.],[30.,30.]], k, al)
-
-f5.create_equ('T', 0., [[30.,30.],[30.,30.]], k, al)
+f2.equs['T'].v_bou = [[30.,30.],[30.,30.]]
+f3.equs['T'].v_bou = [[30.,30.],[30.,30.]]
+f4.equs['T'].v_bou = [[30.,30.],[30.,30.]]
+f5.equs['T'].v_bou = [[30.,30.],[30.,30.]]
 
 
 
 #prob.solve2(1e-2, 1e-4, True)
 
 #profile.run("prob.solve('s', 1e-1)")
-prob.solve('s', 1e-1)
+prob.solve('s', 1e-2, True)
 
 
 prob.value_add('s',-1.0)
@@ -89,13 +89,15 @@ prob.value_normalize('s')
 
 prob.copy_value_to_source('s','T')
 
-prob.solve('T', 1e-2)
+#prob.solve('T', 1e-4, True)
+prob.solve2('T', 1e-2, 1e-2, True)
 
 #prob.plot3()
 
+#prob.plot('s')
 prob.plot('T')
 
-pl.show()
+#pl.show()
 
 
 

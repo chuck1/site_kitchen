@@ -3,12 +3,13 @@ from util import *
 
 class Patch(LocalCoor):
 	def __init__(self,
-			name, normal, indices, x, nx, k, alpha, alpha_src,
-			T_bou = [[0.,0.], [0.,0.]],
-			T_0 = 30.0):
+			group, name,
+			normal, indices, x, nx, k, alpha, alpha_src,
+			T_bou = [[0.,0.], [0.,0.]]):
 		
 		LocalCoor.__init__(self, normal)
 		
+		self.group = group
 		self.name = name
 
 		#print 'T_0',T_0
@@ -45,12 +46,13 @@ class Patch(LocalCoor):
 				pos_z = x[self.z][indices[self.z]]
 				
 				
-				faces[i,j] = Face(normal, ext, pos_z, [numx, numy], alpha_src)
+				faces[i,j] = Face(self, normal, ext, pos_z, [numx, numy], alpha_src)
 			
 				# unique to current setup
 				# create temperature and source spreader equations
-				faces[i,j].create_equ('T', T_0, T_bou, k, alpha)
-				faces[i,j].create_equ('s', 2.0, [[1.,1.],[1.,1.]], 10.0, 1.0)
+				faces[i,j].create_equ('T', T_bou, k, alpha)
+				
+				faces[i,j].create_equ('s', [[1.0,1.0],[1.0,1.0]], 10.0, al = 1.0)
 				faces[i,j].equs['s'].flag['only_parallel_faces'] = True
 
 				
@@ -64,9 +66,12 @@ class Patch(LocalCoor):
 		for f in self.faces.flatten():
 			f.create_equ(name, v0, v_bou, k, al)
 	
+	
 	def set_v_bou(self, equ_name, v_bou):
 		for f in self.faces.flatten():
 			f.equs[equ_name].v_bou = np.array(v_bou)
+	
+	
 
 	# value statistics
 	def max(self, equ_name):
@@ -75,6 +80,7 @@ class Patch(LocalCoor):
 		for f in self.faces.flatten():
 			a = f.equs[equ_name].max()
 			v = max(v,a)
+			print "a v",a,v
 		
 		return v
 

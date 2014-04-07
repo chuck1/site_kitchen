@@ -13,6 +13,8 @@ import sys
 from face import *
 from patch import *
 
+import patch_group
+
 class Fig:
 	def __init__(self):
 		self.fig = pl.figure()
@@ -27,8 +29,8 @@ class Fig:
 
 class Problem:
 	def __init__(self, name, x, nx, k, alpha, alpha_src,
-			it_max_1 = 100,
-			it_max_2 = 100):
+			it_max_1 = 200,
+			it_max_2 = 200):
 		self.name = name
 		
 		self.x = x
@@ -43,25 +45,16 @@ class Problem:
 		self.it_max_2 = it_max_2
 
 		self.patch_groups = []
-		self.patches = []
-		self.faces = []
 
 		#signal.signal(signal.SIGINT, self)
 
-	def createPatch(self, name, normal, indices,
-			T_bou = [[0,0],[0,0]],
-			T_0 = 1.0):
-	
-		#print 'T_0',T_0
-
-		p = Patch(name, normal, indices, self.x, self.nx, self.k, self.alpha, self.alpha_src,
-				T_bou = T_bou, T_0 = T_0)
+	def create_patch_group(self, v_0, S):
+		pg = patch_group.patch_group(self, v_0, S)
 		
-		self.faces += list(p.faces.flatten())
+		self.patch_groups.append(pg)
 
-		self.patches.append(p)
+		return pg
 
-		return p
 	def __call__(self, signal, frame):
 		print "saving"
 		#self.save()
@@ -69,28 +62,28 @@ class Problem:
 		
 	def temp_max(self, equ_name):
 		T = float("-inf")
-		for f in self.faces:
+		for f in self.faces():
 			e = f.equs[equ_name]
 			T = max(e.max(), T)
 		
 		return T
 	def temp_min(self, equ_name):
 		T = float("inf")
-		for f in self.faces:
+		for f in self.faces():
 			e = f.equs[equ_name]
 			T = min(e.min(), T)
 		
 		return T
 	def grad_max(self, equ_name):
 		T = float("-inf")
-		for f in self.faces:
+		for f in self.faces():
 			e = f.equs[equ_name]
 			T = max(e.grad_max(), T)
 		
 		return T
 	def grad_min(self, equ_name):
 		T = float("inf")
-		for f in self.faces:
+		for f in self.faces():
 			e = f.equs[equ_name]
 			T = min(e.grad_min(), T)
 		
@@ -98,40 +91,41 @@ class Problem:
 	
 	# value manipulation
 	def value_add(self, equ_name, v):
-		for p in self.patches:
-			for f in p.faces.flatten():
-				equ = f.equs[equ_name]
-				equ.v = equ.v + v
+		for f in self.faces():
+			equ = f.equs[equ_name]
+			equ.v = equ.v + v
 	
 	def value_normalize(self, equ_name):
-		for pg in self.patch_groups:
+		for g in self.patch_groups:
 			# max value in patch group
 			v_max = float("-inf")
-			for p in pg:
+			for p in g.patches:
 				p_v_max = p.max(equ_name)
+				print "patch max value",p_v_max
 				v_max = max(v_max, p_v_max)
 			
+			print "max value",v_max
+			
 			# normalize
-			for p in pg:
+			for p in g.patches:
 				for f in p.faces.flatten():
 					equ = f.equs[equ_name]
 					equ.v = equ.v / v_max
 	
 	def copy_value_to_source(self,equ_name_from,equ_name_to):
 
-		for p in self.patches:
-			for f in p.faces.flatten():
-				e1 = f.equs[equ_name_from]
-				e2 = f.equs[equ_name_to]
+		for f in self.faces():
+			e1 = f.equs[equ_name_from]
+			e2 = f.equs[equ_name_to]
+			
+			s1 = tuple(a-2 for a in np.shape(e1.v))
+			s2 = np.shape(e2.s)
 				
-				s1 = tuple(a-2 for a in np.shape(e1.v))
-				s2 = np.shape(e2.s)
-				
-				if s1 == s2:
-					e2.s = e1.v[:-2,:-2]
-				else:
-					print s1, s2
-					raise ValueError('size mismatch')
+			if s1 == s2:
+				e2.s = e1.v[:-2,:-2]
+			else:
+				print s1, s2
+				raise ValueError('size mismatch')
 
 	
 	# plotting
@@ -144,22 +138,23 @@ class Problem:
 		
 		figs = {}
 		
-		for p in self.patches:
-			key = (p.Z, p.indices[p.z])
-			try:
-				f = figs[key]
-			except:
-				f = Fig()
-				figs[key] = f
+		for g in self.patch_groups:
+			for p in g.patches:
+				key = (p.Z, p.indices[p.z])
+				try:
+					f = figs[key]
+				except:
+					f = Fig()
+					figs[key] = f
 			
-			con1, con2 = p.plot(equ_name, f, V, Vg)
+				con1, con2 = p.plot(equ_name, f, V, Vg)
 		
-			f.ax1.axis('equal')
-			f.ax2.axis('equal')
+				f.ax1.axis('equal')
+				f.ax2.axis('equal')
 			
-			if f.cb1 is None:
-				f.cb1 = pl.colorbar(con1, ax = f.ax1)
-				f.cb2 = pl.colorbar(con2, ax = f.ax2)
+				if f.cb1 is None:
+					f.cb1 = pl.colorbar(con1, ax = f.ax1)
+					f.cb2 = pl.colorbar(con2, ax = f.ax2)
 		
 
 		pl.show()
@@ -208,21 +203,28 @@ class Problem:
 
 		return ax
 	
-	def solve(self, name, cond, ver = True, R_outer = 0.0):
+	def faces(self):
+		for g in self.patch_groups:
+			for p in g.patches:
+				for f in p.faces.flatten():
+					yield f
+
+	# solving
+	def solve(self, name, cond, ver, R_outer = 0.0):
 		return self.solve_serial(name, cond, ver, R_outer)
-		
-	def solve_serial(self, name, cond = 1e-4, ver = True, R_outer = 0.0):
+	
+	def solve_serial(self, name, cond, ver, R_outer = 0.0):
 		
 		R = np.array([])
 		
 		for it in range(self.it_max_1):
 			R = np.append(R, 0.0)
 			
-			for face in self.faces:
+			for face in self.faces():
 				R[-1] = max(face.step(name), R[-1])
 				face.send(name)
 			
-			for face in self.faces:
+			for face in self.faces():
 				face.recv(name)
 			
 			
@@ -238,7 +240,7 @@ class Problem:
 		return it
 		
 
-	def solve2(self, cond1_final, cond2, ver = False):
+	def solve2(self, equ_name, cond1_final, cond2, ver):
 		#cond1 = 1
 		
 		#it_cond = 2
@@ -246,14 +248,14 @@ class Problem:
 		R = 1.0
 		for it_2 in range(self.it_max_2):
 			
-			cond1 = R / 10.0 # target residual for inner loop is proportional to current residual for outer loop
+			cond1 = R / 1000.0 # target residual for inner loop is proportional to current residual for outer loop
 			
-			it_1 = self.solve(cond1, ver, R)
+			it_1 = self.solve(equ_name, cond1, ver, R)
 			
 			R = 0.0
 			
-			for f in self.faces:
-				Rn = f.reset_s()
+			for g in self.patch_groups:
+				Rn = g.reset_s(equ_name)
 				
 				R = max(Rn, R)
 			
