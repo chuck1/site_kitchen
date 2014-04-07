@@ -40,10 +40,10 @@ class Equ:
 		return np.min(self.v[:-2,:-2])
 	def max(self):
 		v = np.max(self.v[:-2,:-2])
-		print "v"
-		print self.v
-		print "max"
-		print v
+		#print "v"
+		#print self.v
+		#print "max"
+		#print v
 		return v
 	def grad_min(self):
 		return np.min(self.grad_mag()[:-2,:-2])

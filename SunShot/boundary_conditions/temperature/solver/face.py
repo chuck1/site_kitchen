@@ -443,7 +443,7 @@ class Face(LocalCoor):
 		return X,Y,Z,W
 
 	def plot_temp_sub(self, equ, ax, V = None):
-		X,Y,_,W = self.grid('T')
+		X,Y,_,W = self.grid(equ.name)
 		
 		ver = False
 		if ver:
