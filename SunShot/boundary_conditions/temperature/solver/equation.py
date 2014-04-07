@@ -1,30 +1,33 @@
 import numpy as np
 
+class equation_prob:
+	def __init__(self, prob, name, k, alpha, alpha_source):
+		self.prob = prob
+		self.name = name
+		self.k = k
+		self.alpha = alpha
+		self.alpha_source = alpha_source
 
 class Equ:
 	# diffusion equation variable set
 
-	def __init__(self, name, face, n, v_bou, k, al):
+	def __init__(self, name, face, equ_prob):
 		self.name = name
 		self.face = face
 		
-		self.n = n
+		self.equ_prob = equ_prob
+
 		#self.v_0 = v_0
 		
-		n_extended = self.n + np.array([2, 2])
+		n_extended = self.face.n + np.array([2, 2])
 		
 		self.v = np.ones(n_extended) * self.face.patch.group.v_0[self.name]
 		
-		self.v_bou = np.array(v_bou)
-		
-		if not np.shape(self.v_bou) == (2,2):
-			print self.v_bou
-			raise ValueError('')
-		
-		self.s = np.ones(n)
-		
-		self.k = k
-		self.al = al
+		print "equation"
+		print "name",self.name
+		print "v_0",self.face.patch.group.v_0[self.name]
+
+		self.s = np.ones(face.n)
 		
 		self.flag = {"only_parallel_faces":False}
 		

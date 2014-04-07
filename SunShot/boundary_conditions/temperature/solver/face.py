@@ -66,7 +66,7 @@ class Conn:
 
 
 class Face(LocalCoor):
-	def __init__(self, patch, normal, ext, pos_z, n, alpha_src):
+	def __init__(self, patch, normal, ext, pos_z, n):
 		LocalCoor.__init__(self, normal)
 	
 		self.patch = patch
@@ -86,11 +86,6 @@ class Face(LocalCoor):
 			for j in range(n_extended[1]):
 				self.d[i,j,:] = (self.ext[:,1] - self.ext[:,0]) / np.float32(self.n)
 		
-		
-		# temperature
-		
-
-		self.alpha_src = alpha_src
 		
 		if np.any(self.d < 0):
 			print self.d
@@ -116,8 +111,8 @@ class Face(LocalCoor):
 
 		self.equs = {}
 
-	def create_equ(self, name, v_bou, k, al):
-		self.equs[name] = equation.Equ(name, self, self.n, v_bou, k, al)
+	def create_equ(self, name, equ_prob):
+		self.equs[name] = equation.Equ(name, self, equ_prob)
 	
 	def get_loc_pos_par_index(self, nbr):
 		OL = self.nbr_to_loc(nbr)
@@ -248,7 +243,7 @@ class Face(LocalCoor):
 		indn = list(ind)
 		indn[v] += sv
 		
-		v_bou = equ.v_bou[v][(sv+1)/2]
+		v_bou = self.patch.v_bou[equ.name][v][(sv+1)/2]
 		
 		if v_bou == 0.0:
 			# insulated
@@ -300,7 +295,7 @@ class Face(LocalCoor):
 			print "face s",s
 			print "s",equ.s[i,j]
 			print "A",A
-			print "k",equ.k
+			print "k",equ.equ_prob.k
 
 		for i in range(self.n[0]):
 			for j in range(self.n[1]):
@@ -317,7 +312,7 @@ class Face(LocalCoor):
 				#print "source =",self.s(To)
 				
 				# source term
-				s = equ.s[i,j] * S * A / equ.k
+				s = equ.s[i,j] * S * A / equ.equ_prob.k
 
 				#if s < 0:
 				#debug_s()
@@ -326,7 +321,7 @@ class Face(LocalCoor):
 				num = aW*yW + aE*yE + aS*yS + aN*yN + s
 				ys = num / (aW + aE + aS + aN)
 				
-				dy = equ.al * (ys - yo)
+				dy = equ.equ_prob.alpha * (ys - yo)
 
 				def debug():
 					print "aW aE aS aN"
@@ -427,26 +422,29 @@ class Face(LocalCoor):
 		con2 = self.plot_grad_sub(equ, ax2, Vg)
 
 		return con1, con2
-	def grid(self):
+	def grid(self, equ_name):
 		x = np.linspace(self.ext[0,0], self.ext[0,1], self.n[0])
 		y = np.linspace(self.ext[1,0], self.ext[1,1], self.n[1])
 		
-		X,Y = np.meshgrid(x, y)
-
-		return X,Y
-	def plot_temp_sub(self, equ, ax, V = None):
-		X,Y = self.grid()
+		X,Y = np.meshgrid(x,y)
 		
-		# values
-		Z = equ.v[:-2,:-2]
+		Z = np.ones(np.shape(X)) * self.pos_z
+
+		equ = self.equs[equ_name]
+		
+		W = equ.v[:-2,:-2]
 		
 		if self.zs > 0:
-			Z = np.transpose(Z)
+			W = np.transpose(W)
 		else:
-			Z = np.rot90(Z,1)
-			Z = np.fliplr(Z)
-		
+			W = np.rot90(W,1)
+			W = np.fliplr(W)
 
+		return X,Y,Z,W
+
+	def plot_temp_sub(self, equ, ax, V = None):
+		X,Y,_,W = self.grid('T')
+		
 		ver = False
 		if ver:
 			print np.shape(X)
@@ -454,9 +452,9 @@ class Face(LocalCoor):
 			print np.shape(T)
 		
 		if not V is None:
-			con = ax.contourf(X, Y, Z, V)
+			con = ax.contourf(X, Y, W, V)
 		else:
-			con = ax.contourf(X, Y, Z)
+			con = ax.contourf(X, Y, W)
 		
 		return con
 

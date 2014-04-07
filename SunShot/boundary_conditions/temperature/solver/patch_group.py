@@ -1,25 +1,27 @@
 import math
+import numpy as np
 
 import patch
 
 class patch_group:
-	def __init__(self, name, prob, v_0, S):
+	def __init__(self, prob, name, v_0, S):
 		
 		self.patches = []
 
 		self.prob = prob
+		self.name = name
 		self.v_0 = v_0
 
 		self.S = S
 
-	def create_patch(self, name, normal, indices,
-			T_bou = [[0,0],[0,0]]):
-	
-		#print 'T_0',T_0
+		print "patch_group"
+		print self.v_0
 
-		p = patch.Patch(self, name, normal, indices, 
-				self.prob.x, self.prob.nx, self.prob.k, self.prob.alpha, self.prob.alpha_src,
-				T_bou = T_bou)
+	def create_patch(self, name, normal, indices, v_bou):
+		
+		#print 'T_0',T_0
+		
+		p = patch.Patch(self, name, normal, indices, self.prob.x, self.prob.nx, v_bou)
 		
 		self.patches.append(p)
 		
@@ -67,7 +69,7 @@ class patch_group:
 		
 		dv = v_0 - v_m
 		
-		dS = equ.k * dv / 10.
+		dS = equ.equ_prob.k * dv / 10.
 		
 		self.S[equ_name] += dS
 		
@@ -85,21 +87,54 @@ class patch_group:
 	def write(self, equ_name):
 		
 		x = np.zeros(0)
-		
+		y = np.zeros(0)
+		z = np.zeros(0)
+		w = np.zeros(0)
+
 		for f in self.faces():
-			X,Y,Z = f.grid()
+			X,Y,Z,W = f.grid(equ_name)
 			
 			x = np.append(x, X.ravel())
+			y = np.append(y, Y.ravel())
+			z = np.append(z, Z.ravel())
+			w = np.append(w, W.ravel())
 		
-		name = self.name + '_prof_' + equ_name
+		name = 'prof_' + self.name + '_' + equ_name
 		
-		f = open(name + '.txt')
+		n = np.size(x,0)
 		
-		f.write("(({0} point {1})",format(name,n))
+		f = open(name + '.txt','w')
+
+		f.write("(({0} point {1})\n".format(name,n))
+		
+		f.write("(x\n")
+		f.write("".join(np_join(x)) + ")\n")
+		
+		f.write("(y\n")
+		f.write("".join(np_join(y)) + ")\n")
+
+		f.write("(z\n")
+		f.write("".join(np_join(z)) + ")\n")
+		
+		f.write("(w\n")
+		f.write("".join(np_join(w)) + ")\n")
+		#f.write(" ".join("{0:e}".format(a) for a in w) + ")")
+		
+		f.write(")")
+		
+		f.close()
 		
 		
-		
-		
+def np_join(x):
+	a = 0
+
+	for b in x:
+		yield "{0:e} ".format(b)
+		a = a + 1
+		if a == 10:
+			yield "\n"
+			a = 0
+
 
 
 

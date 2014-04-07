@@ -2,21 +2,20 @@ from face import *
 from util import *
 
 class Patch(LocalCoor):
-	def __init__(self,
-			group, name,
-			normal, indices, x, nx, k, alpha, alpha_src,
-			T_bou = [[0.,0.], [0.,0.]]):
+	def __init__(self, group, name, normal, indices, x, nx, v_bou):
 		
 		LocalCoor.__init__(self, normal)
 		
 		self.group = group
 		self.name = name
-
+		
+		self.v_bou = v_bou
+		#if not np.shape(self.v_bou) == (2,2):
+		#	print self.v_bou
+		#	raise ValueError('')
+		
 		#print 'T_0',T_0
 
-		self.k = k
-		self.alpha = alpha
-		
 		self.indices = indices
 		
 		NX = len(indices[self.x])-1
@@ -46,13 +45,15 @@ class Patch(LocalCoor):
 				pos_z = x[self.z][indices[self.z]]
 				
 				
-				faces[i,j] = Face(self, normal, ext, pos_z, [numx, numy], alpha_src)
+				faces[i,j] = Face(self, normal, ext, pos_z, [numx, numy])
 			
 				# unique to current setup
 				# create temperature and source spreader equations
-				faces[i,j].create_equ('T', T_bou, k, alpha)
 				
-				faces[i,j].create_equ('s', [[1.0,1.0],[1.0,1.0]], 10.0, al = 1.0)
+				
+				faces[i,j].create_equ('T', self.group.prob.equs['T'])
+				
+				faces[i,j].create_equ('s', self.group.prob.equs['s'])
 				faces[i,j].equs['s'].flag['only_parallel_faces'] = True
 
 				

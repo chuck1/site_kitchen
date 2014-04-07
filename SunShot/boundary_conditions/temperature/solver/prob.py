@@ -2,12 +2,12 @@ import time
 import numpy as np
 import itertools
 import pylab as pl
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import cm
+#from mpl_toolkits.mplot3d import Axes3D
+#from matplotlib import cm
 import math
 import inspect
-import pickle
-import signal
+#import pickle
+#import signal
 import sys
 
 from face import *
@@ -28,32 +28,31 @@ class Fig:
 		self.text = pl.figtext(0,0,'')
 
 class Problem:
-	def __init__(self, name, x, nx, k, alpha, alpha_src,
-			it_max_1 = 200,
-			it_max_2 = 200):
+	def __init__(self, name, x, nx, it_max_1, it_max_2):
 		self.name = name
-		
+
 		self.x = x
 		self.nx = nx
 
-		self.k = k
+		self.equs = {}
 		
-		self.alpha = alpha
-		self.alpha_src = alpha_src
-
 		self.it_max_1 = it_max_1
 		self.it_max_2 = it_max_2
 
 		self.patch_groups = []
 
 		#signal.signal(signal.SIGINT, self)
+	def create_equation(self, name, k, alpha, alpha_source):
+		e = equation.equation_prob(self, name, k, alpha, alpha_source)
+		self.equs[name] = e
+		return e 
 
-	def create_patch_group(self, v_0, S):
-		pg = patch_group.patch_group(self, v_0, S)
+	def create_patch_group(self, name, v_0, S):
+		g = patch_group.patch_group(self, name, v_0, S)
 		
-		self.patch_groups.append(pg)
+		self.patch_groups.append(g)
 
-		return pg
+		return g
 
 	def __call__(self, signal, frame):
 		print "saving"
@@ -273,5 +272,9 @@ class Problem:
 		f = open('case_' + self.name, 'w')
 		pickle.dump(self, f)
 	
-	
+	def write(self, equ_name):
+		for g in self.patch_groups:
+			g.write(equ_name)
+
+
 
