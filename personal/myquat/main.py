@@ -242,25 +242,27 @@ test(
 		)
 """
 
-"""
-o1,o2,o3 = symbols('o1:4')
+def rotations():
+	o1,o2,o3 = symbols('o1:4')
 
-o = quat([0, o1, o2, o3])
+	o = quat([0, o1, o2, o3])
 
-t3, t3p = symbols('t, tp')
+	t3, t3p = symbols('t, tp')
 
-t = quat([0, 0, 0, t3])
-tp = quat([0, 0, 0, t3p])
-
-c = quatmul(conj(o),t) + tp + quatmul(t,o)
-
-pprint(c)
+	t = quat([0, 0, 0, t3])
+	tp = quat([0, 0, 0, t3p])
+	
+	c = quatmul(conj(o),t) + tp + quatmul(t,o)
+	
+	pprint(c)
+	
+	
+	
+rotations()
 
 #print mul((B(t), o))
 #print mul((B(conj(o)), t))
 #print mul((B(t), o)) + mul((B(conj(o)), t)) + tp
-"""
-
 
 
 """
@@ -299,6 +301,6 @@ pprint(d)
 """
 
 
-pprint(quatmul(a,b))
-pprint(quatmul(conj(b),a))
+#pprint(quatmul(a,b))
+#pprint(quatmul(conj(b),a))
 
