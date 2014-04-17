@@ -258,6 +258,8 @@ def rotations():
 	
 	
 	
+
+	
 rotations()
 
 #print mul((B(t), o))
