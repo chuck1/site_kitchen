@@ -76,7 +76,6 @@ f4.equs['T'].v_bou = [[30.,30.],[30.,30.]]
 f5.equs['T'].v_bou = [[10.,10.],[10.,10.]]
 
 
-
 #prob.solve2(1e-2, 1e-4, True)
 
 #profile.run("prob.solve('s', 1e-1)")
