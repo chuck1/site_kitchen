@@ -5,7 +5,7 @@ import sys
 from lxml import etree
 import numpy as np
 
-modules_dir = os.environ["HOME"] + '/Programming/Python/Modules/'
+modules_dir = os.environ["HOME"] + '/Documents/Programming/Python/Modules/'
 media_dir = modules_dir + 'Sci/media/'
 
 def get_child_by_attr(root,attr,value):
