@@ -18,4 +18,15 @@
 			4.800000E-01
 		</poly>
 	</property>
+	<property name="viscosity">
+		<poly>
+			1.90E-3
+		</poly>
+	</property>
+	<property name="k">
+		<poly>
+			0.53
+		</poly>
+	</property>
+
 </fluid>

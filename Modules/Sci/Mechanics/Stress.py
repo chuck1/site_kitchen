@@ -10,7 +10,8 @@ def axially_loaded_bar(d1, d2, a):
 
 # d1 = diameter_hex_to_circ(ST)
 # d2 = D
-# a  = gap_radius
+# a  <= gap_radius
+
 
 
 

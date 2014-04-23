@@ -110,8 +110,13 @@ class Fluid:
 		X = frange( T0, T1, 1 )
 		
 		return self.dict['cp'].poly[0].integrate( X );
-		
-		
+	def Pr(self, T):
+		cp = self.get('cp',T)
+		mu = self.get('viscosity',T)
+		k = self.get('k',T)
+		Pr = cp * mu / k
+		return Pr
+
 def integ(X,Y):
 	l = len(X)
 	return np.sum( ( Y[:l-1] + Y[1:] ) * ( X[1:] - X[:l-1] ) / 2 )
