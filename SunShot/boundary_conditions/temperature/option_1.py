@@ -41,20 +41,20 @@ s = 1.0e10
 
 # patch groups
 
-g_hi_xp	= prob.create_patch_group('hi_xp', v_0 = {'T':100.0,'s':2.0}, S = {'T':0.0,'s':s})
-g_hi_yp	= prob.create_patch_group('hi_yp', v_0 = {'T':100.0,'s':2.0}, S = {'T':0.0,'s':s})
-g_hi_ym	= prob.create_patch_group('hi_ym', v_0 = {'T':100.0,'s':2.0}, S = {'T':0.0,'s':s})
-g_hi_zo	= prob.create_patch_group('hi_zo', v_0 = {'T':100.0,'s':2.0}, S = {'T':0.0,'s':s})
-g_hi_zi	= prob.create_patch_group('hi_zi', v_0 = {'T':100.0,'s':2.0}, S = {'T':0.0,'s':s})
+g_hi_xp		= prob.create_patch_group('hi_xp', v_0 = {'T':100.0,'s':2.0}, S = {'T':0.0,'s':s})
+g_hi_yp		= prob.create_patch_group('hi_yp', v_0 = {'T':100.0,'s':2.0}, S = {'T':0.0,'s':s})
+g_hi_ym		= prob.create_patch_group('hi_ym', v_0 = {'T':100.0,'s':2.0}, S = {'T':0.0,'s':s})
+g_hi_zo		= prob.create_patch_group('hi_zo', v_0 = {'T':100.0,'s':2.0}, S = {'T':0.0,'s':s})
+g_hi_zi		= prob.create_patch_group('hi_zi', v_0 = {'T':100.0,'s':2.0}, S = {'T':0.0,'s':s})
 
-g_ho_xp	= prob.create_patch_group('ho_xp', v_0 = {'T':100.0,'s':2.0}, S = {'T':0.0,'s':s})
-g_ho_yp	= prob.create_patch_group('ho_yp', v_0 = {'T':100.0,'s':2.0}, S = {'T':0.0,'s':s})
-g_ho_ym	= prob.create_patch_group('ho_ym', v_0 = {'T':100.0,'s':2.0}, S = {'T':0.0,'s':s})
-g_ho_zo	= prob.create_patch_group('ho_zo', v_0 = {'T':100.0,'s':2.0}, S = {'T':0.0,'s':s})
-g_ho_zi	= prob.create_patch_group('ho_zi', v_0 = {'T':100.0,'s':2.0}, S = {'T':0.0,'s':s})
+g_ho_xp		= prob.create_patch_group('ho_xp',	v_0 = {'T':100.0,'s':2.0}, S = {'T':0.0,'s':s})
+g_ho_yp		= prob.create_patch_group('ho_yp',	v_0 = {'T':100.0,'s':2.0}, S = {'T':0.0,'s':s})
+g_ho_ym		= prob.create_patch_group('ho_ym',	v_0 = {'T':100.0,'s':2.0}, S = {'T':0.0,'s':s})
+g_ho_zo		= prob.create_patch_group('ho_zo',	v_0 = {'T':100.0,'s':2.0}, S = {'T':0.0,'s':s})
+g_ho_zi		= prob.create_patch_group('ho_zi',	v_0 = {'T':100.0,'s':2.0}, S = {'T':0.0,'s':s})
 
-g_pi	= prob.create_patch_group('pi', v_0 = {'T':100.0,'s':2.0}, S = {'T':0.0,'s':s})
-g_po	= prob.create_patch_group('po', v_0 = {'T':100.0,'s':2.0}, S = {'T':0.0,'s':s})
+g_pi		= prob.create_patch_group('pi',		v_0 = {'T':100.0,'s':2.0}, S = {'T':0.0,'s':s})
+g_po		= prob.create_patch_group('po',		v_0 = {'T':100.0,'s':2.0}, S = {'T':0.0,'s':s})
 
 g_ch_xp		= prob.create_patch_group('ch_xp', v_0 = {'T':100.0,'s':2.0}, S = {'T':0.0,'s':s})
 g_ch_yp		= prob.create_patch_group('ch_yp', v_0 = {'T':100.0,'s':2.0}, S = {'T':0.0,'s':s})
@@ -62,26 +62,26 @@ g_ch_ym_i	= prob.create_patch_group('ch_ym_i', v_0 = {'T':100.0,'s':2.0}, S = {'
 g_ch_ym_o	= prob.create_patch_group('ch_ym_o', v_0 = {'T':100.0,'s':2.0}, S = {'T':0.0,'s':s})
 
 # inlet
-f_hi_xp   = g_hi_xp.create_patch('f_hi_xp', 1, [3,		[0,1,2,3],	[0,1,2,3]],	v_bou = {'T':[[0.0,0.0],[0.0,0.0]],'s':[[1.0,1.0],[1.0,1.0]]})
+f_hi_xp   = g_hi_xp.create_patch('f_hi_xp',	1, [3,		[0,1,2,3],	[0,1,2,3]],	v_bou = {'T':[[0.0,0.0],[0.0,0.0]],'s':[[1.0,1.0],[1.0,1.0]]})
 
-f_hi_yp_1 = g_hi_yp.create_patch('f_hi_yp_1', 2, [[1,2,3],	3,		[0,1,2,3]],	v_bou = {'T':[[0.0,0.0],[0.0,0.0]],'s':[[1.0,1.0],[1.0,1.0]]})
-f_hi_yp_o = g_hi_yp.create_patch('f_hi_yp_o', 2, [[0,1],	3,		[0,1]],		v_bou = {'T':[[0.0,0.0],[0.0,0.0]],'s':[[1.0,1.0],[1.0,1.0]]})
-f_hi_yp_i = g_hi_yp.create_patch('f_hi_yp_i', 2, [[0,1],	3,		[2,3]],		v_bou = {'T':[[0.0,0.0],[0.0,0.0]],'s':[[1.0,1.0],[1.0,1.0]]})
+f_hi_yp_1 = g_hi_yp.create_patch('f_hi_yp_1',	2, [[1,2,3],	3,		[0,1,2,3]],	v_bou = {'T':[[0.0,0.0],[0.0,0.0]],'s':[[1.0,1.0],[1.0,1.0]]})
+f_hi_yp_o = g_hi_yp.create_patch('f_hi_yp_o',	2, [[0,1],	3,		[0,1]],		v_bou = {'T':[[0.0,0.0],[0.0,0.0]],'s':[[1.0,1.0],[1.0,1.0]]})
+f_hi_yp_i = g_hi_yp.create_patch('f_hi_yp_i',	2, [[0,1],	3,		[2,3]],		v_bou = {'T':[[0.0,0.0],[0.0,0.0]],'s':[[1.0,1.0],[1.0,1.0]]})
 
-f_hi_ym   = g_hi_ym.create_patch('f_hi_ym',-2, [[3,2,1,0],	0,		[3,2,1,0]],	v_bou = {'T':[[0.0,0.0],[0.0,0.0]],'s':[[1.0,1.0],[1.0,1.0]]})
+f_hi_ym   = g_hi_ym.create_patch('f_hi_ym',	-2,[[3,2,1,0],	0,		[3,2,1,0]],	v_bou = {'T':[[0.0,0.0],[0.0,0.0]],'s':[[1.0,1.0],[1.0,1.0]]})
 
-f_hi_zo   = g_hi_zo.create_patch('f_hi_zo',-3, [[3,2,1,0],	[3,2,1,0],	0],		v_bou = {'T':[[0.0,0.0],[0.0,0.0]],'s':[[1.0,1.0],[1.0,1.0]]})
+f_hi_zo   = g_hi_zo.create_patch('f_hi_zo',	-3,[[3,2,1,0],	[3,2,1,0],	0],		v_bou = {'T':[[0.0,0.0],[0.0,0.0]],'s':[[1.0,1.0],[1.0,1.0]]})
 
-f_hi_zi_1 = g_hi_zi.create_patch('f_hi_zi_1', 3, [[2,3],	[0,1,2,3],	3],		v_bou = {'T':[[0.0,0.0],[0.0,0.0]],'s':[[1.0,1.0],[1.0,1.0]]})
-f_hi_zi_2 = g_hi_zi.create_patch('f_hi_zi_2', 3, [[0,1,2],	[0,1],		3],		v_bou = {'T':[[0.0,0.0],[0.0,0.0]],'s':[[1.0,1.0],[1.0,1.0]]})
-f_hi_zi_3 = g_hi_zi.create_patch('f_hi_zi_3', 3, [[0,1,2],	[2,3],		3],		v_bou = {'T':[[0.0,0.0],[0.0,0.0]],'s':[[1.0,1.0],[1.0,1.0]]})
+f_hi_zi_1 = g_hi_zi.create_patch('f_hi_zi_1',	3, [[2,3],	[0,1,2,3],	3],		v_bou = {'T':[[0.0,0.0],[0.0,0.0]],'s':[[1.0,1.0],[1.0,1.0]]})
+f_hi_zi_2 = g_hi_zi.create_patch('f_hi_zi_2',	3, [[0,1,2],	[0,1],		3],		v_bou = {'T':[[0.0,0.0],[0.0,0.0]],'s':[[1.0,1.0],[1.0,1.0]]})
+f_hi_zi_3 = g_hi_zi.create_patch('f_hi_zi_3',	3, [[0,1,2],	[2,3],		3],		v_bou = {'T':[[0.0,0.0],[0.0,0.0]],'s':[[1.0,1.0],[1.0,1.0]]})
 
 # outlet
-f_ho_xp   = g_ho_xp.create_patch('f_ho_xp', 1, [3,		[0,1,2,3],	[6,7,8,9]],	v_bou = {'T':[[0.0,0.0],[0.0,0.0]],'s':[[1.0,1.0],[1.0,1.0]]})
+f_ho_xp   = g_ho_xp.create_patch('f_ho_xp',	1, [3,		[0,1,2,3],	[6,7,8,9]],	v_bou = {'T':[[0.0,0.0],[0.0,0.0]],'s':[[1.0,1.0],[1.0,1.0]]})
 
-f_ho_yp_1 = g_ho_yp.create_patch('f_ho_yp_1', 2, [[1,2,3],	3,		[6,7,8,9]],	v_bou = {'T':[[0.0,0.0],[0.0,0.0]],'s':[[1.0,1.0],[1.0,1.0]]})
-f_ho_yp_o = g_ho_yp.create_patch('f_ho_yp_o', 2, [[0,1],	3,		[8,9]],		v_bou = {'T':[[0.0,0.0],[0.0,0.0]],'s':[[1.0,1.0],[1.0,1.0]]})
-f_ho_yp_i = g_ho_yp.create_patch('f_ho_yp_i', 2, [[0,1],	3,		[6,7]],		v_bou = {'T':[[0.0,0.0],[0.0,0.0]],'s':[[1.0,1.0],[1.0,1.0]]})
+f_ho_yp_1 = g_ho_yp.create_patch('f_ho_yp_1',	2, [[1,2,3],	3,		[6,7,8,9]],	v_bou = {'T':[[0.0,0.0],[0.0,0.0]],'s':[[1.0,1.0],[1.0,1.0]]})
+f_ho_yp_o = g_ho_yp.create_patch('f_ho_yp_o',	2, [[0,1],	3,		[8,9]],		v_bou = {'T':[[0.0,0.0],[0.0,0.0]],'s':[[1.0,1.0],[1.0,1.0]]})
+f_ho_yp_i = g_ho_yp.create_patch('f_ho_yp_i',	2, [[0,1],	3,		[6,7]],		v_bou = {'T':[[0.0,0.0],[0.0,0.0]],'s':[[1.0,1.0],[1.0,1.0]]})
 
 f_ho_ym   = g_ho_ym.create_patch('f_ho_ym',-2, [[3,2,1,0],	0,		[9,8,7,6]],	v_bou = {'T':[[0.0,0.0],[0.0,0.0]],'s':[[1.0,1.0],[1.0,1.0]]})
 
