@@ -29,7 +29,7 @@ def plot2(z,z_str):
 	
 def pressure_drop_from_diameter(D):
 	ch.D = D
-	ch.pressure_drop()
+	ch.run()
 	return ch.dp
 
 # stress in pin
@@ -49,8 +49,8 @@ ch.T_out = 600 + 273
 ch.D = 5e-4
 #ch.D = 4e-4 + np.arange(0.0,1.0,0.01) * 5e-4
 
-#ch.PT = 3.0
-ch.PT = np.arange(2.0, 5.0, 1.0)
+ch.PT = 2.0
+#ch.PT = np.arange(2.0, 5.0, 1.0)
 
 # choose independent var
 
@@ -91,7 +91,7 @@ print stress_max
 
 
 
-
+# =================
 # known
 
 fluid = fl.Fluid('ms')
@@ -100,11 +100,9 @@ fluid = fl.Fluid('ms')
 
 # calc
 
-
 ch.W  = 1e-2
 ch.L  = 1e-2
 ch.flux = 4e6
-
 ch.fluid = fl.Fluid('ms')
 
 #ch.pressure_drop()
@@ -121,6 +119,25 @@ D = shoot.shooting([2e-4, 6e-4], pressure_drop_from_diameter, 1e5 * np.ones(np.s
 
 ch.disp()
 
-Nu = heat.cross_flow_tube_bank_staggered(ch.Re, ch.Pr)
+#Nu = heat.cross_flow_tube_bank_staggered(ch.Re, ch.Pr)
+
+ch2 = Sci.Zone.Rectangular()
+ch2.W_chan = 0.0001
+ch2.H_chan = 0.0001
+ch2.W_wall = 0.0001
+
+ch2.W  = 1e-2
+ch2.L  = 1e-2
+ch2.flux = 4e6
+ch2.fluid = fl.Fluid('ms')
+
+ch2.run()
+
+print "rectangular"
+
+ch2.disp()
+
+
+
 
 
