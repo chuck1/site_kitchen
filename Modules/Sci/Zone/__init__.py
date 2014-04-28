@@ -116,7 +116,8 @@ class Staggered(Circular):
 		# area of single gap
 		self.area_flow = math.pi * self.gap**2 / 4.0
 		
-		
+		self.D_h = self.D		
+
 		"""
 		print "f         {0}".format(self.f)
 		print "D         {0} micro".format(self.D*1e6)
