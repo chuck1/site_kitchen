@@ -4,6 +4,36 @@ import pylab as pl
 
 import Sci.Fluids as fl
 
+def cylinder_in_cross_flow(Re, Pr):
+	#C = np.zeros(np.shape(self.Re))
+	#m = np.zeros(np.shape(self.Re))
+		
+	#for i in range(np.size(self.Re)):
+	if Re >= 40 and Re <= 4000:
+		C = 0.683
+		m = 0.466
+	else:
+		return 0 #np.zeros(np.shape(self.Re))
+	
+	Nu = C * Re**m * Pr**(float(1)/float(3))
+	return Nu
+
+def staggered_tube_bank(Re, Pr):
+	#C = np.zeros(np.shape(self.Re))
+	#m = np.zeros(np.shape(self.Re))
+
+	#	for i in range(np.size(self.Re)):
+	if Re >= 10 and Re <= 1e2:
+		C = 0.9
+		m = 0.4
+	elif Re > 1e2 and Re <= 1e3: 
+		return cylinder_in_cross_flow(Re, Pr)
+	else:
+		return 0
+
+	Nu = C * Re**m * Pr**0.36
+	return Nu
+
 class RectZone:
 	# fluid
 	# W
@@ -15,12 +45,19 @@ class RectZone:
 	def __init__(self):
 		pass
 
+	def copy(self, rz):
+		self.W		= rz.W
+		self.L		= rz.L
+		self.flux	= rz.flux
+		self.fluid	= rz.fluid
+		self.T_in	= rz.T_in
+		self.T_out	= rz.T_out
+		self.fluid_operating_pressure = rz.fluid_operating_pressure
+
 	def get_fluid_prop(self):
-		self.T_in = 300 + 273
-		self.T_out = 600 + 273
 		TA = (self.T_in + self.T_out)*0.5
 		
-		# self.mu = self.fluid.get('viscosity',TA) ????????
+		self.mu = self.fluid.get('viscosity',TA)
 		self.rho = self.fluid.get('density',TA)
 		self.Pr = self.fluid.Pr(TA)
 
@@ -29,6 +66,7 @@ class RectZone:
 
 		# global mass flow
 		self.mass_flow = self.flux * self.L * self.W / self.dh
+
 	def run(self):
 		self.get_fluid_prop()
 		self.calc_mass_flow()
@@ -39,19 +77,29 @@ class RectZone:
 		self.get_friction()
 		
 		self.pressure_drop()
+
+		self.get_nusselt_number()
+	
+		self.stress()
 	def get_Re(self):
 		self.Re = self.rho * self.D_h * self.v / self.mu
+		self.Re = np.array(self.Re)
+
 	def get_velocity(self):
 		# velocity through single gap or channel
 		self.v = self.mass_flow / (self.rho * self.area_flow * self.NT)
 	
 	def disp(self):
-		print "v   {0:e} m/s".format(self.v)
-		print "f   {0:e}".format(self.f)
-		print "Re  {0:e}".format(self.Re)
-		print "dp  {0:e} bar".format(self.dp/1e5)
-
-
+		print "rho kg/m3       ",self.rho
+		print "mu m2/s         ",self.mu
+		print "mass_flow       ",self.mass_flow
+		print "area_flow       ",self.area_flow
+		print "v m/s           ",self.v
+		print "f               ",self.f
+		print "Re              ",self.Re
+		print "dp bar          ",self.dp/1e5
+		print "Nu              ",self.Nu
+		
 class Straight(RectZone):
 	def __init__(self):
 		pass
@@ -61,7 +109,7 @@ class Straight(RectZone):
 class Rectangular(Straight):
 	def __init__(self):
 		pass
-				
+
 	def get_friction(self):
 		self.alpha = self.H_chan / self.W_chan
 		self.alpha = min(self.alpha, 1.0 / self.alpha)
@@ -81,10 +129,16 @@ class Rectangular(Straight):
 		
 		self.D_h = 4.0 * self.area_flow / self.perimeter_flow
 
+	def get_nusselt_number(self):
+		# square with uniform wall temp
+		self.Nu = 2.98
+
+	def stress(self):
 		pass
+
 	def disp(self):
-		print "W_chan {0:e} m".format(self.W_chan)
-		print "H_chan {0:e} m".format(self.H_chan)
+		print "W_chan micron   ", self.W_chan * 1e6
+		print "H_chan micron   ", self.H_chan * 1e6
 
 		RectZone.disp(self)
 
@@ -100,6 +154,23 @@ class Array(RectZone):
 class Circular(Array):
 	def __init__(self):
 		pass
+
+	def stress(self):
+		self.area_planform_pin = math.pi * np.power(self.D, 2) / 4.0
+		
+		self.area_planform_fluid = (self.ST * self.SL) - self.area_planform_pin
+		
+		self.stress_pin = self.area_planform_fluid / self.area_planform_pin * self.fluid_operating_pressure
+	
+		self.C = 1.4
+
+		self.stress_max = self.C * self.stress_pin
+
+	def disp(self):
+		print "stress_pin MPa  ", self.stress_pin
+		print "stress_max MPa  ", self.stress_max
+		
+		RectZone.disp(self)
 
 class Staggered(Circular):
 	def get_geo(self):
@@ -118,37 +189,19 @@ class Staggered(Circular):
 		
 		self.D_h = self.D		
 
-		"""
-		print "f         {0}".format(self.f)
-		print "D         {0} micro".format(self.D*1e6)
-		print "ST        {0} micro".format(self.ST*1e6)
-		print "SL        {0} micro".format(self.SL*1e6)
-		
-		print "rho       {0} kg/m3".format(rho)
-		print "mu        {0} m2/s".format(mu)
-		print "f         {0}".format(self.f)
+	def get_nusselt_number(self):
 
-		print "dh        {0:e} J/kg K".format(self.dh)
-		print "mass_flow {0} kg/s".format(self.mass_flow)
-		print "velocity  {0} m/s".format(self.v)
-		
-		print "Re        {0}".format(self.Re)
-		"""
-		#print "pressure  {0} bar".format(self.dp/100000)
+		fun = np.vectorize(staggered_tube_bank);
+
+		self.Nu = fun(self.Re, self.Pr)
+	
 	def disp(self):
-		print "D        ",self.D
-		print "PT       ",self.PT
-		print "NT       ",self.NT
-		print "NL       ",self.NL
-		print "rho      ",self.rho
-		print "mu       ",self.mu
-		print "mass_flow",self.mass_flow
-		print "area_flow",self.area_flow
-		print "v        ",self.v
+		print "D micron        ",self.D*1e6
+		print "PT              ",self.PT
+		print "NT              ",self.NT
+		print "NL              ",self.NL
 
-		print "f        ",self.f
-		print "Re       ",self.Re
-		print "dp       ",self.dp
+		Circular.disp(self)
 
 
 

@@ -20,7 +20,7 @@ def log(x1,x2,y1,y2,goal):
 # @param x1 initial guess
 # @param x2 initial guess
 # @param f function f(x)=0
-def shooting(x,f,goal):
+def shooting(obj,x,f,goal):
 	
 	#print type(goal)
 	#print goal
@@ -45,13 +45,13 @@ def shooting(x,f,goal):
 		
 	Y = np.zeros((2,) + np.shape(goal))
 
-	print "X",X
-	print "Y",Y
+	#print "X",X
+	#print "Y",Y
 
-	Y[0] = f(X[0])
-	Y[1] = f(X[1])
+	Y[0] = f(obj,X[0])
+	Y[1] = f(obj,X[1])
 	
-	print "loop"
+	#print "loop"
 
 	i = 0
 	j = 1
@@ -59,7 +59,7 @@ def shooting(x,f,goal):
 	for a in range(3):
 		
 		xn = log(X[j], X[i], Y[j], Y[i], goal)
-		yn = f(xn)
+		yn = f(obj,xn)
 		
 		"""
 		if xn < 0:
@@ -70,8 +70,8 @@ def shooting(x,f,goal):
 			break
 		"""
 		
-		print np.shape(X)
-		print np.shape(xn)
+		#print np.shape(X)
+		#print np.shape(xn)
 		
 		X = np.append(X, np.reshape(xn, (1,) + np.shape(xn)), 0)
 		Y = np.append(Y, np.reshape(yn, (1,) + np.shape(yn)), 0)
@@ -101,11 +101,15 @@ def shooting(x,f,goal):
 
 	#y = y + 1e5
 
-	#pl.plot(x,y,'o')
-	#pl.loglog(x,y,'o')
-	#pl.show()
+	def plot():
+		
 
-	print X
+		pl.plot(X,Y,'o')
+		pl.loglog(X,Y,'o')
+		pl.show()
+	#plot()
+
+	#print X
 
 	return X[-1]
 
