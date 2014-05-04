@@ -9,6 +9,7 @@ import inspect
 #import pickle
 #import signal
 import sys
+import os
 
 from face import *
 from patch import *
@@ -271,10 +272,21 @@ class Problem:
 	def save(self):
 		f = open('case_' + self.name, 'w')
 		pickle.dump(self, f)
-	
+
 	def write(self, equ_name):
-		for g in self.patch_groups:
-			g.write(equ_name)
+		
+		directory = 'data/' + self.name + '/'
+	
+		if not os.path.exists(directory):
+			os.makedirs(directory)
+
+		name = 'prof_' + equ_name + '.txt'
+		
+		with open(directory + name,'w') as f:
+			for g in self.patch_groups:
+				print g
+				g.write(equ_name,f)
+
 
 
 

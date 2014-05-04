@@ -167,8 +167,8 @@ class Circular(Array):
 		self.stress_max = self.C * self.stress_pin
 
 	def disp(self):
-		print "stress_pin MPa  ", self.stress_pin
-		print "stress_max MPa  ", self.stress_max
+		print "stress_pin MPa  ", self.stress_pin*1e-6
+		print "stress_max MPa  ", self.stress_max*1e-6
 		
 		RectZone.disp(self)
 
@@ -197,9 +197,29 @@ class Staggered(Circular):
 	
 	def disp(self):
 		print "D micron        ",self.D*1e6
+		print "R micron        ", self.D * 0.5 * 1e6
 		print "PT              ",self.PT
+		print "PL              ",self.PL
 		print "NT              ",self.NT
 		print "NL              ",self.NL
+		print "SL micron       ",self.SL*1e6
+		print "ST micron       ",self.ST*1e6
+		print "ST half micron  ",self.ST*1e6*0.5
+		print "Gap micron      ",self.gap*1e6
+		print
+		zm = self.gap
+		zp = self.gap
+		n = round(self.NL)
+		print "n               ",n
+		print "inlet x0        ",0
+		print "inlet x1        ",self.ST / 2 * 1e6
+		print "inlet z0        ",(self.SL - zm) * 1e6
+		print "inlet z1        ",self.SL * 1e6
+		print "solar z0        ",self.SL * 1e6
+		print "solar z1 cm     ",(n + 2.5) * self.SL * 1e2
+
+		
+		print
 
 		Circular.disp(self)
 

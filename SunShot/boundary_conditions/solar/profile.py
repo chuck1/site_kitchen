@@ -3,6 +3,7 @@
 import sys, os
 import numpy as np
 import matplotlib.pyplot as plt
+import math
 
 module_dir = os.environ["HOME"] + "/Documents/Programming/Python/Modules/"
 sys.path.append(module_dir)
@@ -11,6 +12,38 @@ import mycsv
 
 # a*(x*x + y*y) + b*(x + y) + c
 
+def numerically_integrate_exp_form_1(a,b,x1,y1):
+	# f = a * exp(b * x**2)
+	
+	res = 0.01
+
+	x = np.linspace(0, x1, 100)
+	y = np.linspace(0, y1, 100)
+	
+	A = x1 * y1
+	A_cell = (x[1]-x[0]) * (y[1]-y[0])
+
+	X,Y = np.meshgrid(x,y)
+	
+	R2 = np.square(X) + np.square(Y)
+	
+	#R = np.sqrt(R2)
+	
+	F = a * np.exp(b * R2) * A_cell
+	
+	def plot():
+		CS = plt.contourf(X,Y,F)
+		CB = plt.colorbar(CS,format='%e')
+		CB.set_label('heat flux (W/m2)')
+		plt.axis('equal')
+		plt.show()
+	
+	#plot()
+	
+	aa = np.sum(F) / A
+	print "area average = {0:e}".format(aa)
+	return aa
+	
 def fun(x,a,b):
 	y = a*x*x + b
 	return y
@@ -104,7 +137,8 @@ filename = sys.argv[1]
 
 
 # half width
-w = 1.5e-2 + 0.000886
+#w = 1.5e-2 + 0.000886
+w = 0.5e-2 + 0.00012826330742
 
 data = mycsv.read(filename)
 
@@ -160,21 +194,40 @@ print p1
 print "parabola vertex x =",-p1[1] / 2. / p1[0]
 
 
+def high_res_x(x):
+	return np.linspace(x[0],x[-1],1000)
+	
+def plot1():
+	plt.plot(x,y,'o')
+	x3 = high_res_x(x2)
+	plt.plot(x3,f(x3),'-')
+	plt.plot(x3,l3(x3),'-')
+	
+	plt.xlabel('position (m)')
+	plt.ylabel('heat flux (W/m2)')
+	plt.legend(['experimental','parabola','normal distribution'], loc='lower center')
+	
+	plt.show()
+
+A = math.exp(p3[1])
+B = p3[0]
+
+print "A {0:e} B {1:e}".format(A,B)
+
+f_int_1 = numerically_integrate_exp_form_1(A, B, 5e-3, 5e-3)
+
+A2 = A * 4e6 / f_int_1
+
+print "A scaled = {0:e}".format(A2)
+
+f_int_2 = numerically_integrate_exp_form_1(A2, B, 5e-3, 5e-3)
+
+plot1()
+
+sys.exit()
 
 
 
-plt.plot(x,y,'o')
-plt.plot(x2,f(x2),'-')
-plt.plot(x2,l3(x2),'-')
-
-plt.xlabel('position (m)')
-plt.ylabel('heat flux (W/m2)')
-plt.legend(['experimental','parabola','normal distribution'], loc='lower center')
-
-
-
-
-plt.show()
 
 
 
@@ -184,17 +237,6 @@ plt.show()
 
 
 
-
-
-
-
-
-
-
-
-
-
-sys.exit(0)
 
 
 
@@ -219,7 +261,7 @@ S = 4e6 * w * w;
 
 S1 = integrate( (min[0]-xc), (max[0]-xc), (min[2]-zc), (max[2]-zc), a, b, c )
 
-plot2d(filename,a,c)
+#plot2d(filename,a,c)
 
 
 
@@ -230,22 +272,21 @@ sys.exit(0)
 
 
 
-x = np.arange(101) / 100.0 * w + min[0]
-z = np.arange(101) / 100.0 * rng[2] + min[2]
+def plot():
+	x = np.arange(101) / 100.0 * w + min[0]
+	z = np.arange(101) / 100.0 * rng[2] + min[2]
 
-X,Z = np.meshgrid(x,z)
+	X,Z = np.meshgrid(x,z)
 
-s = a*X*X + b*Z*Z + c
+	s = a*X*X + b*Z*Z + c
 
-CS = plt.contourf(X,Z,s)
-CB = plt.colorbar(CS,format='%e')
-CB.set_label('heat flux (W/m2)')
-plt.axis('equal')
-plt.xlabel('x (cm)')
-plt.ylabel('y (cm)')
-
-
-plt.show()
+	CS = plt.contourf(X,Z,s)
+	CB = plt.colorbar(CS,format='%e')
+	CB.set_label('heat flux (W/m2)')
+	plt.axis('equal')
+	plt.xlabel('x (cm)')
+	plt.ylabel('y (cm)')
+	plt.show()
 
 
 

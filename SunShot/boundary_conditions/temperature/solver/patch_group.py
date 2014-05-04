@@ -84,7 +84,7 @@ class patch_group:
 			for f in p.faces.flatten():
 				yield f
 
-	def write(self, equ_name):
+	def write(self, equ_name, file):
 		
 		x = np.zeros(0)
 		y = np.zeros(0)
@@ -103,26 +103,25 @@ class patch_group:
 		
 		n = np.size(x,0)
 		
-		f = open(name + '.txt','w')
+		
+		file.write("(({0} point {1})\n".format(name,n))
+		
 
-		f.write("(({0} point {1})\n".format(name,n))
+		file.write("(x\n")
+		file.write("".join(np_join(x)) + ")\n")
 		
-		f.write("(x\n")
-		f.write("".join(np_join(x)) + ")\n")
-		
-		f.write("(y\n")
-		f.write("".join(np_join(y)) + ")\n")
+		file.write("(y\n")
+		file.write("".join(np_join(y)) + ")\n")
 
-		f.write("(z\n")
-		f.write("".join(np_join(z)) + ")\n")
+		file.write("(z\n")
+		file.write("".join(np_join(z)) + ")\n")
 		
-		f.write("(w\n")
-		f.write("".join(np_join(w)) + ")\n")
-		#f.write(" ".join("{0:e}".format(a) for a in w) + ")")
+		file.write("(w\n")
+		file.write("".join(np_join(w)) + ")\n")
+		#file.write(" ".join("{0:e}".format(a) for a in w) + ")")
 		
-		f.write(")")
+		file.write(")\n")
 		
-		f.close()
 		
 		
 def np_join(x):

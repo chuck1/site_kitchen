@@ -174,19 +174,21 @@ stitch(f_po_zo, f_ho_yp_o)
 stitch(f_po_zi, f_ho_yp_i)
 
 
+def solve_with_source():
+	prob.solve2(1e-4, 1e-2, True)
+	prob.solve('s', 1e-2, True)
+	prob.value_add('s', -1.0)
+	prob.value_normalize('s')
+	prob.copy_value_to_source('s','T')
+	prob.solve2('T', 1e-2, 1e-2, True)
 
-#prob.solve2(1e-4, 1e-2, True)
-prob.solve('s', 1e-2, True)
-prob.value_add('s', -1.0)
-prob.value_normalize('s')
 
-prob.copy_value_to_source('s','T')
-
-prob.solve2('T', 1e-2, 1e-2, True)
+prob.solve('T', 1e-2, True)
 
 #prob.save()
 
-prob.plot('T')
+#prob.plot('T')
 
+prob.write('T')
 
 
