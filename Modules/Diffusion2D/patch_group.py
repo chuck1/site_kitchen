@@ -31,11 +31,10 @@ class patch_group:
 		def debug():
 			print "reset_s"
 			print "equ_name",equ_name
-			print equ.name
-			print "v_m",v_m
-			print "v_0",v_0
-			print "dS",dS
-			print "S",self.S[equ_name]
+			print "v_m     ",v_m
+			print "v_0     ",v_0
+			print "dS      ",dS
+			print "S       ",self.S[equ_name]
 		
 		v_0 = self.v_0[equ_name]
 		
@@ -54,18 +53,10 @@ class patch_group:
 				v += equ.mean() * a
 				A += a
 		
-		v_m = v/A
+		print "name       ",self.name
+		print "num patches",len(self.patches)
 
-		#equ = self.equs[equ_name]
-		
-		#vW = self.T_boundary(-2)
-		#vE = self.T_boundary(2)
-		#vS = self.T_boundary(-3)
-		#vN = self.T_boundary(3)
-		
-		#dx = (self.ext[0,1] - self.ext[0,0]) / 2.0
-		#dy = (self.ext[1,1] - self.ext[1,0]) / 2.0
-		#A = dx * dy
+		v_m = v/A
 		
 		dv = v_0 - v_m
 		

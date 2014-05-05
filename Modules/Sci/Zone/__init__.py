@@ -1,8 +1,11 @@
 import math
 import numpy as np
 import pylab as pl
+import units
 
 import Sci.Fluids as fl
+
+si_density = units.named_unit('si_density', ['Kg'], ['m','m','m'])
 
 def cylinder_in_cross_flow(Re, Pr):
 	#C = np.zeros(np.shape(self.Re))
@@ -18,6 +21,23 @@ def cylinder_in_cross_flow(Re, Pr):
 	Nu = C * Re**m * Pr**(float(1)/float(3))
 	return Nu
 
+def pressure_drop_tube_bank(Ke, f, NL):
+	dp = NL * f * Ke
+	
+	if bad(dp):
+		print "pressure_drop_tube_bank"
+		print "Ke",Ke
+		print "f ",f
+		print "NL",NL
+		print "dp",dp
+		raise 0
+
+	return dp
+
+def pressure_drop_staggered_tube_bank(Ke, Re, NL):
+	f = 0.8
+	return pressure_drop_tube_bank(Ke, f, NL)
+
 def staggered_tube_bank(Re, Pr):
 	#C = np.zeros(np.shape(self.Re))
 	#m = np.zeros(np.shape(self.Re))
@@ -30,9 +50,15 @@ def staggered_tube_bank(Re, Pr):
 		return cylinder_in_cross_flow(Re, Pr)
 	else:
 		return 0
-
+	
 	Nu = C * Re**m * Pr**0.36
 	return Nu
+
+def bad(arr):
+	print type(arr)
+	return np.any(np.logical_or(np.isnan(arr),np.isinf(arr)))
+
+# classes ------------------------------
 
 class RectZone:
 	# fluid
@@ -41,9 +67,34 @@ class RectZone:
 	# flux
 	# T_in
 	# T_out
+	
+	
+	def __init__(self, W, L, flux, fluid_name, T_in, T_out):
+		self.W		= np.squeeze(np.array(W))
+		self.L		= np.squeeze(np.array(L))
+		self.flux	= np.squeeze(np.array(flux))
+		self.set_attr("T_in",T_in)
+		self.T_out	= np.squeeze(np.array(T_out))
 
-	def __init__(self):
-		pass
+		self.fluid	= fl.Fluid(fluid_name)
+
+		print "init"
+		print "T_in     ",self.T_in
+		print "T_out    ",self.T_out
+	
+	def set_attr(self, name, value):
+		value = np.squeeze(np.array([value]))
+		if np.shape(value) == ():
+			value = np.reshape(value,(1,))
+		setattr(self, name, value)
+
+	def print_attr(self, attr):
+		for a in attr:
+			try:
+				v = self.getattr(a)
+				print "{0:20} =".format(a), v
+			except:
+				print "{0:20} = not found"
 
 	def copy(self, rz):
 		self.W		= rz.W
@@ -55,8 +106,13 @@ class RectZone:
 		self.fluid_operating_pressure = rz.fluid_operating_pressure
 
 	def get_fluid_prop(self):
-		TA = (self.T_in + self.T_out)*0.5
-		
+		print self.T_in,type(self.T_in)
+		print self.T_out,type(self.T_out)
+
+		TA = (self.T_in + self.T_out) * 0.5
+	
+		print TA,type(TA)
+
 		self.mu = self.fluid.get('viscosity',TA)
 		self.rho = self.fluid.get('density',TA)
 		self.Pr = self.fluid.Pr(TA)
@@ -66,6 +122,23 @@ class RectZone:
 
 		# global mass flow
 		self.mass_flow = self.flux * self.L * self.W / self.dh
+		
+		def debug():
+			print "W        ",self.W
+			print "L        ",self.L
+			print "dh       ",self.dh
+			print "flux     ",self.flux
+			print "mass_flow",self.mass_flow
+		debug()
+		
+		if bad(self.mass_flow):
+			self.print_attr(["T_in","T_out"])
+			print "W        ",self.W
+			print "L        ",self.L
+			print "dh       ",self.dh
+			print "flux     ",self.flux
+			print "mass_flow",self.mass_flow
+			raise 0
 
 	def run(self):
 		self.get_fluid_prop()
@@ -84,12 +157,23 @@ class RectZone:
 	def get_Re(self):
 		self.Re = self.rho * self.D_h * self.v / self.mu
 		self.Re = np.array(self.Re)
+		
+		if np.any(np.isnan(self.Re)):
+			print "v ",self.v
+			print "Re",self.Re
+			raise 0
 
 	def get_velocity(self):
 		# velocity through single gap or channel
 		self.v = self.mass_flow / (self.rho * self.area_flow * self.NT)
-	
+		
+		if bad(self.v):
+			print "mass_flow",self.mass_flow
+			print "area_flow",self.area_flow
+			raise 0
+
 	def disp(self):
+		print 
 		print "rho kg/m3       ",self.rho
 		print "mu m2/s         ",self.mu
 		print "mass_flow       ",self.mass_flow
@@ -145,11 +229,10 @@ class Rectangular(Straight):
 class Array(RectZone):
 	def __init__(self):
 		pass
-	def pressure_drop(self):
-		self.dp = self.NL * self.f * self.rho * self.v**2 / 2.0
 
 	def get_friction(self):
-		self.f = 64.0 / self.Re
+		#self.f = 64.0 / self.Re
+		self.f = 0.8
 
 class Circular(Array):
 	def __init__(self):
@@ -183,11 +266,24 @@ class Staggered(Circular):
 		self.NL = self.L / self.SL
 		
 		self.gap = self.ST - self.D
-
+		
 		# area of single gap
 		self.area_flow = math.pi * self.gap**2 / 4.0
 		
 		self.D_h = self.D		
+
+		if bad(self.area_flow):
+			print "D  ",self.D
+			print "ST ",self.ST
+			print "gap",self.gap
+			raise 0
+
+	def pressure_drop(self):
+		self.KE = self.rho * np.power(self.v,2) * 0.5
+		self.dp = pressure_drop_staggered_tube_bank(self.KE, self.Re, self.NL)
+		
+		print "dp",self.dp
+
 
 	def get_nusselt_number(self):
 
@@ -206,17 +302,31 @@ class Staggered(Circular):
 		print "ST micron       ",self.ST*1e6
 		print "ST half micron  ",self.ST*1e6*0.5
 		print "Gap micron      ",self.gap*1e6
+
+		
+		m = self.mass_flow / self.NT
+	
+		CD = 1.2
+		
+		dp_cyl_single = self.KE * CD
+		dp_cyl = dp_cyl_single * self.NL
+
+		print "dp cyl bar       ",dp_cyl*1e-5
+		
+		print "mass flow per ST ",m
 		print
+		
 		zm = self.gap
 		zp = self.gap
 		n = round(self.NL)
+
 		print "n               ",n
 		print "inlet x0        ",0
 		print "inlet x1        ",self.ST / 2 * 1e6
 		print "inlet z0        ",(self.SL - zm) * 1e6
 		print "inlet z1        ",self.SL * 1e6
-		print "solar z0        ",self.SL * 1e6
-		print "solar z1 cm     ",(n + 2.5) * self.SL * 1e2
+		print "solar z0        ",(self.SL - zm) * 1e6
+		print "solar z1 cm     ",((n + 1.5) * self.SL + zp) * 1e2
 
 		
 		print

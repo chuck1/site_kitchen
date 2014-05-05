@@ -1,6 +1,11 @@
 import math
 import numpy as np
 import pylab as pl
+from units import unit
+import units.predefined
+import pydoc
+
+units.predefined.define_units()
 
 #import Sci.Fluid.pressure as pres
 #import Sci.Fluid.heat as heat
@@ -41,20 +46,27 @@ def pressure_drop_from_square_channel(z, D):
 
 # ========================================================================
 
-rz = Sci.Zone.RectZone()
-rz.W  = 1e-2
-rz.L  = 1e-2
-rz.flux = 4e6
-rz.fluid = fl.Fluid('ms1')
-rz.T_in = 300 + 273
-rz.T_out = 600 + 273
+centimeter = unit('cm')
+meter = unit('m')
+watt = unit('W')
+kelvin = unit('K')
+
+ms = unit("m*m")
+
+print ms(1) / meter(1)
+
+rz = Sci.Zone.RectZone(
+		centimeter(1),
+		centimeter(1),
+		watt(4e6) / meter(1)**2,
+		'ms1',
+		kelvin(300 + 273.15),
+		kelvin(600 + 273.15))
 rz.fluid_operating_pressure = 10 * 1e5
 
 # stress in pin
 
 #known
-
-#fluid_pressure = 10 * 1e5
 
 print
 print "staggered"
@@ -63,7 +75,7 @@ print
 ch = Sci.Zone.Staggered()
 ch.copy(rz)
 
-ch.D = 5e-4
+ch.D = np.array(5e-4)
 #ch.D = 4e-4 + np.arange(0.0,1.0,0.01) * 5e-4
 
 ch.PT = 1.5
@@ -86,14 +98,14 @@ x_str = 'D micrometer'
 #pl.show()
 
 # find diameter that gives desired pressure drop
-D = shoot.shooting(ch, [2e-4, 6e-4], pressure_drop_from_diameter, 1e5 * np.ones(np.shape(ch.PT)))
+D = shoot.shooting(ch, [2e-4, 6e-4], pressure_drop_from_diameter, 0.6e5 * np.ones(np.shape(ch.PT)))
 
 ch.disp()
 
 #Nu = heat.cross_flow_tube_bank_staggered(ch.Re, ch.Pr)
 
 print
-print "rectangular"
+#print "rectangular"
 print
 
 ch2 = Sci.Zone.Rectangular()
@@ -108,7 +120,7 @@ D = shoot.shooting(ch2, [1e-6, 1e-4], pressure_drop_from_square_channel, 1e5)
 
 ch2.run()
 
-ch2.disp()
+#ch2.disp()
 
 
 

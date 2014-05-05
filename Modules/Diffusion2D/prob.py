@@ -275,7 +275,7 @@ class Problem:
 
 	def write(self, equ_name):
 		
-		directory = 'data/' + self.name + '/'
+		directory = self.name + '/'
 	
 		if not os.path.exists(directory):
 			os.makedirs(directory)

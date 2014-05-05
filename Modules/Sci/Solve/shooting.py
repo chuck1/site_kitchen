@@ -21,11 +21,20 @@ def log(x1,x2,y1,y2,goal):
 # @param x2 initial guess
 # @param f function f(x)=0
 def shooting(obj,x,f,goal):
+	print "shooting method"
 	
+	# x[0] and x[1] are the two initial guesses
+
+	goal = np.array(goal)
+
+	print "x",x
+	print "f",f
+	print "goal",goal
+	print "shape(goal)",np.shape(goal)
 	#print type(goal)
 	#print goal
 
-	goal = np.array(goal)
+	
 
 		
 	X = np.zeros((2,) + np.shape(goal))
@@ -35,22 +44,16 @@ def shooting(obj,x,f,goal):
 	
 	X[0] = np.ones(np.shape(goal)) * x[0]
 	X[1] = np.ones(np.shape(goal)) * x[1]
-	
-	#X = np.array(goal)
-	
-	#for i in range(X.size):
-	#	X[i] = shooting(x, f, goal[i])
-	
-	#return X
-		
-	Y = np.zeros((2,) + np.shape(goal))
 
-	#print "X",X
-	#print "Y",Y
+	
+
+	Y = np.zeros((2,) + np.shape(goal))
 
 	Y[0] = f(obj,X[0])
 	Y[1] = f(obj,X[1])
 	
+	#print "X",X
+	#print "Y",Y
 	#print "loop"
 
 	i = 0
@@ -69,6 +72,15 @@ def shooting(obj,x,f,goal):
 		if math.isinf(yn):
 			break
 		"""
+		
+		def plot():
+			print X
+			print Y
+			pl.plot(X,Y,'o')
+			pl.loglog(X,Y,'o')
+			pl.show()
+		#plot()
+	
 		
 		#print np.shape(X)
 		#print np.shape(xn)
@@ -102,8 +114,6 @@ def shooting(obj,x,f,goal):
 	#y = y + 1e5
 
 	def plot():
-		
-
 		pl.plot(X,Y,'o')
 		pl.loglog(X,Y,'o')
 		pl.show()
