@@ -1,13 +1,9 @@
-import osi
+import os
 import math
 import re
 import sys
 from lxml import etree
 import numpy as np
-import units
-
-si_density = units.named_unit('si_density', ['Kg'], ['m','m','m'])
-
 
 modules_dir = os.environ["HOME"] + '/Documents/Programming/Python/Modules/'
 media_dir = modules_dir + 'Sci/media/'
@@ -31,36 +27,20 @@ class Poly:
 		
 		self.a = np.array([])
 		
-		print 'poly tag =', node.tag, "attr =",node.attrib
+		#print 'poly tag =', node.tag, "attr =",node.attrib
 		
-		try:
-			unit_name = node.attrib['unit']
-		except:
-			raise ValueError('units attribute missing')
-		
-		unitx = unit(unit_name)
-		unity = unit(unity_name)
-
 		#print 'poly text=%r' % node.text
-		print 'split {0}'.format( split )
+		#print 'split {0}'.format( split )
 		
 		# process coefficients
-		for s,i in zip(split,range(len(split))): #len(split)-1]:
-			if s:
-				#print "s=%r" % s
-				v = float(s)
-				print "v =",v,"p =",p
-				
-				val = v / np.power(u(1),p)
-
-				print "val =",val
-				self.a = np.append(self.a, val)
+		for s in split:
+			v = float(s)
+			self.a = np.append(self.a, v)
 	
-		print "u =",u
-		print "a =",self.a
+		#print "a =",self.a
 
 	def eval( self, X ):
-		print "X",X
+		#print "X",X
 		if isinstance(X, float):
 			Y = np.array( [X]*len(self.a) )
 			
@@ -71,9 +51,17 @@ class Poly:
 			Z = np.array([])
 			for x in X:
 				Y = np.array([x] * len(self.a))
-				print "Y",Y
-				print "a",self.a
-				print self.a * np.power(Y, range(len(self.a)))
+				#print "Y",Y
+				
+				t1 = np.power(Y, range(len(self.a)))
+				#print "a ",self.a,np.shape(self.a)
+				#print "t1",t1,np.shape(t1)
+				#print "--",self.a[0] * t1[0]
+				#if len(self.a) > 1:
+				#print "--",self.a[1] * t1[1]
+
+				#print np.multiply(self.a, t1)
+
 				z = np.sum(self.a * np.power(Y, range(len(self.a))))
 
 				Z = np.append(Z,z)
@@ -145,8 +133,8 @@ class Fluid:
 		return self.dict['cp'].poly[0].integrate( X );
 	def Pr(self, T):
 		cp = self.get('cp',T)
-		mu = self.get('viscosity',T)
-		k = self.get('k',T)
+		mu = self.get('dynamic_viscosity',T)
+		k = self.get('thermal_conductivity',T)
 		
 		print cp,mu,k
 

@@ -1,11 +1,12 @@
+import sys
 import math
 import numpy as np
 import pylab as pl
-from units import unit
-import units.predefined
+#from units import unit
+#import units.predefined
 import pydoc
 
-units.predefined.define_units()
+#units.predefined.define_units()
 
 #import Sci.Fluid.pressure as pres
 #import Sci.Fluid.heat as heat
@@ -46,22 +47,15 @@ def pressure_drop_from_square_channel(z, D):
 
 # ========================================================================
 
-centimeter = unit('cm')
-meter = unit('m')
-watt = unit('W')
-kelvin = unit('K')
-
-ms = unit("m*m")
-
-print ms(1) / meter(1)
 
 rz = Sci.Zone.RectZone(
-		centimeter(1),
-		centimeter(1),
-		watt(4e6) / meter(1)**2,
+		1e-2,
+		1e-2,
+		4e6,
 		'ms1',
-		kelvin(300 + 273.15),
-		kelvin(600 + 273.15))
+		300 + 273.15,
+		600 + 273.15)
+
 rz.fluid_operating_pressure = 10 * 1e5
 
 # stress in pin
@@ -78,7 +72,7 @@ ch.copy(rz)
 ch.D = np.array(5e-4)
 #ch.D = 4e-4 + np.arange(0.0,1.0,0.01) * 5e-4
 
-ch.PT = 1.5
+ch.PT = 2.0
 #ch.PT = np.arange(2.0, 5.0, 1.0)
 
 # choose independent var
@@ -98,7 +92,10 @@ x_str = 'D micrometer'
 #pl.show()
 
 # find diameter that gives desired pressure drop
-D = shoot.shooting(ch, [2e-4, 6e-4], pressure_drop_from_diameter, 0.6e5 * np.ones(np.shape(ch.PT)))
+#D = shoot.shooting(ch, [2e-4, 6e-4], pressure_drop_from_diameter, 0.6e5 * np.ones(np.shape(ch.PT)))
+D = 250e-6
+
+ch.run()
 
 ch.disp()
 

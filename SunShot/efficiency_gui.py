@@ -17,32 +17,36 @@ class HelloWorld:
 	# in this example. More on callbacks below.
 	def hello(self, widget, data=None):
 		n = [0]
-		for i in range(1):	
+		for i in range(1):
 			s = self.entry[i].get_text()
 			if s:
 				n[i] = float(s)
 			else:
 				print "empty string"
 				return
+		# get entries
+		T = float(self.entry_temp.get_text())
+		q_abs = float(self.entry_flux.get_text())
 		
-		T = float(self.entry[0].get_text())
 		
-		T_inf = 298.0
+		T_inf = 25 + 273.0
 		h_nat = 15.0
 		sigma = 5.67 * pow(10,-8)
 		emiss = 0.95
 		
-		q_abs = 1e6
+		
 		q_rad = emiss * sigma * (pow(T,4) - pow(T_inf,4))
 		q_conv = h_nat * (T - T_inf)
 		
-		eff = q_abs * emiss / (q_abs + q_rad + q_conv)
+		# thermal
+		eff_ther = q_abs / (q_abs + q_rad + q_conv)
 		
-		self.entry[1].set_text("{0}".format(eff))
+		self.entry_ther.set_text("{0}".format(eff_ther))
+	
+		# receiver
+		eff_recv = eff_ther * emiss
 		
-		eff = q_abs  / (q_abs + q_rad + q_conv)
-		
-		self.entry[2].set_text("{0}".format(eff))
+		self.entry_recv.set_text("{0}".format(eff_recv))
 
 
 	def delete_event(self, widget, event, data=None):
@@ -83,12 +87,12 @@ class HelloWorld:
 		vbox.pack_start(self.button[1], True, True, 0)
 		self.button[1].show()
 
-		labels = ["temperature (K)","efficiency1","efficiency2"];
-		x = [0,0,0]
+		labels = ["temperature (K)","flux (w/m2)","eff thermal","eff receiver"];
+		x = [0,0,0,0]
 		
 		self.vbox = []
 		self.entry = []
-		for i in range(3):
+		for i in range(4):
 			vb = gtk.VBox(False,0)
 			vbox.pack_start(vb, True, True, 0)
 			vb.show()
@@ -105,6 +109,12 @@ class HelloWorld:
 			
 			self.vbox.append(vb)
 		
+		self.entry_temp = self.entry[0]
+		self.entry_flux = self.entry[1]
+		self.entry_ther = self.entry[2]
+		self.entry_recv = self.entry[3]
+
+
 		
 		# and the window
 		self.window.show()

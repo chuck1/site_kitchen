@@ -8,25 +8,19 @@
 		</poly>
 	</property>
 	<property name="cp">
-		<poly unit="K">
+		<poly unitx="K" unity="si_specific_heat">
 			2.018200E+03,
 			-8.302800E-01
 		</poly>
 	</property>
-	<property name="thermal-conductivity">
-		<poly unit="K">
+	<property name="thermal_conductivity">
+		<poly unitx="K" unity="si_thermal_conductivity">
 			4.800000E-01
 		</poly>
 	</property>
-	<property name="viscosity">
-		<poly unit="K">
+	<property name="dynamic_viscosity">
+		<poly unitx="K" unity="si_dynamic_viscosity">
 			1.90E-3
 		</poly>
 	</property>
-	<property name="k">
-		<poly unit="K">
-			0.53
-		</poly>
-	</property>
-
 </fluid>

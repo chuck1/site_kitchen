@@ -1,11 +1,12 @@
 import math
 import numpy as np
 import pylab as pl
-import units
+#import units
 
 import Sci.Fluids as fl
 
-si_density = units.named_unit('si_density', ['Kg'], ['m','m','m'])
+#si_density = units.named_unit('si_density', ['Kg'], ['m','m','m'])
+#ddsi_specific_heat = units.named_unit('si_specific_heat', ['KJ
 
 def cylinder_in_cross_flow(Re, Pr):
 	#C = np.zeros(np.shape(self.Re))
@@ -106,14 +107,14 @@ class RectZone:
 		self.fluid_operating_pressure = rz.fluid_operating_pressure
 
 	def get_fluid_prop(self):
-		print self.T_in,type(self.T_in)
-		print self.T_out,type(self.T_out)
+		#print self.T_in,type(self.T_in)
+		#print self.T_out,type(self.T_out)
 
 		TA = (self.T_in + self.T_out) * 0.5
 	
-		print TA,type(TA)
+		#print TA,type(TA)
 
-		self.mu = self.fluid.get('viscosity',TA)
+		self.mu = self.fluid.get('dynamic_viscosity',TA)
 		self.rho = self.fluid.get('density',TA)
 		self.Pr = self.fluid.Pr(TA)
 
@@ -129,7 +130,7 @@ class RectZone:
 			print "dh       ",self.dh
 			print "flux     ",self.flux
 			print "mass_flow",self.mass_flow
-		debug()
+		#debug()
 		
 		if bad(self.mass_flow):
 			self.print_attr(["T_in","T_out"])

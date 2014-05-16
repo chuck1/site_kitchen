@@ -82,12 +82,16 @@ def shooting(obj,x,f,goal):
 		#plot()
 	
 		
-		#print np.shape(X)
-		#print np.shape(xn)
+		print X,np.shape(X)
+		print Y,np.shape(Y)
+		print xn,np.shape(xn)
+		print yn,np.shape(yn)
 		
+		#X = np.append(X, np.reshape(xn, (1,) + np.shape(xn)), 0)
 		X = np.append(X, np.reshape(xn, (1,) + np.shape(xn)), 0)
-		Y = np.append(Y, np.reshape(yn, (1,) + np.shape(yn)), 0)
-		
+		#Y = np.append(Y, np.reshape(yn, (1,) + np.shape(yn)), 0)
+		Y = np.append(Y, np.reshape(yn, (1,)), 0)
+
 		if(np.all(np.fabs(Y[-1] - goal) < 1.0)):
 			break
 		
