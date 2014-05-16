@@ -83,10 +83,6 @@ parser.add_argument('src')
 parser.add_argument('dst')
 args = parser.parse_args()
 
-if not os.path.isfile(args.src):
-	print "file does not exist"
-	sys.exit(1)
-
 for root, dirs, files in os.walk('.'):
 	for file in files:
 		roo,ext = os.path.splitext(file)
@@ -97,11 +93,11 @@ for root, dirs, files in os.walk('.'):
 			#print path
 			fix_links(path, args.src, args.dst)
 
-
 dst_dir = os.path.dirname(args.dst)
+if dst_dir:
+	if not os.path.exists(dst_dir):
+		 os.makedirs(dst_dir)
 
-if not os.path.exists(dst_dir):
-	 os.makedirs(dst_dir)
 
 shutil.move(args.src, args.dst)
 
