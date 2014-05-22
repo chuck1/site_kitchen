@@ -125,7 +125,7 @@ class Config:
 		#logging.info(self.cat, self.x
 	
 	def run(self):
-		self.root = self.get_root(self.path)
+		self.get_root(self.path)
 
 	def get_root(self, path):
 		#logging.info("loading '{0}'".format(filename)
@@ -133,17 +133,13 @@ class Config:
 		if not os.path.isfile(path):
 			raise ValueError(clr.RED + "{0}: No such file.".format(path) + clr.END)
 
-		tree = ET.parse(path)
-		root = tree.getroot()
-
-		self.load_var_from_root(root)
-
-		self.include_files(root, path)
-
+		self.tree = ET.parse(path)
+		self.root = self.tree.getroot()
 		
+		self.load_var_from_root(self.root)
 
-		return root	
-	
+		self.include_files(self.root, path)
+
 	def include_files(self, root, path):
 		# path - path of xml file which is source of root
 
@@ -216,13 +212,15 @@ class Config:
 		text = child.text
 
 		logging.info("load \"{0}\"".format(name))
+		
+		text = text.strip()
 
 		if type == 'string':
-			val = strip_white(text)
+			val = text
 		elif type == 'int':
-			val = int(strip_white(text))
+			val = int(text)
 		elif type == 'float':
-			val = float(strip_white(text))
+			val = float(text)
 		elif type == 'array':
 			val = process_array(text)
 		elif type == 'bool':
@@ -403,10 +401,14 @@ class Case(Config):
 		for s in str: yield s
 	
 	def flu_jou_wall(self, name, child):
-		heat_flux_spec = child.attrib["heat_flux_specification"]
-		heat_flux = self.float_or_var(child.attrib["heat_flux"])
+		heat_flux_spec	= child.attrib["heat_flux_specification"]
+		material	= child.attrib["material"]
+		heat_flux	= self.float_or_var(child.attrib["heat_flux"])
 		
-		for s in FLU.wall_heat_flux_const(name, heat_flux): yield s
+		if heat_flux_spec == "constant":
+			for s in FLU.wall_heat_flux_const(name, heat_flux, material): yield s
+		else:
+			raise ValueError("bad heat flux spec")
 	
 	# ---
 	def script_fluent_materials(self):
