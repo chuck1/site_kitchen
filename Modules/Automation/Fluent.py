@@ -90,7 +90,7 @@ def wall_heat_flux_const(name, heat_flux, material):
 	
 	yield "(resolve_name \"{0}\" \"{1}\")".format(str, name)
 
-	change wall material...
+	#change wall material...
 
 	str = "/define/boundary-conditions/wall ~a 0 no 0 yes {0} no no {1} no no 1".format(material, heat_flux)
 
