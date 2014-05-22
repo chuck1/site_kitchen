@@ -2,13 +2,13 @@ import re
 import os
 import glob
 import sys
+import fnmatch
 
-if len(sys.argv) > 1:
-	cfiles = sys.argv[1:]
-else:
-	cfiles = glob.glob("*.c")
-	ccfiles = glob.glob("*.cpp")
-	cfiles += ccfiles
+cfiles = []
+for root, dirnames, filenames in os.walk('.'):
+	for filename in fnmatch.filter(filenames, '*.cc'):
+		cfiles.append(os.path.join(root, filename))
+
 
 #['foo.c']
 
