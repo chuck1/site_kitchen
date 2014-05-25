@@ -1,5 +1,5 @@
 import re
-import vim
+#import vim
 
 def displaysearch(search):
 	if search is None:
@@ -301,4 +301,14 @@ def reformat():
 	print '%%%'
 	print gchunk.keep
 
+
+if __name__ == '__main__':
+	with open('test.h','r') as f:
+		lines = f.readlines()
+	
+	gchunk = Chunk(lines)
+	gchunk.process()
+
+	print gchunk.keep
+	print gchunk.scope
 
