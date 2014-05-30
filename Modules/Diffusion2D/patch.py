@@ -8,8 +8,9 @@ class Patch(LocalCoor):
 		
 		self.group = group
 		self.name = name
+
+				
 		
-		self.v_bou = v_bou
 		#if not np.shape(self.v_bou) == (2,2):
 		#	print self.v_bou
 		#	raise ValueError('')
@@ -20,7 +21,21 @@ class Patch(LocalCoor):
 		
 		NX = len(indices[self.x])-1
 		NY = len(indices[self.y])-1
+
+		# expand scalar v_bou values
+		for k in v_bou.keys():
+			if isinstance(v_bou[k][0][0], float): v_bou[k][0][0] = np.ones(NY)*v_bou[k][0][0]
+			if isinstance(v_bou[k][0][1], float): v_bou[k][0][1] = np.ones(NY)*v_bou[k][0][1]
+			if isinstance(v_bou[k][1][0], float): v_bou[k][1][0] = np.ones(NX)*v_bou[k][1][0]
+			if isinstance(v_bou[k][1][1], float): v_bou[k][1][1] = np.ones(NX)*v_bou[k][1][1]
+
 		
+		# make sure indices are sorted properly
+		rev = True if normal < 0 else False
+		indices[self.x] = sorted(indices[self.x], reverse=rev)
+		indices[self.y] = sorted(indices[self.y], reverse=rev)
+		
+		# alloc faces array
 		faces = np.empty((NX,NY), dtype=object)
 		
 		for i in range(NX):
@@ -55,7 +70,23 @@ class Patch(LocalCoor):
 				
 				faces[i,j].create_equ('s', self.group.prob.equs['s'])
 				faces[i,j].equs['s'].flag['only_parallel_faces'] = True
+				
+				# alloc v_bou dict in face
+				faces[i,j].v_bou = {}
+				
+				for k in v_bou.keys():
+					# alloc face v_bou list
+					faces[i,j].v_bou[k] = [[0,0],[0,0]]
+					
+					# set face v_bou
+					#logging.debug("".format(np.shape(v_bou[k][)))
 
+					if i == 0:	faces[i,j].v_bou[k][0][0] = v_bou[k][0][0][j]
+					if i == NX-1:	faces[i,j].v_bou[k][0][1] = v_bou[k][0][1][j]
+					if j == 0:	faces[i,j].v_bou[k][1][0] = v_bou[k][1][0][i]
+					if j == NY-1:	faces[i,j].v_bou[k][1][1] = v_bou[k][1][1][i]
+
+				
 				
 		self.npatch = np.array([NX,NY])
 

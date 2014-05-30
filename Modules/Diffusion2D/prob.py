@@ -48,8 +48,8 @@ class Problem:
 		self.equs[name] = e
 		return e 
 
-	def create_patch_group(self, name, v_0, S):
-		g = patch_group.patch_group(self, name, v_0, S)
+	def create_patch_group(self, name, v_0, S, v_0_point):
+		g = patch_group.patch_group(self, name, v_0, S, v_0_point)
 		
 		self.patch_groups.append(g)
 
@@ -240,7 +240,7 @@ class Problem:
 		return it
 		
 
-	def solve2(self, equ_name, cond1_final, cond2, ver):
+	def solve2(self, equ_name, cond1_final, cond2, res_coeff, ver):
 		#cond1 = 1
 		
 		#it_cond = 2
@@ -248,7 +248,7 @@ class Problem:
 		R = 1.0
 		for it_2 in range(self.it_max_2):
 			
-			cond1 = R / 1000.0 # target residual for inner loop is proportional to current residual for outer loop
+			cond1 = R * res_coeff # target residual for inner loop is proportional to current residual for outer loop
 			
 			it_1 = self.solve(equ_name, cond1, ver, R)
 			

@@ -4,6 +4,7 @@ import numpy as np
 import multiprocessing
 from matplotlib import cm
 import pylab as pl
+import logging
 
 from unit_vec import *
 
@@ -56,7 +57,7 @@ class Conn:
 			try:
 				v = self.twin.equs[name]
 			except:
-				print "warning: array not available"
+				#print "warning: array not available"
 				v = np.zeros(n)
 		
 		return v
@@ -239,17 +240,29 @@ class Face(LocalCoor):
 			self.step_pre_cell_open_bou(equ, ind, V)
 
 	def step_pre_cell_open_bou(self, equ, ind, V):
+		logging.debug('step_pre_cell_open_bou')
+		
 		v,sv = v2is(V)
 		indn = list(ind)
 		indn[v] += sv
 		
-		v_bou = self.patch.v_bou[equ.name][v][(sv+1)/2]
+		p = 0 if v==1 else 1
 		
-		if v_bou == 0.0:
-			# insulated
-			equ.v[tuple(indn)] = equ.v[tuple(ind)]
+		logging.debug("V    {0}".format(V))
+		logging.debug("ind  {0}".format(ind))
+		logging.debug("indn {0}".format(indn))
+		
+		# get stored boundary value
+		v_bou = self.v_bou[equ.name][v][(sv+1)/2]
+
+		if isinstance(v_bou,float):
+			pass
 		else:
-			# constant temperature
+			v_bou = v_bou[ind[p]]
+		
+		if v_bou == 0.0: # insulated
+			equ.v[tuple(indn)] = equ.v[tuple(ind)]
+		else: # constant temperature
 			equ.v[tuple(indn)] = 2.0 * v_bou - equ.v[tuple(ind)]
 		
 

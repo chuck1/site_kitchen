@@ -4,13 +4,14 @@ import numpy as np
 import patch
 
 class patch_group:
-	def __init__(self, prob, name, v_0, S):
+	def __init__(self, prob, name, v_0, S, v_0_point):
 		
 		self.patches = []
 
 		self.prob = prob
 		self.name = name
 		self.v_0 = v_0
+		self.v_0_point = v_0_point
 
 		self.S = S
 
@@ -28,8 +29,11 @@ class patch_group:
 		return p
 
 	def reset_s(self, equ_name):
+		# update source term
+
 		def debug():
 			print "reset_s"
+			print "name    ",self.name
 			print "equ_name",equ_name
 			print "v_m     ",v_m
 			print "v_0     ",v_0
@@ -41,26 +45,43 @@ class patch_group:
 		if v_0 == 0.0:
 			return
 		
-		# current area-weighted-average value
-		v = float(0)
-		A = float(0)
+		def awa():
+			# current area-weighted-average value
+			v = float(0)
+			A = float(0)
+			
+			for p in self.patches:
+				for f in p.faces.flatten():
+					equ = f.equs[equ_name]
+			
+					a = f.area()
+					v += equ.mean() * a
+					A += a
 		
-		for p in self.patches:
-			for f in p.faces.flatten():
-				equ = f.equs[equ_name]
-		
-				a = f.area()
-				v += equ.mean() * a
-				A += a
-		
-		print "name       ",self.name
-		print "num patches",len(self.patches)
+			print "name       ",self.name
+			print "num patches",len(self.patches)
 
-		v_m = v/A
-		
+			v_m = v/A
+			return v_m
+		def point():
+			for p in self.patches:
+				for f in p.faces.flatten():
+					equ = f.equs[equ_name]
+
+					v_m = equ.point(self.v_0_point)
+
+					if v_m:
+						return v_m
+			raise ValueError('point is not in patch_group')
+	
+		v_m = point()
+
+		# change source term
 		dv = v_0 - v_m
-		
-		dS = equ.equ_prob.k * dv / 10.
+	
+		k = self.prob.equs[equ_name].k
+
+		dS = k * dv / 10.
 		
 		self.S[equ_name] += dS
 		
