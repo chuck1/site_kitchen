@@ -1,22 +1,13 @@
+#!/usr/bin/python
+
 import re
 import os
 import glob
 import sys
 import fnmatch
-
-cfiles = []
-for root, dirnames, filenames in os.walk('.'):
-	for filename in fnmatch.filter(filenames, '*.cc'):
-		cfiles.append(os.path.join(root, filename))
-
-
-#['foo.c']
-
-files = cfiles
-filetype = [[1]]*len(cfiles)
-i = 0
-
-dep = []
+import gv
+import argparse
+import logging
 
 def process(fileto,flags):
 	global i
@@ -28,6 +19,7 @@ def process(fileto,flags):
 	
 	fileto = re.sub('\/nfs\/stak\/students\/r\/rymalc\/usr\/include','',fileto)
 	
+	logging.debug("fileto {0}".format(fileto))
 	
 	if 1 in flags or 3 in flags: # decend
 		try:
@@ -48,16 +40,19 @@ def process(fileto,flags):
 			if 3 in filetype[i]: #elif filetype[i[-1]]==3:
 				#print "skip(currently in system header) \"{0}\"".format(fileto)
 				pass
+			elif 3 in filetype[h]:
+				pass
 			else:	
 				newdep = [i,h] #newdep = [i[-1],h]
 				if not newdep in dep:
 					dep.append(newdep)
-		
-			print "descend   from \"{0:40}\":{1:10} to \"{2:40}\":{3}".format(
+			
+			logging.debug("descend   from \"{0:40}\":{1:10} to \"{2:40}\":{3}".format(
 						files[i],
 						filetype[i],
 						fileto,
-						flags)
+						flags))
+
 			i = h #i.append(h)
 			
 			#print "i=",i
@@ -65,11 +60,11 @@ def process(fileto,flags):
 	elif 2 in flags: #ascend
 		j = files.index(fileto)
 
-		print "ascending from \"{0:40}\":{1:10} to \"{2:40}\":{3}".format(
+		logging.debug("ascending from \"{0:40}\":{1:10} to \"{2:40}\":{3}".format(
 				files[i],
 				filetype[i],
 				files[j],
-				filetype[j])
+				filetype[j]))
 
 		
 		
@@ -79,23 +74,55 @@ def process(fileto,flags):
 		
 		#print "i=",i
 	else:
-		print "don't care about..."
-		print line[0:-2]
+		logging.debug("don't care about...")
+		logging.debug(line[0:-2])
+
+
+
+
+
+###########################################################3333
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-v','--verbose',action='store_true')
+args = parser.parse_args()
+
+if args.verbose:
+	logging.basicConfig(level=logging.DEBUG)
+else:
+	logging.basicConfig(level=logging.INFO)
+
+cfiles = []
+for root, dirnames, filenames in os.walk('.'):
+	for filename in fnmatch.filter(filenames, '*.cc'):
+		cfiles.append(os.path.join(root, filename))
+
+
+#['foo.c']
+
+files = cfiles
+filetype = [[1]]*len(cfiles)
+i = 0
+
+dep = []
+
 
 
 
 for cfile,c in zip(cfiles,range(len(cfiles))):
 	
-	print "parsing file \"{0}\"".format(cfile)
-
+	logging.info("parsing file \"{0}\"".format(cfile))
+	
 	i = c
 	
-	fileroot = cfile[:-2]
-	print fileroot
+	root,ext = os.path.splitext(cfile)
 	
-	os.system('gcc -E -I. ' + cfile + ' > ' + cfile + '.pre')
+	additional_opt = ' -DNDEBUG -std=c++0x '
+	include_dir    = ' -I. -I../build/src '
 	
-	with open(cfile + '.pre','r') as f:
+	os.system("g++ -E " + include_dir + additional_opt + cfile + " > " + root + '.pre')
+	
+	with open(root + '.pre','r') as f:
 		lines = f.readlines()
 		#print lines
 	
@@ -103,15 +130,16 @@ for cfile,c in zip(cfiles,range(len(cfiles))):
 	for line in lines:
 		if line[0]=='#':
 			newlines.append(line)
-			print line[:-1]
+			#print line[:-1]
 	
 	lines = newlines
 	
 	for line in lines:
 		#print line
 		
+		header_exts = '|'.join(['h','hh','hpp'])
 		
-		m = re.search('# \d+ "([\w\/]+\.(cpp|c|h|hpp))"( \d)( \d)?( \d)?',line)
+		m = re.search('# \d+ "(\.?[\w\/]+\.(' + header_exts + '))"( \d)( \d)?( \d)?',line)
 		if m:
 			#print "groups=",len(m.groups())
 			g = list(m.groups())
@@ -125,7 +153,7 @@ for cfile,c in zip(cfiles,range(len(cfiles))):
 			
 			#print flags
 			fileto = m.group(1)
-			print line[:-1]
+			logging.debug(line[:-1])
 			#print "match \"{0}\".format(m.group(0))
 				
 			process(fileto,flags)
@@ -139,9 +167,9 @@ for cfile,c in zip(cfiles,range(len(cfiles))):
 			#
 			#		process(fileto,1)	
 
-print cfiles
-print files
-print dep
+print "cfiles",cfiles
+print "files ",files
+print "dep   ",dep
 
 filesclean = []
 for file in files:
@@ -151,23 +179,22 @@ for file in files:
 
 depflat = [d for subl in dep for d in subl]
 
+graph = gv.digraph('header_dep')
 
-with open('header_dep.dot','w') as f:
-	f.write('digraph {\n')
 
-	for file,fileclean,i in zip(files,filesclean,range(len(files))):
-		if i in depflat:
-			f.write("\t{0} [label=\"{1}\"]\n".format(
-				fileclean,
-				file))
+for file,fileclean,i in zip(files,filesclean,range(len(files))):
+	if i in depflat:
+		node = gv.node(graph, fileclean);
+		gv.setv(node, 'label', file)
 
-	for d in dep:
-		f.write("\t{0} -> {1}\n".format(
-			filesclean[d[0]],
-			filesclean[d[1]]))
-	f.write('}\n')
+for d in dep:
+	gv.edge(graph, filesclean[d[0]], filesclean[d[1]])
 
+i
 #os.system('cat header_dep.dot')
 
+gv.write(graph, 'header_dep.dot')
+
+os.system('dot header_dep.dot -Tpdf -oheader_dep.pdf')
 
 
