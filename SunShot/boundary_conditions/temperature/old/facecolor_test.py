@@ -12,7 +12,8 @@ def plot(ax, a):
 	Gx, Gy = np.gradient(Z) # gradients with respect to x and y
 	G = (Gx**2+Gy**2)**.5  # gradient magnitude
 	N = G/G.max()  # normalize 0..1
-	surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, facecolors=cm.jet(N),
+
+    surf = ax.plot_surface(X, Y, Z, rstride=1, cstride=1, facecolors=cm.jet(N),
 			linewidth=0, antialiased=False, shade=False)
 
 

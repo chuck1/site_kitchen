@@ -122,6 +122,11 @@ class Fluid:
 		poly = prop.poly[0]
 		
 		return poly.eval( T )
+
+	def list(self):
+		"""list properties"""
+		for k,v in self.dict.items():
+			print k
 		
 	def enthalpy_change( self, T0, T1 ):
 		T0 = np.array(T0)
@@ -165,5 +170,11 @@ def frange(start,stop,step):
 	return x
 
 
+if __name__ == "__main__":
+	import Sci.Fluids
+	help(Sci.Fluids)
+	
+	f = Sci.Fluids.Fluid('co2')
+	f.list()
 
 
