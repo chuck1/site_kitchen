@@ -25,7 +25,7 @@ SET(libs ${libs}
 
 cmh_static_library()
 
-#add_subdirectory(test)
+add_subdirectory(test)
 
 
 
