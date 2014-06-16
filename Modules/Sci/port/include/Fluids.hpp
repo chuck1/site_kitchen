@@ -61,8 +61,9 @@ class Poly {
 		}
 		double				eval(double X);
 		std::vector<double>		eval(std::vector<double> X);
-		double		integrate(std::vector<double> X);
-
+		double				integrate(std::vector<double> X);
+		void				print();
+		
 		/**
 		 * polynomial coefficients
 		 */
@@ -74,6 +75,7 @@ class Property {
 		template<typename Archive> void		serialize(Archive & ar, unsigned int const & version) {
 			ar & boost::serialization::make_nvp("polys", polys_);
 		}
+		void					print();
 	public:
 		std::vector< Poly >		polys_;
 
@@ -81,11 +83,9 @@ class Property {
 
 class Fluid {
 	public:
-		Fluid(std::string filename);
+		Fluid();
 		void					load(std::string filename);
 		void					save(std::string filename);
-
-		Fluid();
 		template<typename Archive> void		serialize(Archive & ar, unsigned int const & version) {
 			ar & boost::serialization::make_nvp("props", props_);
 		}
