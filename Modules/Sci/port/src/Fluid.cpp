@@ -1,18 +1,37 @@
-#include <Fluids.hpp>
+#include <util.hpp>
+#include <poly.hpp>
+#include <prop.hpp>
+#include <fluid.hpp>
 
 Fluid::Fluid() {}
 void					Fluid::load(std::string filename) {
+	filename = media_dir + filename;
+	
 	std::ifstream ifs;
 	ifs.open(filename);
+
+	if(!ifs.is_open()) {
+		std::cout << "file error" << std::endl;
+		exit(1);
+	}
+	
 	boost::archive::xml_iarchive ar(ifs);
 
 	serialize(ar,0);
 
 }
 void					Fluid::save(std::string filename) {
+	filename = media_dir + filename;
 
 	std::ofstream ofs;
-	ofs.open(filename);
+	ofs.open(filename, std::ofstream::out | std::ofstream::trunc);
+	
+	if(!ofs.is_open()) {
+		std::cout << "file error" << std::endl;
+		std::cout << filename << std::endl;
+		exit(1);
+	}
+
 	boost::archive::xml_oarchive ar(ofs);
 
 	serialize(ar,0);
