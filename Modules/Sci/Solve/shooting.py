@@ -2,13 +2,13 @@ import numpy as np
 import pylab as pl
 import math
 
-def linear(x1,x2,y1,y2,goal):
+def linear(x1,x2,y1,y2):
 	m = (y2-y1)/(x2-x1)
 	b = y2 - m * x2
-	x = (goal - b) / m
+	x = -b / m
 	return x
 
-def log(x1,x2,y1,y2,goal):
+def log(x1,x2,y1,y2):
 	
 	m = (np.log(y2) - np.log(y1)) / (np.log(x2) - np.log(x1))
 	b = np.log(y2) - m * np.log(x2)
@@ -17,40 +17,51 @@ def log(x1,x2,y1,y2,goal):
 	
 	
 
-# @param x1 initial guess
-# @param x2 initial guess
+# @param x array with two values for initial guess
 # @param f function f(x)=0
-def shooting(obj,x,f,goal):
+def shooting(obj,x,f):
 	print "shooting method"
 	
 	# x[0] and x[1] are the two initial guesses
 
-	goal = np.array(goal)
-
 	print "x",x
 	print "f",f
-	print "goal",goal
-	print "shape(goal)",np.shape(goal)
-	#print type(goal)
-	#print goal
-
 	
-
-		
-	X = np.zeros((2,) + np.shape(goal))
+	X = np.array(x)
 	
 	#print np.shape(X)
 	#print np.shape(X[0])
 	
-	X[0] = np.ones(np.shape(goal)) * x[0]
-	X[1] = np.ones(np.shape(goal)) * x[1]
-
 	
 
-	Y = np.zeros((2,) + np.shape(goal))
+	Y = np.zeros((2,))
+	
+	while True:
 
-	Y[0] = f(obj,X[0])
-	Y[1] = f(obj,X[1])
+		try:
+			Y[0] = f(obj,X[0])
+		except ValueError:
+			Y[0] = float('NaN')
+	
+		try:
+			Y[1] = f(obj,X[1])
+		except ValueError:
+			Y[1] = float('NaN')
+	
+		if(np.all(np.isnan(Y))):
+			raise ValueError()
+	
+		if(math.isnan(Y[0])):
+			print "f({0}) = nan. trying new X[0].".format(X[0])
+			X[0] = (X[0] + X[1]) / 2.0
+			continue
+		
+		if(math.isnan(Y[1])):
+			print "f({0}) = nan. trying new X[1].".format(X[1])
+			X[1] = (X[0] + X[1]) / 2.0
+			continue
+		
+		break
 	
 	#print "X",X
 	#print "Y",Y
@@ -59,11 +70,16 @@ def shooting(obj,x,f,goal):
 	i = 0
 	j = 1
 	
-	for a in range(3):
+	for a in range(10):
 		
-		xn = log(X[j], X[i], Y[j], Y[i], goal)
-		yn = f(obj,xn)
+		xn = linear(X[j], X[i], Y[j], Y[i])
 		
+		try:
+			yn = f(obj,xn)
+		except ValueError:
+			yn = nan
+
+
 		"""
 		if xn < 0:
 			break
@@ -82,17 +98,17 @@ def shooting(obj,x,f,goal):
 		#plot()
 	
 		
-		print X,np.shape(X)
-		print Y,np.shape(Y)
-		print xn,np.shape(xn)
-		print yn,np.shape(yn)
+		print "X",X,np.shape(X)
+		print "Y",Y,np.shape(Y)
+		print "xn {0:e}".format(xn),np.shape(xn)
+		print "yn {0:e}".format(yn),np.shape(yn)
 		
 		#X = np.append(X, np.reshape(xn, (1,) + np.shape(xn)), 0)
 		X = np.append(X, np.reshape(xn, (1,) + np.shape(xn)), 0)
 		#Y = np.append(Y, np.reshape(yn, (1,) + np.shape(yn)), 0)
 		Y = np.append(Y, np.reshape(yn, (1,)), 0)
 
-		if(np.all(np.fabs(Y[-1] - goal) < 1.0)):
+		if(np.all(np.fabs(Y[-1]) < 1.0)):
 			break
 		
 		#d1 = math.fabs(X[-1] - X[j])
@@ -119,9 +135,9 @@ def shooting(obj,x,f,goal):
 
 	def plot():
 		pl.plot(X,Y,'o')
-		pl.loglog(X,Y,'o')
+		#pl.loglog(X,Y,'o')
 		pl.show()
-	#plot()
+	plot()
 
 	#print X
 

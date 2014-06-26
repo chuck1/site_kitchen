@@ -464,7 +464,7 @@ class Case(Config):
 
 		strs += self.script_fluent_general()
 		strs += self.script_fluent_models()
-		strs += self.script_fluent_udf()
+		#strs += self.script_fluent_udf()
 		strs += self.script_fluent_materials()
 		strs += self.script_fluent_cell_zones()
 		strs += self.script_fluent_boundary_conditions()
@@ -480,7 +480,7 @@ class Case(Config):
 		strs = []
 
 		strs += self.script_fluent_models()
-		strs += self.script_fluent_udf()
+		#strs += self.script_fluent_udf()
 		strs += self.script_fluent_materials()
 		strs += self.script_fluent_cell_zones()
 		strs += self.script_fluent_boundary_conditions()
