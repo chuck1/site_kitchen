@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import Sci.Fluids as fl
 import math
 import numpy as np

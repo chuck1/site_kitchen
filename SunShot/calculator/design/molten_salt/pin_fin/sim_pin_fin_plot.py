@@ -1,6 +1,16 @@
-import pylab as pl
+#!/usr/bin/env python
+
 import numpy as np
 import math
+import argparse
+import scipy.optimize
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-p',action='store_true')
+args = parser.parse_args()
+
+if args.p:
+    import pylab as pl
 
 PT = np.array([
         1.5,
@@ -54,6 +64,18 @@ Y = np.log(f)
 A = A[:3,:]
 Y = Y[:3]
 
+# x1 = PT
+# x2 = D
+# y = f
+def fitfun(p, x1, x2):
+    #return p[0] * np.power(x1, p[1]) * np.power(x2, p[2])
+    return p[0] * x1**p[1] * x2**p[2]
+    
+def errfun(p, x1, x2, z_meas):
+    return (fitfun(p, x1, x2) - z_meas)
+
+
+
 
 print A
 print Y
@@ -70,21 +92,37 @@ fl = math.exp(X[0]) * xl
 
 
 
-fig = pl.figure()
-ax = fig.add_subplot(111)
+#p0 = [1e-8, 3.0, -2.0]
+p0 = [math.exp(X[0]), X[1], X[2]]
 
-ax.plot(xd,f,'o')
-
-ax.plot(xl,fl,'-')
-
-pl.show()
+#p = scipy.optimize.leastsq(errfun, p0, args=(PT, D, f))
+p = scipy.optimize.leastsq(errfun, p0, args=(PT[:3], D[:3], f[:3]))
 
 
-print "k =",math.exp(X[0])
-print "a =",X[1]
-print "b =",X[2]
 
+def plot():
+    fig = pl.figure()
+    ax = fig.add_subplot(111)
 
+    ax.plot(xd,f,'o')
+
+    ax.plot(xl,fl,'-')
+
+    pl.show()
+
+err1 = errfun(p[0], PT, D, f)
+err2 = errfun(p0, PT, D, f)
+
+print "f   =",f
+print "k   =",math.exp(X[0])
+print "a   =",X[1]
+print "b   =",X[2]
+print "p0  =",p0
+print "p   =",p[0]
+print "err =",err1
+print "%err=",err1 / f * 100.0
+print "err =",err2
+print "%err=",err2 / f * 100.0
 
 
 
