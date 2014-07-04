@@ -13,7 +13,10 @@ import mycsv
 # a*(x*x + y*y) + b*(x + y) + c
 
 def numerically_integrate_exp_form_1(a,b,x1,y1):
+	# equation:
 	# f = a * exp(b * x**2)
+	# a and b are constants
+	# x is distance from center
 	
 	res = 0.01
 
@@ -198,26 +201,35 @@ def high_res_x(x):
 	return np.linspace(x[0],x[-1],1000)
 	
 def plot1():
-	plt.plot(x,y,'o')
-	x3 = high_res_x(x2)
-	plt.plot(x3,f(x3),'-')
-	plt.plot(x3,l3(x3),'-')
+	leg = []
 	
+	plt.plot(x,y,'o')
+	leg.append('experimental')
+
+	x3 = high_res_x(x2)
+	
+	#plt.plot(x3,f(x3),'-')
+	#leg.append('parabola')
+	
+	plt.plot(x3,l3(x3),'-')
+	leg.append('normal dist')
+
 	plt.xlabel('position (m)')
 	plt.ylabel('heat flux (W/m2)')
-	plt.legend(['experimental','parabola','normal distribution'], loc='lower center')
+	plt.legend(leg, loc='lower center')
 	
 	plt.show()
 
 A = math.exp(p3[1])
 B = p3[0]
 
-print "A {0:e} B {1:e}".format(A,B)
 
 f_int_1 = numerically_integrate_exp_form_1(A, B, 5e-3, 5e-3)
 
 A2 = A * 4e6 / f_int_1
 
+print "A        = {0:e}".format(A)
+print "B        = {0:e}".format(B)
 print "A scaled = {0:e}".format(A2)
 
 f_int_2 = numerically_integrate_exp_form_1(A2, B, 5e-3, 5e-3)
