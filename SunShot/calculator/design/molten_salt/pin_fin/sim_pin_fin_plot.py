@@ -2,9 +2,9 @@
 
 import numpy as np
 import math
-import argparse
 import scipy.optimize
 
+import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('-p',action='store_true')
 args = parser.parse_args()
@@ -41,34 +41,53 @@ f = np.array([
         ])
 
 
-def plot1():
+if args.p:
     fig = pl.figure()
+
+    # plot 1
     ax = fig.add_subplot(121)
+    
+    ind1 = D == D[0]
+    ind2 = D == D[1]
+    ax.plot(PT[ind1],f[ind1],'o', label="D = {0} m".format(D[0]))
+    ax.plot(PT[ind2],f[ind2],'s', label="D = {0} m".format(D[1]))
 
-    ax.plot(PT,f,'o')
+    ax.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, borderaxespad=0.)
 
+    
+
+    ax.set_xlabel('PT')
+    ax.set_ylabel('f')
+  
+    ax.set_xlim([1.4,2.1])
+
+    # plot 2
     ax = fig.add_subplot(122)
-    ax.plot(RE,f,'o')
+    
+    ind1 = PT == PT[0]
+    ind2 = PT == PT[2]
+    ax.plot(D[ind1],f[ind1],'o', label="PT = {0}".format(PT[0]))
+    ax.plot(D[ind2],f[ind2],'s', label="PT = {0}".format(PT[2]))
+    
+    ax.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3, borderaxespad=0.)
+    
+    ax.set_xlabel('D (m)')
+    ax.set_ylabel('f')
+
+    ax.xaxis.get_major_formatter().set_powerlimits((0, 1))
+
+    ax.autoscale_view(tight=False, scalex=False, scaley=True)
+
+    pl.subplots_adjust(top=0.8)
+
+    pl.show()
 
 
-#pl.show()
-
-A = np.ones((4,3))
-
-A[:,1] = np.log(PT)
-#A[:,2] = np.log(RE)
-A[:,2] = np.log(D)
-
-Y = np.log(f)
-
-A = A[:3,:]
-Y = Y[:3]
 
 # x1 = PT
 # x2 = D
 # y = f
 def fitfun(p, x1, x2):
-    #return p[0] * np.power(x1, p[1]) * np.power(x2, p[2])
     return p[0] * x1**p[1] * x2**p[2]
     
 def errfun(p, x1, x2, z_meas):
@@ -77,53 +96,42 @@ def errfun(p, x1, x2, z_meas):
 
 
 
-print A
-print Y
+#xl = np.linspace(np.min(xd),np.max(xd),100)
+#fl = math.exp(X[0]) * xl
 
-X = np.linalg.solve(A,Y)
+p0 = [1e-8, 3.0, -2.0]
 
-print X
-
-xd = np.power(PT,X[1]) * np.power(D,X[2])
-
-
-xl = np.linspace(np.min(xd),np.max(xd),100)
-fl = math.exp(X[0]) * xl
+p,_ = scipy.optimize.leastsq(errfun, p0, args=(PT, D, f))
 
 
 
-#p0 = [1e-8, 3.0, -2.0]
-p0 = [math.exp(X[0]), X[1], X[2]]
+if args.p:
 
-#p = scipy.optimize.leastsq(errfun, p0, args=(PT, D, f))
-p = scipy.optimize.leastsq(errfun, p0, args=(PT[:3], D[:3], f[:3]))
-
-
-
-def plot():
+    xd = PT**p[1] * D**p[2]
+    
+    xl = np.linspace(np.min(xd),np.max(xd),100)  
+    fl = p[0] * xl  
+    
     fig = pl.figure()
     ax = fig.add_subplot(111)
-
+    
     ax.plot(xd,f,'o')
 
     ax.plot(xl,fl,'-')
 
+    ax.set_xlabel('PT^b D^c')
+    ax.set_ylabel('f')
+
     pl.show()
 
-err1 = errfun(p[0], PT, D, f)
-err2 = errfun(p0, PT, D, f)
+err1 = errfun(p, PT, D, f)
 
 print "f   =",f
-print "k   =",math.exp(X[0])
-print "a   =",X[1]
-print "b   =",X[2]
-print "p0  =",p0
-print "p   =",p[0]
+#print "p0  =",p0
+print "p   =",p
 print "err =",err1
 print "%err=",err1 / f * 100.0
-print "err =",err2
-print "%err=",err2 / f * 100.0
 
-
+np.save('p',p[0])
 
 

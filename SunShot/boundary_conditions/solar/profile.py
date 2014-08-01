@@ -2,37 +2,77 @@
 
 import sys, os
 import numpy as np
-import matplotlib.pyplot as plt
 import math
+import scipy.optimize
 
 module_dir = os.environ["HOME"] + "/Documents/Programming/Python/Modules/"
 sys.path.append(module_dir)
 
-import mycsv
+import csv
+
+import argparse
+
 
 # a*(x*x + y*y) + b*(x + y) + c
 
-def numerically_integrate_exp_form_1(a,b,x1,y1):
+def fun1(p, x, y, x0 = 0.0, y0 = 0.0):
+        return p[0] * np.exp(p[1] * (x**2 + y**2))
+
+
+# centered normal distribution
+	
+
+# non-centered normal distribution
+def fun2(p, x):
+	return p[0] * np.exp(p[1] * (x - p[2])**2)
+
+def errfun2(p, r, f):
+	return f - fun2(p, r)
+
+
+# centered normal distribution
+def fun3(p, r):
+	return p[0] * np.exp(p[1] * r**2)
+
+def fun3xy(p, x, y, x0 = 0.0, y0 = 0.0):
+	r = np.sqrt(np.square(x - x0) + np.square(y - y0))
+	return fun3(p, r)
+
+
+
+def fun_grid(p, fun, x, y, n, xm = 0.0, ym = 0.0):
+	x = np.linspace(x[0], x[1], n)
+	y = np.linspace(y[0], y[1], n)
+	
+	#print x
+	#print y
+
+	X,Y = np.meshgrid(x,y)
+	
+	F = fun(p,X,Y,xm,ym)
+	
+	return X,Y,F
+	
+def numerically_integrate_2D(p,fun, x, y):
 	# equation:
 	# f = a * exp(b * x**2)
 	# a and b are constants
 	# x is distance from center
 	
 	res = 0.01
+	
+	n = 100
+	
+	l = x[1] - x[0]
+	w = y[1] - y[0]
 
-	x = np.linspace(0, x1, 100)
-	y = np.linspace(0, y1, 100)
+	A = l * w
 	
-	A = x1 * y1
-	A_cell = (x[1]-x[0]) * (y[1]-y[0])
+	A_cell = (l/float(n-1)) * (w/float(n-1))
+	
+	X,Y,F = fun_grid(p, fun, x, y, n)
 
-	X,Y = np.meshgrid(x,y)
-	
-	R2 = np.square(X) + np.square(Y)
-	
-	#R = np.sqrt(R2)
-	
-	F = a * np.exp(b * R2) * A_cell
+	FA = F * A_cell
 	
 	def plot():
 		CS = plt.contourf(X,Y,F)
@@ -43,8 +83,8 @@ def numerically_integrate_exp_form_1(a,b,x1,y1):
 	
 	#plot()
 	
-	aa = np.sum(F) / A
-	print "area average = {0:e}".format(aa)
+	aa = np.sum(FA) / A
+	#print "area average = {0:e}".format(aa)
 	return aa
 	
 def fun(x,a,b):
@@ -128,179 +168,145 @@ def plot2d(filename,a,c):
 	
 	plt.show()
 	
-
-if len(sys.argv) != 2:
-	print "usage: {0} file"
-	sys.exit(1)
-
-
-filename = sys.argv[1]
-#c = float(sys.argv[2])
-#e = float(sys.argv[3])
-
-
-# half width
-#w = 1.5e-2 + 0.000886
-w = 0.5e-2 + 0.00012826330742
-
-data = mycsv.read(filename)
-
-x = data[:,0]
-y = data[:,1]
-
-x = x * 1e-3
-y = y * 1e4
-
-x = x - w
-
-#print x
-
-#i = np.argsort(x)
-#x = x[i]
-#y = x[i]
-
-#print x
-
-p1 = np.polyfit(x, y, 2)
-
-#p2 = p1
-
-#p2[2] += scale(4e6*w*w, w, p1)
-
-#print integrate_poly2d(w, p1)
-#print integrate_poly2d(w, p2)
-
-
-f = np.poly1d(p1)
-
-#print p2
-
-x2 = np.sort(x)
-
-# normal distribution
-x3 = np.power(x,2)
-y3 = np.log(y)
-
-p3 = np.polyfit(x3, y3, 1)
-f3 = np.poly1d(p3)
-
-"""
-plt.plot(x3,y3,'o')
-plt.plot(x3,f3(x3),'s')
-plt.show()
-"""
-
-print "p3 =",p3
-l3 = lambda x: np.exp(f3(np.square(x)))
-
-print p1
-print "parabola vertex x =",-p1[1] / 2. / p1[0]
-
-
-def high_res_x(x):
-	return np.linspace(x[0],x[-1],1000)
+def get_csv_data(filename):
+	raw = []
+	with open(filename, 'r') as csvfile:
+		spamreader = csv.reader(csvfile) 
+		for row in spamreader:
+			raw.append(list(float(c) for c in row))
 	
-def plot1():
-	leg = []
+	data = np.array(raw)
 	
-	plt.plot(x,y,'o')
-	leg.append('experimental')
+	return data
 
-	x3 = high_res_x(x2)
+#=================================================================================================
+#=================================================================================================
+#=================================================================================================
+
+def convert_arg_line_to_args(self, arg_line):
+	for arg in arg_line.split():
+		if not arg.strip():
+			continue
+		yield arg
+
+class Action(argparse.Action):
+	def __call__(self, parser, namespace, values, option_string=None):
+		if not getattr(namespace, 's'):
+			parser.error("requires -s")
+		else:
+			setattr(namespace,self.dest,values)
+
+
+if __name__=='__main__':
 	
-	#plt.plot(x3,f(x3),'-')
-	#leg.append('parabola')
+	parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
+	parser.add_argument('-p', action="store_true")
+	parser.add_argument('-s', type=float, help='half-width of heated surface')
+	parser.add_argument('-f', type=float)
+	parser.add_argument('--prof', action=Action, help='write profile file')
+	parser.add_argument('-x', type=float, help='x origin for profile file')
+	parser.add_argument('-y', type=float, help='y origin for profile file')
+	parser.add_argument('-z', type=float, help='z origin for profile file')
+	parser.add_argument('filename', help='csv file')
+	args = parser.parse_args()
 	
-	plt.plot(x3,l3(x3),'-')
-	leg.append('normal dist')
-
-	plt.xlabel('position (m)')
-	plt.ylabel('heat flux (W/m2)')
-	plt.legend(leg, loc='lower center')
 	
-	plt.show()
+	data = get_csv_data(args.filename)
 
-A = math.exp(p3[1])
-B = p3[0]
+	# extract x and y
+	x = data[:,0]
+	y = data[:,1]
+	
+	# correct units
+	x = x * 1e-3
+	y = y * 1e4
+	
+	x_sort = np.sort(x)
 
+	p,_ = scipy.optimize.leastsq(errfun2, [1.0e6, -1.0e3, 0.0], args=(x, y))
+	
 
-f_int_1 = numerically_integrate_exp_form_1(A, B, 5e-3, 5e-3)
+	print "{0:16}{1}".format("p", p)
 
-A2 = A * 4e6 / f_int_1
-
-print "A        = {0:e}".format(A)
-print "B        = {0:e}".format(B)
-print "A scaled = {0:e}".format(A2)
-
-f_int_2 = numerically_integrate_exp_form_1(A2, B, 5e-3, 5e-3)
-
-plot1()
-
-sys.exit()
-
-
+	
+	
 
 
+	if args.f and args.s:
+
+		print "{0:16}{1: e}".format("flux", args.f)
+		
+		f_int_1 = numerically_integrate_2D(p, fun3xy, [0.0, args.s], [0.0, args.s])
+		
+		p2 = np.array(p)
+		p2[0] = p2[0] * args.f / f_int_1
+		
+		print "{0:16}{1}".format("p scaled", p)
+		
+		f_int_2 = numerically_integrate_2D(p, fun3xy, [0.0, args.s], [0.0, args.s])
+		
+	
+	if args.p:
+		import pylab as pl
+
+		leg = []
+		
+		pl.plot(x,y,'o')
+		leg.append('experimental')
+		
+		pl.plot(x_sort,fun2(p,x_sort))
+		leg.append('normal dist')
+	
+		if args.f and args.s:
+			pl.plot(x_sort,fun2(p2,x_sort))
+			leg.append('normal dist scaled')
+		
+
+		pl.xlabel('position (m)')
+		pl.ylabel('heat flux (W/m2)')
+		pl.legend(leg, loc='lower center')
+		pl.show()
+	
+		
+
+	if args.prof:
+		import fluent
+		
+		xe = np.array([0, args.s * 2.0])
+		xe += args.x
+		
+		ze = np.array([0, args.s * 2.0])
+		ze += args.z
+
+		xm = np.mean(xe)
+		zm = np.mean(ze)
+
+		print "{0:16}{1}".format("xe", xe)
+		print "{0:16}{1}".format("ze", ze)
+		print "{0:16}{1}".format("xm", xm)
+		print "{0:16}{1}".format("zm", zm)
+	
+		X,Z,F = fun_grid(p2, fun3xy, xe, ze, 20, xm, zm)
+	
+		Y = np.zeros(np.shape(X)) + args.y
+
+		if args.p:
+			con = pl.contourf(X,Z,F)
+			pl.colorbar(con)
+			pl.show()
+		
+		prof = fluent.profile.Profile(
+				args.prof,
+				'solar',
+				['x','y','z','flux'],
+				np.array([X,Y,Z,F]))
+
+		print "write profile with {0} points".format(np.size(X))
+
+		prof.write()
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-w = 1e-3
-
-# curvature based on measured peak and edge values
-a = parab_2d_coeff_from_meas( c, e, w/2 )
-b = a;
-
-# initial ingeral
-S0 = integrate( -w/2, w/2, -w/2, w/2, a, b, c )
-
-# desired integrated value
-S = 4e6 * w * w;
-
-
-# adject peak to give desired integral value
-#c = scale( S, (min[0]-xc), (max[0]-xc), (min[2]-zc), (max[2]-zc), a, b )
-
-S1 = integrate( (min[0]-xc), (max[0]-xc), (min[2]-zc), (max[2]-zc), a, b, c )
-
-#plot2d(filename,a,c)
-
-
-
-sys.exit(0)
-
-#print "S0={0}".format(S0)
-#print "S1={0}".format(S1)
-
-
-
-def plot():
-	x = np.arange(101) / 100.0 * w + min[0]
-	z = np.arange(101) / 100.0 * rng[2] + min[2]
-
-	X,Z = np.meshgrid(x,z)
-
-	s = a*X*X + b*Z*Z + c
-
-	CS = plt.contourf(X,Z,s)
-	CB = plt.colorbar(CS,format='%e')
-	CB.set_label('heat flux (W/m2)')
-	plt.axis('equal')
-	plt.xlabel('x (cm)')
-	plt.ylabel('y (cm)')
-	plt.show()
-
-
-
-
-
+	

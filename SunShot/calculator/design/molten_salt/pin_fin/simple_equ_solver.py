@@ -4,6 +4,17 @@ import math
 import numpy as np
 import Sci.Solve.shooting as sh
 
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('-p',action='store_true')
+args = parser.parse_args()
+
+if args.p:
+    import pylab as pl
+
+p = np.load('p.npy')
+
+print "p =",p
 
 k = 1.5008651836e-08
 a = 3.33789953302

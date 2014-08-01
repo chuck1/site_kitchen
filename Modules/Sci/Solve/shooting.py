@@ -1,6 +1,13 @@
 import numpy as np
-import pylab as pl
 import math
+
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('-p',action='store_true')
+args = parser.parse_args()
+
+if args.p:
+    import pylab as pl
 
 def linear(x1,x2,y1,y2):
 	m = (y2-y1)/(x2-x1)
@@ -90,11 +97,12 @@ def shooting(obj,x,f):
 		"""
 		
 		def plot():
-			print X
-			print Y
-			pl.plot(X,Y,'o')
-			pl.loglog(X,Y,'o')
-			pl.show()
+			if args.p:
+				print X
+				print Y
+				pl.plot(X,Y,'o')
+				pl.loglog(X,Y,'o')
+				pl.show()
 		#plot()
 	
 		
@@ -134,9 +142,10 @@ def shooting(obj,x,f):
 	#y = y + 1e5
 
 	def plot():
-		pl.plot(X,Y,'o')
-		#pl.loglog(X,Y,'o')
-		pl.show()
+		if args.p:
+			pl.plot(X,Y,'o')
+			#pl.loglog(X,Y,'o')
+			pl.show()
 	plot()
 
 	#print X
