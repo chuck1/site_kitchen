@@ -1,2 +1,2 @@
 
-#include <foo/bar.h>
+#include <foo/bar.hpp>

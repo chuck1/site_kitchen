@@ -8,7 +8,7 @@ namespace ns {
 	};
 }
 
-class bar{
+class bar: ns::foo {
 	public:
 		bar();
 };

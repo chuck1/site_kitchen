@@ -73,9 +73,9 @@ Z = filtw(Z,20)
 
 #Z = filt(Z,5)
 
-Z = norm(Z)
+#Z = norm(Z)
 
-Z = below(Z,0.5)
+#Z = below(Z,0.5)
 
 plot(X,Y,Z)
 

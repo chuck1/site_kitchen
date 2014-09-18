@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import re
 #import vim
 
@@ -8,14 +10,19 @@ def displaysearch(search):
 
 class Scope:
 	def __init__(self, name, list_key_start, list_scope_child, list_key_end):
+                #print 'scope __init__'
 		self.name = name
 		self.list_key_start = list_key_start
-		self.list_scope_child = list_scope_child
+
+                # possible child scopes
+                self.list_scope_child = list_scope_child
+
 		self.list_key_end = list_key_end
 
 
 class Key:
 	def __init__(self, name, string_pattern, ):
+                #print 'Key __init__'
 		self.name = name
 		self.string_pattern = string_pattern
 		self.pattern = re.compile(string_pattern)
@@ -29,14 +36,16 @@ class Key:
 scope_none = Scope(
 	'none',
 	[],
-	['preproc if','preproc ifndef'],
+	['preproc if','preproc ifndef','preproc include','function'],
 	[]);
 
+# class
 scope_class = Scope(
 	'class',
 	['class'],
 	['class body'],
 	[('semicolon',True)])
+
 
 scope_class_body = Scope(
 	'class body',
@@ -44,29 +53,54 @@ scope_class_body = Scope(
 	[],
 	[('curly close',True)])
 
+# ns
+scope_ns = Scope(
+	'ns',
+	['ns'],
+	['ns body'],
+	[('curly close',True)])
+
+# list_key_end:
+#     pass curly close back to 'ns' to close 'ns'
+scope_ns_body = Scope(
+	'ns body',
+	['curly open'],
+	['ns','class'],
+	[('curly close',False)])
+
+
+# preproc
+
 scope_preproc_if = Scope(
 	'preproc if',	
 	['preproc if'],
-	['class'],
+	['class','ns'],
 	[('preproc endif',True)])
 
 
 scope_preproc_ifndef = Scope(
 	'preproc ifndef',
 	['preproc ifndef'],
-	['class'],
+	['class','ns'],
 	[])
 
 
 list_scope = {
 	'class':		scope_class,
 	'class body':		scope_class_body,
+	'ns':	        	scope_ns,
+	'ns body':		scope_ns_body,
 	'preproc define':	Scope('preproc define',[],[],[]),
 	'preproc if':		scope_preproc_if,
 	'preproc ifndef':	scope_preproc_ifndef,
+	'preproc include':	Scope('preproc include',['preproc include'],[],[('newline',True)]),
 	'preproc else':		Scope('preproc else',[],[],[]),
 	'preproc elif':		Scope('preproc elif',[],[],[]),
-	'preproc endif':	Scope('preproc endif',[],[],[])}
+	'preproc endif':	Scope('preproc endif',[],[],[]),
+        'function':             Scope('function',['word'],['function body','function params'],[('curly close',True)]),
+        'function body':        Scope('function body',['curly open'],[],[('curly close',False)]),
+        'function params':      Scope('function params',['paren open'],[],[('paren close',True)])
+        }
 
 
 
@@ -74,6 +108,10 @@ list_scope = {
 key_class = Key(
 	'class',
 	'class$')
+
+key_ns = Key(
+	'namespace',
+	'namespace$')
 
 key_semicolon = Key(
 	'semicolon',
@@ -87,33 +125,74 @@ key_preproc_ifndef = Key(
 	'preproc ifndef',
 	'#ifndef$')
 
+key_preproc_include = Key(
+	'preproc include',
+	'#include$')
+
 list_key = {
-	'class':		key_class,
+        'newline':              Key('newline','^\n$'),
+        'class':		key_class,
+        'ns':                   key_ns,
 	'curly open':		Key('curly open','{$'),
-	'curly close':		Key('curly open','}$'),
+	'curly close':		Key('curly close','}$'),
+	'paren open':		Key('paren open','\($'),
+	'paren close':		Key('paren close','\)$'),
 	'semicolon':		key_semicolon,
 	'preproc define':	Key('preproc define','#define$'),
 	'preproc if':		key_preproc_if,
 	'preproc ifndef':	key_preproc_ifndef,
+	'preproc include':	key_preproc_include,
 	'preproc else':		Key('preproc else','#else$'),
 	'preproc elif':		Key('preproc elif','#elif$'),
-	'preproc endif':	Key('preproc endif','#endif$')}
-	
+	'preproc endif':	Key('preproc endif','#endif$'),
+        'word':                 Key('word','\w+')
+        }
+
+
 def key_in_scope_start(key, list_scope_):
+        print 'key_in_scope_start'
+        print '    key =',repr(key)
+        print '    list_scope_ =',list_scope_
+
 	for scope_name in list_scope_:
 		scope = list_scope[scope_name]
 		if key in scope.list_key_start:
-			return scope
+                    print 'returning',scope
+		    return scope
 	
 	return None
 
 
+
 class Chunk:
-	def __init__(self, words, scope=scope_none):
-		self.words = words
+	def __init__(self, parent, words, scope=scope_none):
+
+                #print 'words:'
+                #for w in words:
+                #    print '   ',repr(w)
+
+                self.parent = parent
+                self.words = words
 		self.keep = []
 		self.scope = scope
-		
+
+        def printvar(self,prefix=''):
+            #print 'words:'
+            #print self.words
+
+            if self.scope:
+                print prefix,'scope:', self.scope.name
+            else:
+                print prefix,'scope:', self.scope
+
+            print prefix,'keep:'
+            for k in self.keep:
+                if isinstance(k,Chunk):
+                    print prefix,k
+                    k.printvar(prefix+'    ')
+                else:
+                    print prefix,repr(k)
+
 #	def scan_start(self):
 #		ret = []
 #		if self.scope.list_key_start:
@@ -133,76 +212,11 @@ class Chunk:
 #				# neutral
 #				self.keep.append(w)
 
-	def process(self):
-		#term = terminator_dict[self.code]
-		
-		# if chunk has a starter, then it was created by another call to process and we should therefore scan for an initiator
-		#self.scan_start()
-		
-		#print self.words
-		
-		# do until all words are poped
-		while self.words:
-			# pop words until starter is found
-			word = self.words.pop(0)
-			#print "%r" % word
-			
-			
-			key = classify(word)
-			#print "key={0}".format(key)
-			#print "end={0}".format(self.scope.list_key_end)
-			
-			# child
-			scope = key_in_scope_start(key, self.scope.list_scope_child)
-			if scope:
-				# create new chunk
-				new_chunk = Chunk(self.words, scope)
-				
-				new_chunk.keep.append(word)
 
-				print "word"
-				print word
-				print "words"
-				print self.words
-				print "keep"
-				print self.keep
-				print new_chunk.keep
-
-				self.words = new_chunk.process()
-											
-				self.keep.append(new_chunk)
-					
-				continue
-			
-			# end
-			for k,b in self.scope.list_key_end: #if term != 0:
-				if key == k:
-					
-					# immediate terminator
-					#if term == 1:
-					#	ret = self.words
-					#	ret.insert(0,word)
-					#	self.words = []
-					#	return ret
-					# return what was not used
-					#if word == term:
-	
-					# keep or return the end word?
-					if b:
-						self.keep.append(word)
-					else:
-						self.words.insert(0,word)
-					
-					# return all unused words
-					ret = self.words
-					self.words = []
-					
-					return ret
-			
-			# if word is neither a start nor an end, keep it
-			self.keep.append(word)
-			
-		return []
+        def gen_chunks(self):
+            for k in self.keep:
+                if isinstance(k,Chunk):
+                    yield k
 
 	def cprint(self,prefix=''):
 		#print self.keep
@@ -234,7 +248,155 @@ class Chunk:
 			print prefix+string
 			string = ''
 	
+class Namespace(Chunk):
+	def __init__(self, parent, words, scope=scope_none):
+            Chunk.__init__(self, parent, words, scope)
+
+        def name(self):
+            return self.keep[1]
+
+class NamespaceBody(Chunk):
+	def __init__(self, parent, words, scope=scope_none):
+            Chunk.__init__(self, parent, words, scope)
+
+class Class(Chunk):
+	def __init__(self, parent, words, scope=scope_none):
+            Chunk.__init__(self, parent, words, scope)
+
+        def name(self):
+            return self.keep[1]
+
+class ClassBody(Chunk):
+	def __init__(self, parent, words, scope=scope_none):
+            Chunk.__init__(self, parent, words, scope)
+
+class PreProc(Chunk):
+	def __init__(self, parent, words, scope=scope_none):
+            Chunk.__init__(self, parent, words, scope)
+
+class ChunkNone(Chunk):
+	def __init__(self, parent, words, scope=scope_none):
+            Chunk.__init__(self, parent, words, scope)
+
+
+
+## generators
+
+def gen_namespace(c):
+    for l in c.keep:
+        if isinstance(l, Namespace):
+            yield l
+        elif isinstance(l, PreProc):
+            for l2 in gen_namespace(l):
+                yield l2
+
+def gen_class(c):
+    for l in c.keep:
+        if isinstance(l, Class):
+            yield l
+        elif isinstance(l, PreProc):
+            for l2 in gen_class(l):
+                yield l2
+        elif isinstance(l, NamespaceBody):
+            for l2 in gen_class(l):
+                yield l2
+
+def gen_full(c):
+    for cl in gen_class(c):
+        yield [cl.name()]
+    
+    for ns in gen_namespace(c):
+        for s in gen_full(ns):
+            yield [ns.name()] + s
+
+
+# main process function
+
+def process(c):
+	#term = terminator_dict[c.code]
+	
+	# if chunk has a starter, then it was created by another call to process and we should therefore scan for an initiator
+	#c.scan_start()
+	
+	#print c.words
+	
+	# do until all words are poped
+	while c.words:
+		# pop words until starter is found
+		word = c.words.pop(0)
+		#print "%r" % word
+		
+
+		key = classify(word)
+		#print "key={0}".format(key)
+		#print "end={0}".format(c.scope.list_key_end)
+
+                        #print '    word =',repr(word)
+		#print '    key =',repr(key)
+		
+		# child
+		scope = key_in_scope_start(key, c.scope.list_scope_child)
+		if scope:
+                        print "creating chunk",scope.name
+			# create new chunk
+                        if scope.name == 'ns':
+                            new_chunk = Namespace(c, c.words, scope)
+                        elif scope.name == 'ns body':
+                            new_chunk = NamespaceBody(c, c.words, scope)
+                        elif scope.name == 'class':
+                            new_chunk = Class(c, c.words, scope)
+                        elif scope.name == 'class body':
+                            new_chunk = ClassBody(c, c.words, scope)
+                        elif scope.name == 'preproc ifndef':
+                            new_chunk = PreProc(c, c.words, scope)
+                        else:
+                            new_chunk = Chunk(c, c.words, scope)
+			
+			new_chunk.keep.append(word)
+
+			#print "word"
+			#print word
+			#print "words"
+			#print c.words
+			#print "keep"
+			#print c.keep
+			#print new_chunk.keep
+
+			c.words = process(new_chunk)
+										
+			c.keep.append(new_chunk)
 				
+			continue
+		
+		# end
+		for k,b in c.scope.list_key_end: #if term != 0:
+			if key == k:
+				
+				# immediate terminator
+				#if term == 1:
+				#	ret = c.words
+				#	ret.insert(0,word)
+				#	c.words = []
+				#	return ret
+				# return what was not used
+				#if word == term:
+
+				# keep or return the end word?
+				if b:
+					c.keep.append(word)
+				else:
+					c.words.insert(0,word)
+				
+				# return all unused words
+				ret = c.words
+				c.words = []
+				
+				return ret
+		
+		# if word is neither a start nor an end, keep it
+		c.keep.append(word)
+		
+	return []
 
 
 def classify(word):
@@ -274,7 +436,19 @@ def nullstring(x):
 	if x == '':
 		return False
 	return True
-	
+
+def remove_white(words):
+    nwords = []
+    for w in words:
+        #if w in ['','\n']:
+        if w in ['']:
+            pass
+        else:
+            nwords.append(w)
+    
+    return nwords
+
+
 def reformat():
 	list_word = get_buffer();
 	#print list_word
@@ -297,18 +471,31 @@ def reformat():
 	#print_chunk(gchunk,"",0)
 	print '%%%'
 	gchunk.cprint()
-	
-	print '%%%'
+        print '%%%'
 	print gchunk.keep
 
 
-if __name__ == '__main__':
-	with open('test.h','r') as f:
-		lines = f.readlines()
+def preprocess(lines):
+        lines = fragment(lines, "[\t\ ]+")
 	
-	gchunk = Chunk(lines)
-	gchunk.process()
+	lines = fragment(lines, "([\n{}\(\);,])")
 
-	print gchunk.keep
-	print gchunk.scope
+        lines = fragment(lines, "(?<!:)(:)(?!:)")
+
+        lines = remove_white(lines)
+
+        return lines
+
+
+
+
+
+
+
+
+
+
+
+
+
 

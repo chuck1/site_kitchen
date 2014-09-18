@@ -14,10 +14,13 @@ parser.add_argument('-v', help='verbose', action='store_true')
 args = parser.parse_args()
 
 def replace(filename, src, dst):
-	
-	print filename
-	
 
+        #print "file:",filename
+        #print "src: ",repr(src)
+        #print "dst: ",repr(dst)
+
+        changed = False
+        
 	with open(filename, 'r') as f:
 
 		wlines = []		
@@ -37,52 +40,68 @@ def replace(filename, src, dst):
 				wline = rline[:m.start(0)] + dst + rline[m.end(0)]
 				
 				if args.v:
-					print "{0} : {1} > {2}".format(i, repr(rline), repr(wline))
+                                    if not changed:
+                                        print filename
+                                    
+        			    print "{0} : {1} > {2}".format(i, repr(rline), repr(wline))
+
+                                changed = True
 			else:
 				wline = rline			
-			
+	
+                        i += 1
+
 			wlines.append(wline)
+        
+        if changed:
+            if not args.n:
+                with open(filename, 'w') as f:
+		    f.writelines(wlines)
 
-	if not args.n:
-		with open(filename, 'w') as f:
-			f.writelines(wlines)
 
-
-def list_header_files():
-	for dirpath, dirnames, filenames in os.walk('.'):
+def list_header_files(where = '.'):
+	for dirpath, dirnames, filenames in os.walk(where):
 		for filename in filenames:
 			
 			root, ext = os.path.splitext(filename)
 	
 			if ext in ['.hpp', '.hh', '.h']:
-				yield os.path.join(dirpath, filename)
+				#yield os.path.join(dirpath, filename)
+                                yield dirpath, filename
 
 
 def move_file(src, dst):
 
-	for filename in list_header_files():
-		if args.prefix:
-			replace(
-				filename,
-				os.path.relpath(src, args.prefix),
-				os.path.relpath(dst, args.prefix))
-		else:
-			replace(filename, src, dst)
+	for dirpath, filename in list_header_files():
+            fullname = os.path.join(dirpath, filename)
+	    if args.prefix:
+    	        replace(
+		        fullname,
+		        os.path.relpath(src, args.prefix),
+		        os.path.relpath(dst, args.prefix))
+            else:
+	        replace(fullname, src, dst)
 	
 	if args.v:
-		print "{0} > {1}".format(src, dst)
+		print "move {0} > {1}".format(src, dst)
 	
 	if not args.n:
 		shutil.move(src, dst)
 
 def move_dir(src, dst):
-	pass	
 
-
+    #print src, dst
+    
+    for dispath,filename in list_header_files(src):
+        #print filename
+        #print os.path.join(src,filename), os.path.join(dst,filename)
+        move_file(
+                os.path.join(src,filename),
+                os.path.join(dst,filename))
 	
 
 
-print list(list_header_files())
+#print list(list_header_files())
 
 
 

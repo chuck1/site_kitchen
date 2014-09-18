@@ -15,7 +15,7 @@ def empty_string(s):
 	
 	return True
 
-def read(filename, delim=','):
+def read(filename, delim=',', quote='"'):
 	filename_npy = filename + ".npy"
 	
 	try:
