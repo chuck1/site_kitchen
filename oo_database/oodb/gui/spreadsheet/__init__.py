@@ -5,14 +5,6 @@ import pylab as pl
 
 import oodb
 
-default_gen = 'oodb.class_util.designs'
-
-default_fields = "'id', ('type',lambda x: str(type(x))), 'Re', 'desc', 'mdot'"
-
-default_fields = "'id', ('design',lambda s: s.geo.design), 'Re', "
-default_fields = "'receiver_efficiency', ('dp/L3', lambda x: x.get('dp') / x.get('length')**3)"
-default_fields = "'id', 'desc', 'width'"
-
 
 
 class Format:
@@ -101,8 +93,10 @@ class Table(QtGui.QTableWidget):
 
                                 #if isinstance(v, oodb.Value):
                                 #print('WhatsThis',str(v.obj))
+
+                                d = v.prnt()
                                 
-                                i.setToolTip(str(type(v)))
+                                i.setToolTip(str(type(d)))
                                 
                                 i.setEditable(v.editable)
                                 
@@ -207,8 +201,11 @@ class TabLayout(QtGui.QVBoxLayout):
 
 
 class Tab(QtGui.QWidget):
-        def __init__(self, parent):
+        def __init__(self, parent, s0, s1):
                 super(Tab, self).__init__(parent)
+
+                self.s0 = s0
+                self.s1 = s1
 
                 self.w = [[300,100,100],[600],[600]]
                 self.h = [60,60,600]
@@ -238,7 +235,7 @@ class Tab(QtGui.QWidget):
                 self.editext = []
                 
                 # first
-                self.editext.append(QtGui.QLineEdit(default_gen, self))
+                self.editext.append(QtGui.QLineEdit(self.s0, self))
 
                 self.layout.addWidget(self.editext[0])
                 
@@ -250,7 +247,7 @@ class Tab(QtGui.QWidget):
 
 
                 
-                self.text_fields = QtGui.QTextEdit(default_fields, self)
+                self.text_fields = QtGui.QTextEdit(self.s1, self)
                 
                 #self.putInSlot(self.tb2, 0, 1)
                 self.layout.addWidget(self.text_fields, 1)
@@ -276,8 +273,11 @@ class Tab(QtGui.QWidget):
                 
 class TabWidget(QtGui.QTabWidget):
     
-        def __init__(self, parent):
+        def __init__(self, parent, s0, s1):
                 super(TabWidget, self).__init__(parent)
+
+                self.s0 = s0
+                self.s1 = s1
                 
                 self.setStyleSheet('font-size: 11pt; font-family: Courier;')
 
@@ -321,11 +321,9 @@ class TabWidget(QtGui.QTabWidget):
         def initUI(self):
 
                 self.tabs = []
-                self.tabs.append(Tab(self))
-
+                self.tabs.append(Tab(self, self.s0, self.s1))
                 
-                self.addTab(self.tabs[0], "hello")
-                self.addTab(Tab(self), "world")
+                self.addTab(self.tabs[0], "sheet 0")
                 
                 self.setGeometry(
                         8,
@@ -342,12 +340,15 @@ class TabWidget(QtGui.QTabWidget):
                 pass
 
 class Window(QtGui.QWidget):
-        def __init__(self):
+        def __init__(self, s0, s1):
                 super(Window, self).__init__()
 
                 self.layout = QtGui.QVBoxLayout()
 
                 self.setLayout(self.layout)
+
+                self.s0 = s0
+                self.s1 = s1
 
                 self.createMenuBar()
                 self.createTabWidget()
@@ -396,8 +397,8 @@ class Window(QtGui.QWidget):
                 
         def createTabWidget(self):
 
-                self.tabwidget = TabWidget(self)
-
+                self.tabwidget = TabWidget(self, self.s0, self.s1)
+                
                 self.layout.addWidget(self.tabwidget)
 
 

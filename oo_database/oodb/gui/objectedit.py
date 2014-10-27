@@ -34,6 +34,8 @@ class Table(QtGui.QTableWidget):
             if k == 'id':
                 i.setEditable(False)
 
+            i.setToolTip(str(type(v)))
+
             self.setItem(r,1,i)
             
             r += 1

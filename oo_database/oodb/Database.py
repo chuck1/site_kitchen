@@ -119,7 +119,7 @@ class Database:
                 a = getattr(o, attr_desc)
             except:
                 # attribute doesnt exist
-                return make_value(o, attr_desc, 'None')
+                return oodb.make_value(o, attr_desc, 'None')
             else:
                 # attribute exists
                 if not a:
@@ -130,7 +130,7 @@ class Database:
         else:
             # external function
             l = lambda: attr_desc[1](o)
-            return Method(l)
+            return oodb.Method(l)
 
     def save(self):
         print('save')

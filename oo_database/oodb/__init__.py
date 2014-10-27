@@ -9,6 +9,13 @@ import oodb.gui
 
 from oodb.Database import Database
 
+######
+
+class Scival:
+    def __init__(self, v, u):
+        self.v = v
+        self.u = u
+
 #######
 
 class ValueType:

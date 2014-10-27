@@ -14,6 +14,14 @@ def convert(s):
         except:
                 pass
 
+        try:
+                e = eval(s)
+                print(e)
+                return e
+        except:
+                pass
+        
+        
         return s
 
 class TableWidgetItem(QtGui.QTableWidgetItem):
