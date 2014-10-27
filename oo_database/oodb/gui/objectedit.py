@@ -11,8 +11,6 @@ class Table(QtGui.QTableWidget):
 
         self.itemChanged.connect(self.handleItemChanged)
 
-        self.refresh()
-
     def refresh(self):
         
         d = self.parent().obj.__dict__
@@ -62,6 +60,7 @@ class Window(QtGui.QWidget):
         self.setLayout(self.layout)
 
         self.table = Table(self)
+        self.table.refresh()
         
         self.layout.addWidget(self.table)
 

@@ -61,17 +61,25 @@ class Table(QtGui.QTableWidget):
                 print('text1',repr(text2))
                 
                 if text1 and text2:
-                        res1 = eval(text1)
-                        res2 = eval(text2)
-                        #print(res)
-                        self.rows = self.parent().db.gen_rows(res1, res2)
+                        try:
+                                res1 = eval(text1)
+                                res2 = eval(text2)
+                                #print(res)
+                                self.rows = self.parent().db.gen_rows(res1, res2)
+                        except:
+                                self.setRowCount(0)
+                                self.setColumnCount(0)
+                                return
                 else:
                         #self.rows = self.db.gen_rows(oodb.class_util.all, ['id', ('type',type), 'desc'])
-                        self.rows = self.db.gen_rows(
-                                oodb.class_util.designs,
-                                ['id', ('type',lambda x: str(type(x))), 'Re', 'mdot']
-                                )
-
+                        #self.rows = self.db.gen_rows(
+                        #        oodb.class_util.designs,
+                        #        ['id', ('type',lambda x: str(type(x))), 'Re', 'mdot']
+                        #        )
+                        self.rows = []
+                        self.setRowCount(0)
+                        self.setColumnCount(0)
+                        return
                 
                 
                 #print(self.rows)
@@ -87,9 +95,16 @@ class Table(QtGui.QTableWidget):
                 for r in range(R):
                         for c in range(C):
                                 v = self.rows[r][c]
-                                i = oodb.gui.TableWidgetItem(
-                                        fmt[c].prnt(v)
-                                        )
+
+                                if v.editable:
+                                        i = oodb.gui.TableWidgetItemRaw(
+                                                self.rows[0][c].prnt(),
+                                                v.prnt(),
+                                                v.obj)
+                                else:
+                                        i = oodb.gui.TableWidgetItem(
+                                                fmt[c].prnt(v)
+                                                )
 
                                 #if isinstance(v, oodb.Value):
                                 #print('WhatsThis',str(v.obj))
@@ -181,6 +196,10 @@ class Table(QtGui.QTableWidget):
                 return None
                 
         def handleItemChanged(self, item):
+                if isinstance(item, oodb.gui.TableWidgetItemRaw):
+                        item.handleChanged()
+                        return
+                
                 #print(item, 'changed')
                 #print(self.parent())
                 

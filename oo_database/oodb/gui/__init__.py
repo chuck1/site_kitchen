@@ -1,7 +1,10 @@
+import sys
 from PyQt4 import Qt, QtGui, QtCore
 
 import oodb.gui.spreadsheet
 import oodb.gui.objectedit
+
+import unit
 
 def convert(s):
         try:
@@ -18,9 +21,13 @@ def convert(s):
                 e = eval(s)
                 print(e)
                 return e
-        except:
+        except Exception as e:
+                print(e)
+                print(sys.exc_info())
                 pass
         
+
+        print('str:',s)
         
         return s
 
@@ -49,9 +56,33 @@ class TableWidgetItemRaw(TableWidgetItem):
         self.value      = value
         self.obj        = obj
 
+        self.first_change = True
+
     def handleChanged(self):
-        print(self,'handleItemChanged')
+        if self.first_change:
+                self.first_change = False
+                return
+        
+        print(self,'handleChanged')
         setattr(
             self.obj,
             self.field_name,
             convert(self.text()))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
