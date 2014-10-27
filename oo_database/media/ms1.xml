@@ -1,0 +1,26 @@
+<fluid>
+	<property name="density">
+		<poly unitx="K" unity="si_density">
+			2.013800E+03,
+			-4.231200E-01,
+			3.622700E-05,
+			-1.705800E-08
+		</poly>
+	</property>
+	<property name="cp">
+		<poly unitx="K" unity="si_specific_heat">
+			2.018200E+03,
+			-8.302800E-01
+		</poly>
+	</property>
+	<property name="thermal_conductivity">
+		<poly unitx="K" unity="si_thermal_conductivity">
+			4.800000E-01
+		</poly>
+	</property>
+	<property name="dynamic_viscosity">
+		<poly unitx="K" unity="si_dynamic_viscosity">
+			1.90E-3
+		</poly>
+	</property>
+</fluid>
