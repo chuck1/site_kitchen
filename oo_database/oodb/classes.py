@@ -17,6 +17,11 @@ class FluidSettings:
             
 class Object:
 
+    def print_dict(self):
+        print('__dict__:')
+        for k,v in self.__dict__.items():
+            print(k,v)
+
     def get(self, name):
         #print('get')
 
@@ -35,10 +40,16 @@ class Design(Object):
         self.id = i
 
     def resolve(self, db):
-        self.fluid = Fluids.Fluid(self.fluid_str)
-
-        self.fs = FluidSettings(self.fluid_str)
-
+        print('Design.resolve')
+        try:
+            self.fluid = Fluids.Fluid(self.fluid_str)
+            self.fs = FluidSettings(self.fluid_str)
+        except:
+            self.print_dict()
+            print('__dict__:')
+            for k,v in self.__dict__.items():
+                print(k,v)
+                
     def display(self):
         for k,v in self.__dict__.items():
             print(k,v)
