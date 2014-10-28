@@ -1,8 +1,10 @@
 import sys
 from PyQt4 import Qt, QtGui, QtCore
 
-import oodb.gui.spreadsheet
-import oodb.gui.objectedit
+#import oodb.gui.spreadsheet
+#import oodb.gui.objectedit
+
+from oodb.gui.Window import Window
 
 import unit
 
@@ -32,21 +34,25 @@ def convert(s):
         return s
 
 class TableWidgetItem(QtGui.QTableWidgetItem):
-    def __init__(self, string):
-        super(TableWidgetItem, self).__init__(string)
+	def __init__(self, value, editable = True):
+		super(TableWidgetItem, self).__init__(str(value))
 
-    def setEditable(self, x):
-        if x:
-            f = self.flags()
-            f |= 2
-            self.setFlags(f)
-        else:
-            f = self.flags()
-            f ^= 2
-            self.setFlags(f)
+		self.value = value
+		
+		self.setEditable(editable)
+		
+	def setEditable(self, x):
+		if x:
+			f = self.flags()
+			f |= 2
+			self.setFlags(f)
+		else:
+			f = self.flags()
+			f ^= 2
+			self.setFlags(f)
 
-    def handleChanged(self):
-        pass
+	def handleChanged(self):
+		pass
 
 class TableWidgetItemRaw(TableWidgetItem):
     def __init__(self, field_name, value, obj):

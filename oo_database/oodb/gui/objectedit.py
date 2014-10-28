@@ -4,6 +4,9 @@ from PyQt4 import QtGui, QtCore
 import pylab as pl
 
 import oodb
+import oodb.gui
+
+help(oodb.gui)
 
 class Table(QtGui.QTableWidget):
     def __init__(self, parent):
@@ -40,9 +43,9 @@ class Table(QtGui.QTableWidget):
 
     def handleItemChanged(self, item):
         item.handleChanged()
-        
-        
-class Window(QtGui.QWidget):
+
+
+class Window(oodb.gui.Window):
     def __init__(self, obj):
         super(Window, self).__init__()
         

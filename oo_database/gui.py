@@ -1,6 +1,7 @@
 import sys
 
 import oodb
+import oodb.gui.spreadsheet
 
 s0 = 'oodb.class_util.designs'
 s0 = 'oodb.class_util.experiments'
@@ -18,6 +19,5 @@ def main():
         sys.exit(app.exec_())
 
 if __name__ == '__main__':
-
         
         main()

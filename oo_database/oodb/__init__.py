@@ -23,7 +23,7 @@ class Method(ValueType):
         super(Method, self).__init__(False)
         self.f = f
 
-    def prnt(self):
+    def get(self):
         return self.f()
 
 class Value(ValueType):
@@ -40,16 +40,16 @@ class Value(ValueType):
         self.data = value
         
 
-    def prnt(self):
+    def get(self):
         return self.data
 
-class Label(ValueType):
-    def __init__(self, value):
-        super(Label, self).__init__(False)
-        self.data = value
+# class Label(ValueType):
+    # def __init__(self, value):
+        # super(Label, self).__init__(False)
+        # self.data = value
 
-    def prnt(self):
-        return self.data
+    # def __str__(self):
+        # return self.data
 
 ##########
 
