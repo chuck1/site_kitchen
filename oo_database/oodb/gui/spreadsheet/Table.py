@@ -66,11 +66,11 @@ class Table(QtGui.QTableWidget):
 		
 		#print(self.rows)
 		
-		
+		print('rows:',view.r)
 		
 		#fmt = [Format()]*C
 		
-		self.setRowCount(view.r)
+		self.setRowCount(view.r+1)
 		self.setColumnCount(view.c)
 
 		# headers
@@ -78,19 +78,22 @@ class Table(QtGui.QTableWidget):
 			i = oodb.gui.TableWidgetItem(view.headers[c], False)
 			self.setItem(0,c,i) 
 		
+		# data
 		for r in range(view.r):
+			print('row:',r)
 			for c in range(view.c):
 				v = view.rows[r][c]
 				
-				print(v,v.get())
+				#print(v,v.get())
+				
 				if v.editable:
-					print('editable')
+					#print('editable')
 					i = oodb.gui.TableWidgetItemRaw(
-							view.rows[0][c],
+							view.headers[c],
 							v.get(),
 							v.obj)
 				else:
-					print('not editable')
+					#print('not editable')
 					i = oodb.gui.TableWidgetItem(v.get())
 
 				#if isinstance(v, oodb.Value):
@@ -143,10 +146,14 @@ class Table(QtGui.QTableWidget):
 				print(a)
 			
 			#print(arr[0])
-			pl.plot(arr[0], arr[1], 'o')
+			pl.plot(arr[0], arr[1], 'o', markerfacecolor='w', markersize=8.0)
 			
-			pl.xlabel(self.item(0, cols[0]).text())
-			pl.ylabel(self.item(0, cols[1]).text())
+			# TEMPORARY
+			x_unit = ' (g/s)'
+			y_unit = ' (bar)'
+			
+			pl.xlabel(self.item(0, cols[0]).text() + x_unit)
+			pl.ylabel(self.item(0, cols[1]).text() + y_unit)
 			
 			pl.show()
 
