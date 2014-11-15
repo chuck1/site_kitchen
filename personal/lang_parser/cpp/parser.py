@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+#
 import re
 #import vim
 
@@ -150,14 +150,14 @@ list_key = {
 
 
 def key_in_scope_start(key, list_scope_):
-        print 'key_in_scope_start'
-        print '    key =',repr(key)
-        print '    list_scope_ =',list_scope_
+        #print 'key_in_scope_start'
+        #print '    key =',repr(key)
+        #print '    list_scope_ =',list_scope_
 
 	for scope_name in list_scope_:
 		scope = list_scope[scope_name]
 		if key in scope.list_key_start:
-                    print 'returning',scope
+                    #print 'returning',scope
 		    return scope
 	
 	return None
@@ -176,22 +176,38 @@ class Chunk:
 		self.keep = []
 		self.scope = scope
 
+	def __str__(self):
+		return self.__class__.__name__+" "+self.scope.name
+
         def printvar(self,prefix=''):
             #print 'words:'
             #print self.words
 
-            if self.scope:
-                print prefix,'scope:', self.scope.name
-            else:
-                print prefix,'scope:', self.scope
+            #if self.scope:
+            #    print prefix+'scope:', self.scope.name
+            #else:
+            #    print prefix+'scope:', self.scope
 
-            print prefix,'keep:'
+            #print prefix+'keep:'
+
+            temp = []
+
             for k in self.keep:
                 if isinstance(k,Chunk):
-                    print prefix,k
-                    k.printvar(prefix+'    ')
+
+                    if temp:
+                        print prefix + repr(" ".join(temp))
+                        temp = []
+
+                    print prefix+str(k)
+                    k.printvar(prefix+'\t')
                 else:
-                    print prefix,repr(k)
+                    if k != '\n':
+	                    #print prefix + repr(k)
+                            temp.append(k)
+
+            if temp:
+                print prefix + repr(" ".join(temp))
 
 #	def scan_start(self):
 #		ret = []
@@ -251,6 +267,8 @@ class Chunk:
 class Namespace(Chunk):
 	def __init__(self, parent, words, scope=scope_none):
             Chunk.__init__(self, parent, words, scope)
+	def __str__(self):
+		return self.__class__.__name__
 
         def name(self):
             return self.keep[1]
@@ -258,10 +276,14 @@ class Namespace(Chunk):
 class NamespaceBody(Chunk):
 	def __init__(self, parent, words, scope=scope_none):
             Chunk.__init__(self, parent, words, scope)
+	def __str__(self):
+		return self.__class__.__name__
 
 class Class(Chunk):
 	def __init__(self, parent, words, scope=scope_none):
             Chunk.__init__(self, parent, words, scope)
+	def __str__(self):
+		return self.__class__.__name__
 
         def name(self):
             return self.keep[1]
@@ -269,14 +291,42 @@ class Class(Chunk):
 class ClassBody(Chunk):
 	def __init__(self, parent, words, scope=scope_none):
             Chunk.__init__(self, parent, words, scope)
+	def __str__(self):
+		return self.__class__.__name__
 
 class PreProc(Chunk):
 	def __init__(self, parent, words, scope=scope_none):
             Chunk.__init__(self, parent, words, scope)
+	def __str__(self):
+		return self.__class__.__name__
+
+class Function(Chunk):
+	def __init__(self, parent, words, scope=scope_none):
+            Chunk.__init__(self, parent, words, scope)
+	def __str__(self):
+		return self.__class__.__name__ + " " + self.name()
+	def name(self):
+		s = re.split('::', self.keep[0])
+		return str(s)
+		return self.keep[0]
+
+class FunctionBody(Chunk):
+	def __init__(self, parent, words, scope=scope_none):
+            Chunk.__init__(self, parent, words, scope)
+	def __str__(self):
+		return self.__class__.__name__
+
+class FunctionParams(Chunk):
+	def __init__(self, parent, words, scope=scope_none):
+            Chunk.__init__(self, parent, words, scope)
+	def __str__(self):
+		return self.__class__.__name__
 
 class ChunkNone(Chunk):
 	def __init__(self, parent, words, scope=scope_none):
             Chunk.__init__(self, parent, words, scope)
+	def __str__(self):
+		return self.__class__.__name__
 
 
 
@@ -337,7 +387,7 @@ def process(c):
 		# child
 		scope = key_in_scope_start(key, c.scope.list_scope_child)
 		if scope:
-                        print "creating chunk",scope.name
+                        #print "creating chunk",scope.name
 			# create new chunk
                         if scope.name == 'ns':
                             new_chunk = Namespace(c, c.words, scope)
@@ -349,6 +399,12 @@ def process(c):
                             new_chunk = ClassBody(c, c.words, scope)
                         elif scope.name == 'preproc ifndef':
                             new_chunk = PreProc(c, c.words, scope)
+                        elif scope.name == 'function':
+                            new_chunk = Function(c, c.words, scope)
+                        elif scope.name == 'function body':
+                            new_chunk = FunctionBody(c, c.words, scope)
+                        elif scope.name == 'function params':
+                            new_chunk = FunctionParams(c, c.words, scope)
                         else:
                             new_chunk = Chunk(c, c.words, scope)
 			
