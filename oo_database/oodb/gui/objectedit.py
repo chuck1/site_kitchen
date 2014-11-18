@@ -4,14 +4,15 @@ from PyQt4 import QtGui, QtCore
 import pylab as pl
 
 import oodb
+import oodb.gui
+
+help(oodb.gui)
 
 class Table(QtGui.QTableWidget):
     def __init__(self, parent):
         super(Table, self).__init__(parent)
 
         self.itemChanged.connect(self.handleItemChanged)
-
-        self.refresh()
 
     def refresh(self):
         
@@ -34,15 +35,17 @@ class Table(QtGui.QTableWidget):
             if k == 'id':
                 i.setEditable(False)
 
+            i.setToolTip(str(type(v)))
+
             self.setItem(r,1,i)
             
             r += 1
 
     def handleItemChanged(self, item):
         item.handleChanged()
-        
-        
-class Window(QtGui.QWidget):
+
+
+class Window(oodb.gui.Window):
     def __init__(self, obj):
         super(Window, self).__init__()
         
@@ -60,6 +63,7 @@ class Window(QtGui.QWidget):
         self.setLayout(self.layout)
 
         self.table = Table(self)
+        self.table.refresh()
         
         self.layout.addWidget(self.table)
 

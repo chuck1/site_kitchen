@@ -8,144 +8,144 @@ import oodb.class_util
 import oodb.util
 import oodb.gui
 
+# get an oodb Value object from an oodb Object
+def get_value(o, attr_desc):
+	
+	if isinstance(attr_desc, str):
+		try:
+			a = getattr(o, attr_desc)
+		except:
+			# attribute doesnt exist
+			return oodb.make_value(o, attr_desc, 'None')
+		else:
+			# attribute exists
+			if not a:
+				return oodb.make_value(o, attr_desc, 'None')
+			else:
+				return oodb.make_value(o, attr_desc, a)
 
+	else:
+		# external function
+		l = lambda: attr_desc[1](o)
+		return oodb.Method(l)
 
+class View:
+	def __init__(self, headers, rows):
+		self.r = len(rows)
+		self.c = len(headers)
+		
+		self.headers = headers
+		self.rows = rows
 
 class Database:
-    def __init__(self):
+	def __init__(self):
         
-        self.lst = []
-        for name in oodb.util.get_data_filenames():
-               
-            with open(name, 'rb') as f:
-                # a list of objects
-                lst = pickle.load(f)
+		self.lst = []
+		for name in oodb.util.get_data_filenames():
+			   
+			with open(name, 'rb') as f:
+				# a list of objects
+				lst = pickle.load(f)
 
-                self.lst += lst
-                
-            #print(lst)
+				self.lst += lst
+				
+			#print(lst)
 
-        for o in self.lst:
-            o.resolve(self)
+		for o in self.lst:
+			o.resolve(self)
 
-    def __del__(self):
-        #self.save()
-        pass
+	def __del__(self):
+		#self.save()
+		pass
 
-    def get_object_index(self, i):
-        found = False
-        for ind in range(len(self.lst)):
-            if self.lst[ind].id == i:
-                found = True
-                o = self.lst[ind]
-                break
-        
-        if not found:
-            print(i)
-            raise Exception()
-        
-        return o,ind
+	def get_object_index(self, i):
+		found = False
+		for ind in range(len(self.lst)):
+			if self.lst[ind].id == i:
+				found = True
+				o = self.lst[ind]
+				break
 
-    def get_object(self, i):
-        o,_ = self.get_object_index(i)
-        return o
+		if not found:
+			print(i)
+			raise Exception()
+
+		return o,ind
+
+	def get_object(self, i):
+		o,_ = self.get_object_index(i)
+		return o
+
+
+
+	def change_type(self, i, A):
+
+		o,ind = self.get_object_index(i)
+		
+		a = A(i)
+
+		a.__dict__ = o.__dict__
+		
+		self.lst[ind] = a
     
+	def display(self, gen, attr_names):
 
-    
-    def change_type(self, i, A):
+		rows = self.gen_rows()
 
-        o,ind = self.get_object_index(i)
-        
-        a = A(i)
-
-        a.__dict__ = o.__dict__
-        
-        self.lst[ind] = a
-    
-    def display(self, gen, attr_names):
-
-        rows = self.gen_rows()
-        
-        # auto col width
-        m = [0]*N
-        for r in rows:
-            for c in range(len(r)):
-                m[c] = max(m[c], len(r[c])+1)
+		# auto col width
+		m = [0]*N
+		for r in rows:
+			for c in range(len(r)):
+				m[c] = max(m[c], len(r[c])+1)
 
 
-        fmtstr = ('{{:{}}}'*N).format(*m)
-        
-        
-        for r in rows:
-            print(fmtstr.format(*r))
-            
+		fmtstr = ('{{:{}}}'*N).format(*m)
 
-        return rows
 
-    def gen_rows(self, gen, attr_names):
-        rows = []
-        
-        c = []
-        for an in attr_names:
-            if isinstance(an, str):
-                c.append(oodb.Label(an))
-            else:
-                c.append(oodb.Label(an[0]))
-        
-        rows.append(c)
-        
-        N = len(attr_names)
-        
-        fmtstr = '{:32}'*N
-        
-        #print(str)
-        #print(attr_names)
-        #print(str.format(*attr_names))
-        
-        for s in gen(self.lst):
-            col = []
-            for an in attr_names:
-                col.append(self.get_value(s, an))
-            
-            rows.append(col)
-            #rows.append(list('{0}'.format(c.prnt()) for c in col))
+		for r in rows:
+			print(fmtstr.format(*r))
+			
 
-        return rows
+		return rows
 
-    def get_value(self, o, attr_desc):
+	def gen_rows(self, gen, attr_names):
         
-        if isinstance(attr_desc, str):
-            try:
-                a = getattr(o, attr_desc)
-            except:
-                # attribute doesnt exist
-                return make_value(o, attr_desc, 'None')
-            else:
-                # attribute exists
-                if not a:
-                    return oodb.make_value(o, attr_desc, 'None')
-                else:
-                    return oodb.make_value(o, attr_desc, a)
+		headers = []
+		for an in attr_names:
+			if isinstance(an, str):
+				headers.append(an)
+			else:
+				headers.append(an[0])
 
-        else:
-            # external function
-            l = lambda: attr_desc[1](o)
-            return Method(l)
+		rows = []
 
-    def save(self):
-        print('save')
-        # rewrite database
-        oodb.util.rm_data_files()
-        oodb.util.save_to_next(self.lst)
-        
-    def replace(obj, r):
+		N = len(attr_names)
 
-        obj.id = r
-        
-        _,ind = self.get_object_index(r)
-        
-        self.lst[ind] = obj
-        
+		fmtstr = '{:32}'*N
 
-        # rewrite database
-        self.save()
+		#print(str)
+		#print(attr_names)
+		#print(str.format(*attr_names))
+
+		rows = list(list(get_value(s, an) for an in attr_names) for s in gen(self.lst))
+
+		return View(headers, rows)
+
+
+	def save(self):
+		print('save')
+		# rewrite database
+		oodb.util.rm_data_files()
+		oodb.util.save_to_next(self.lst)
+		
+	def replace(obj, r):
+
+		obj.id = r
+		
+		_,ind = self.get_object_index(r)
+		
+		self.lst[ind] = obj
+		
+
+		# rewrite database
+		self.save()

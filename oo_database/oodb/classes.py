@@ -17,6 +17,11 @@ class FluidSettings:
             
 class Object:
 
+    def print_dict(self):
+        print('__dict__:')
+        for k,v in self.__dict__.items():
+            print(k,v)
+
     def get(self, name):
         #print('get')
 
@@ -35,10 +40,16 @@ class Design(Object):
         self.id = i
 
     def resolve(self, db):
-        self.fluid = Fluids.Fluid(self.fluid_str)
-
-        self.fs = FluidSettings(self.fluid_str)
-
+        print('Design.resolve')
+        try:
+            self.fluid = Fluids.Fluid(self.fluid_str)
+            self.fs = FluidSettings(self.fluid_str)
+        except:
+            self.print_dict()
+            print('__dict__:')
+            for k,v in self.__dict__.items():
+                print(k,v)
+                
     def display(self):
         for k,v in self.__dict__.items():
             print(k,v)
@@ -143,23 +154,41 @@ class Simulation(Object):
     def resolve(self, db):
         self.geo = db.get_object(self.geo_id)
 
-
     def Re(self):
         return self.geo.design.Re()
 
 
 ## Experiment
 
-class Experiment(Object):
+class HeatLossCurve(Object):
     def __init__(self, i, design_id):
         self.id = i
         self.design_id = design_id
 
     def resolve(self, db):
         self.design = db.get_object(self.design_id)
+        
+class Experiment(Object):
+    def __init__(self, i, design_id):
+        self.id = i
+        self.design_id = design_id
+
+        self.heat_loss_curve = None
+        self.heat_loss_curve_id = None
+
+    def resolve(self, db):
+        self.design = db.get_object(self.design_id)
+
+        if self.heat_loss_curve_id:
+            self.heat_loss_curve = db.get_object(self.heat_loss_curve_id)
 
     def length(self):
         return self.design.get('length')
+
+    def pressure_drop(self):
+        return self.get('pressure_inlet') - self.get('pressure_outlet')
+
+
 
 
 

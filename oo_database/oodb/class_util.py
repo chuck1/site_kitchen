@@ -19,6 +19,13 @@ def simulations(lst):
         if isinstance(l, oodb.classes.Simulation):
             yield l
 
+def experiments(lst):
+    for l in lst:
+        if isinstance(l, oodb.classes.Experiment):
+            yield l
+
+
+
 
 
 

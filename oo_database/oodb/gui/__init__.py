@@ -1,7 +1,12 @@
+import sys
 from PyQt4 import Qt, QtGui, QtCore
 
-import oodb.gui.spreadsheet
-import oodb.gui.objectedit
+#import oodb.gui.spreadsheet
+#import oodb.gui.objectedit
+
+from oodb.gui.Window import Window
+
+import unit
 
 def convert(s):
         try:
@@ -14,24 +19,40 @@ def convert(s):
         except:
                 pass
 
+        try:
+                e = eval(s)
+                print(e)
+                return e
+        except Exception as e:
+                print(e)
+                print(sys.exc_info())
+                pass
+        
+
+        print('str:',s)
+        
         return s
 
 class TableWidgetItem(QtGui.QTableWidgetItem):
-    def __init__(self, string):
-        super(TableWidgetItem, self).__init__(string)
+	def __init__(self, value, editable = True):
+		super(TableWidgetItem, self).__init__(str(value))
 
-    def setEditable(self, x):
-        if x:
-            f = self.flags()
-            f |= 2
-            self.setFlags(f)
-        else:
-            f = self.flags()
-            f ^= 2
-            self.setFlags(f)
+		self.value = value
+		
+		self.setEditable(editable)
+		
+	def setEditable(self, x):
+		if x:
+			f = self.flags()
+			f |= 2
+			self.setFlags(f)
+		else:
+			f = self.flags()
+			f ^= 2
+			self.setFlags(f)
 
-    def handleChanged(self):
-        pass
+	def handleChanged(self):
+		pass
 
 class TableWidgetItemRaw(TableWidgetItem):
     def __init__(self, field_name, value, obj):
@@ -41,9 +62,33 @@ class TableWidgetItemRaw(TableWidgetItem):
         self.value      = value
         self.obj        = obj
 
+        self.first_change = True
+
     def handleChanged(self):
-        print(self,'handleItemChanged')
+        if self.first_change:
+                self.first_change = False
+                return
+        
+        print(self,'handleChanged')
         setattr(
             self.obj,
             self.field_name,
             convert(self.text()))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
