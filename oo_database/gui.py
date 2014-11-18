@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import sys
 
 import oodb
@@ -19,5 +21,4 @@ def main():
         sys.exit(app.exec_())
 
 if __name__ == '__main__':
-        
         main()
