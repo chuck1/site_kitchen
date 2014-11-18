@@ -9,18 +9,18 @@ pygtk.require('2.0')
 import gtk
 
 def efficiency(T, q_abs, T_infr = 298.15, T_infc = 298.15, h_nat = 15.0, emiss = 0.95):
-	sigma = 5.67 * pow(10,-8)
-	
-	q_rad = emiss * sigma * (pow(T,4) - pow(T_infr,4))
-	q_conv = h_nat * (T - T_infc)
-	
-	# thermal
-	eff_ther = q_abs / (q_abs + q_rad + q_conv)
-	
-	# receiver
-	eff_recv = eff_ther * emiss
-	
-	return eff_ther, eff_recv, q_rad, q_conv
+        sigma = 5.67 * pow(10,-8)
+
+        q_rad = emiss * sigma * (pow(T,4) - pow(T_infr,4))
+        q_conv = h_nat * (T - T_infc)
+
+        # thermal
+        eff_ther = q_abs / (q_abs + q_rad + q_conv)
+
+        # receiver
+        eff_recv = eff_ther * emiss
+
+        return eff_ther, eff_recv, q_rad, q_conv
 
 class HelloWorld:
         # This is a callback function. The data arguments are ignored
@@ -50,10 +50,16 @@ class HelloWorld:
                 self.entry["eff re"].set_text("{0}".format(eff_recv))
                 self.entry["q rad"].set_text("{0}".format(q_rad))
                 self.entry["q con"].set_text("{0}".format(q_con))
+<<<<<<< HEAD
+
+
+        def delete_event(self, widget, event, data=None):
+=======
                         
                 
         def delete_event(self, widget, event, data=None):
                 
+>>>>>>> 8e0b8b665d3ae8d3b79e35e1909266d8f5dd6e66
                 # If you return FALSE in the "delete_event" signal handler,
                 # GTK will emit the "destroy" signal. Returning TRUE means
                 # you don't want the window to be destroyed.
@@ -68,7 +74,11 @@ class HelloWorld:
         def destroy(self, widget, data=None):
                 print("destroy signal occurred")
                 gtk.main_quit()
+<<<<<<< HEAD
+
+=======
         
+>>>>>>> 8e0b8b665d3ae8d3b79e35e1909266d8f5dd6e66
         def label_text(self, vbox, nickname, label, value):
                 vb = gtk.VBox(False,0)
                 vbox.pack_start(vb, True, True, 0)
@@ -97,6 +107,7 @@ class HelloWorld:
                 vbox = gtk.VBox(False,0)
                 self.window.add(vbox)
                 vbox.show()
+<<<<<<< HEAD
 
                 self.button = [None,None]
 
@@ -110,6 +121,21 @@ class HelloWorld:
                 vbox.pack_start(self.button[1], True, True, 0)
                 self.button[1].show()
 
+=======
+
+                self.button = [None,None]
+
+                self.button[0] = gtk.Button("Enter")
+                self.button[0].connect("clicked", self.hello, None)
+                vbox.pack_start(self.button[0], True, True, 0)
+                self.button[0].show()
+
+                self.button[1] = gtk.Button("Exit")
+                self.button[1].connect_object("clicked", gtk.Widget.destroy, self.window)
+                vbox.pack_start(self.button[1], True, True, 0)
+                self.button[1].show()
+
+>>>>>>> 8e0b8b665d3ae8d3b79e35e1909266d8f5dd6e66
 
                 self.vbox = []
                 self.entry = {}
@@ -126,8 +152,13 @@ class HelloWorld:
                 self.label_text(vbox, "eff re", "efficiency receiver", 0)
                 self.label_text(vbox, "q rad", "q rad", 0)
                 self.label_text(vbox, "q con", "q conv", 0)
+<<<<<<< HEAD
+
+                
+=======
                
 
+>>>>>>> 8e0b8b665d3ae8d3b79e35e1909266d8f5dd6e66
                 for i in range(0):
                         vb = gtk.VBox(False,0)
                         vbox.pack_start(vb, True, True, 0)
