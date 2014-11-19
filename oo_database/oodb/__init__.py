@@ -1,12 +1,15 @@
 import pickle
 import inspect
 import numpy as np
+import argparse
+import logging
 
-import oodb.classes
-import oodb.class_util
+#import oodb.classes
+#import oodb.class_util
 import oodb.util
 import oodb.gui
 
+from oodb.Object import Object
 from oodb.Database import Database
 
 ######
@@ -65,5 +68,13 @@ def make_value(obj, name, value, editable = True):
 
 
 
+parser = argparse.ArgumentParser()
+parser.add_argument('-v', action="store_true")
+args = parser.parse_args()
+
+if args.v:
+    logging.basicConfig(level = logging.DEBUG)
+else:
+    logging.basicConfig(level = logging.WARNING)
 
 

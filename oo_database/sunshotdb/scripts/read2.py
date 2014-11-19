@@ -3,10 +3,12 @@
 import oodb
 import sunshotdb
 
-obj = oodb.DB.objects()
+obj = list(oodb.DB.objects())
 
 for o in obj:
-    print(o)
+    print(o, o.id)
+    
+
 
 
 

@@ -254,14 +254,6 @@ class Application(QtGui.QApplication):
         def __init__(self, av):
                 super(Application, self).__init__(av)
 
-                parser = argparse.ArgumentParser()
-                parser.add_argument('-v', action="store_true")
-                args = parser.parse_args()
-
-                if args.v:
-                    logging.basicConfig(level = logging.DEBUG)
-                else:
-                    logging.basicConfig(level = logging.WARNING)
 
 
 

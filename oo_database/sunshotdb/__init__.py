@@ -4,9 +4,9 @@ import sys
 
 import oodb
 
+import sunshotdb.models
+
 oodb.ROOT,_ = os.path.split(__file__)
 
-print(oodb.ROOT)
-
-
+oodb.DB = oodb.Database()
 

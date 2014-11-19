@@ -2,6 +2,7 @@
 import pickle
 import inspect
 import numpy as np
+import logging
 
 import oodb.classes
 import oodb.class_util
@@ -38,114 +39,127 @@ class View:
 		self.rows = rows
 
 class Database:
-	def __init__(self):
+    def __init__(self):
         
-		self.lst = []
-		for name in oodb.util.get_data_filenames(oodb.ROOT):
-			print(name)
-			with open(name, 'rb') as f:
-				# a list of objects
-				lst = pickle.load(f)
+        self.lst = []
+        for name in oodb.util.get_data_filenames(oodb.ROOT):
+            logging.info(name)
+            with open(name, 'rb') as f:
+                # a list of objects
+                lst = pickle.load(f)
 
-				self.lst += lst
-				
-			#print(lst)
+                self.lst += lst
+                
+            #logging.info(lst)
 
-		for o in self.lst:
-			o.resolve(self)
+        for o in self.lst:
+            o.resolve(self)
 
-	def __del__(self):
-		#self.save()
-		pass
+    def __del__(self):
+        #self.save()
+        pass
 
-	def get_object_index(self, i):
-		found = False
-		for ind in range(len(self.lst)):
-			if self.lst[ind].id == i:
-				found = True
-				o = self.lst[ind]
-				break
+    def get_object_index(self, i):
+        found = False
+        for ind in range(len(self.lst)):
+            if self.lst[ind].id == i:
+                found = True
+                o = self.lst[ind]
+                break
 
-		if not found:
-			print(i)
-			raise Exception()
+        if not found:
+            logging.info(i)
+            raise Exception()
 
-		return o,ind
+        return o,ind
 
-	def get_object(self, i):
-		o,_ = self.get_object_index(i)
-		return o
+    def objects(self, filters={}):
+        if filters:
+            for o in self.lst:
+                for k,v in filters.items():
+                    if o.get(k) == v:
+                        yield o
+        else:
+            for o in self.lst:
+                yield o
+
+    def get_object(self, i):
+        o,_ = self.get_object_index(i)
+        return o
 
 
 
-	def change_type(self, i, A):
+    def change_type(self, i, A):
 
-		o,ind = self.get_object_index(i)
-		
-		a = A(i)
+        o,ind = self.get_object_index(i)
+        
+        a = A(i)
 
-		a.__dict__ = o.__dict__
-		
-		self.lst[ind] = a
+        a.__dict__ = o.__dict__
+        
+        self.lst[ind] = a
     
-	def display(self, gen, attr_names):
+    def display(self, gen, attr_names):
 
-		rows = self.gen_rows()
+        rows = self.gen_rows()
 
-		# auto col width
-		m = [0]*N
-		for r in rows:
-			for c in range(len(r)):
-				m[c] = max(m[c], len(r[c])+1)
-
-
-		fmtstr = ('{{:{}}}'*N).format(*m)
+        # auto col width
+        m = [0]*N
+        for r in rows:
+            for c in range(len(r)):
+                m[c] = max(m[c], len(r[c])+1)
 
 
-		for r in rows:
-			print(fmtstr.format(*r))
-			
+        fmtstr = ('{{:{}}}'*N).format(*m)
 
-		return rows
 
-	def gen_rows(self, gen, attr_names):
+        for r in rows:
+            logging.info(fmtstr.format(*r))
+            
+
+        return rows
+
+    def gen_rows(self, gen, attr_names):
         
-		headers = []
-		for an in attr_names:
-			if isinstance(an, str):
-				headers.append(an)
-			else:
-				headers.append(an[0])
+        headers = []
+        for an in attr_names:
+            if isinstance(an, str):
+                headers.append(an)
+            else:
+                headers.append(an[0])
 
-		rows = []
+        rows = []
 
-		N = len(attr_names)
+        N = len(attr_names)
 
-		fmtstr = '{:32}'*N
+        fmtstr = '{:32}'*N
 
-		#print(str)
-		#print(attr_names)
-		#print(str.format(*attr_names))
+        #logging.info(str)
+        #logging.info(attr_names)
+        #logging.info(str.format(*attr_names))
 
-		rows = list(list(get_value(s, an) for an in attr_names) for s in gen(self.lst))
+        rows = list(list(get_value(s, an) for an in attr_names) for s in gen(self.lst))
 
-		return View(headers, rows)
+        return View(headers, rows)
 
 
-	def save(self):
-		print('save')
-		# rewrite database
-		oodb.util.rm_data_files(oodb.ROOT)
-		oodb.util.save_to_next(self.lst)
-		
-	def replace(obj, r):
+    def save(self):
+        logging.info('save')
+        # rewrite database
+        oodb.util.rm_data_files(oodb.ROOT)
+        oodb.util.save_to_next(oodb.ROOT, self.lst)
+    
+    ## replace
+    # @param obj new object
+    # @param r id
+    def replace(self, obj, r):
 
-		obj.id = r
-		
-		_,ind = self.get_object_index(r)
-		
-		self.lst[ind] = obj
-		
+        obj.id = r
+        
+        _,ind = self.get_object_index(r)
+        
+        self.lst[ind] = obj
+        
 
-		# rewrite database
-		self.save()
+        # rewrite database
+        self.save()

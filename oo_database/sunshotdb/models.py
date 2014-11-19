@@ -1,8 +1,10 @@
 import math
 import inspect
+import logging
 
 import oodb.util
 import Sci.Fluids
+#import Fluids
 
 class FluidSettings:
     def __init__(self, string):
@@ -15,44 +17,26 @@ class FluidSettings:
             self.temp_in    = 573.15
             self.temp_out   = 873.15
             
-class Object:
 
-    def print_dict(self):
-        print('__dict__:')
-        for k,v in self.__dict__.items():
-            print(k,v)
-
-    def get(self, name):
-        #print('get')
-
-        a = getattr(self, name)
-
-        if inspect.ismethod(a):
-            #print('method', a())
-            return a()
-        else:
-            #print('not method')
-            return a
-
-class Design(Object):
+class Design(oodb.Object):
     def __init__(self, i):
-        print('Design.__init__')
+        logging.info('Design.__init__')
         self.id = i
 
     def resolve(self, db):
-        print('Design.resolve')
+        logging.info('Design.resolve')
         try:
-            self.fluid = Fluids.Fluid(self.fluid_str)
+            self.fluid = Sci.Fluids.Fluid(self.fluid_str)
             self.fs = FluidSettings(self.fluid_str)
         except:
             self.print_dict()
-            print('__dict__:')
+            logging.info('__dict__:')
             for k,v in self.__dict__.items():
-                print(k,v)
+                logging.info("{} {}".format(k,v))
                 
     def display(self):
         for k,v in self.__dict__.items():
-            print(k,v)
+            logging.info("{} {}".format(k,v))
 
     def Re(self):
         
@@ -64,7 +48,7 @@ class Design(Object):
         return rho * self.D_h() * self.v() / mu
 
     def temp_avg(self):
-        return (self.temp_in + self.temp_out) / 2.0
+        return (self.fs.temp_in + self.fs.temp_out) / 2.0
 
     def v(self):
         rho = self.fluid.get('density', self.temp_avg())
@@ -72,8 +56,8 @@ class Design(Object):
 
     # total mass flow rate for device
     def mdot(self):
-        dh = self.fluid.enthalpy_change(self.temp_in, self.temp_out)
-        return self.qpp * self.A_heated() / dh
+        dh = self.fluid.enthalpy_change(self.fs.temp_in, self.fs.temp_out)
+        return self.fs.qpp * self.A_heated() / dh
 
     # 
     def A_heated(self):
@@ -124,7 +108,7 @@ class PinFin(Design):
 
 ### Geo
 
-class Geo:
+class Geo(oodb.Object):
     def __init__(self, i, design_id):
         self.id = i
         self.design_id = design_id
@@ -132,9 +116,12 @@ class Geo:
     def resolve(self, db):
         self.design = db.get_object(self.design_id)
 
+    def Re(self):
+        return self.design.Re()
+    
 ### Simulation
 
-class Simulation(Object):
+class Simulation(oodb.Object):
     def __init__(self, i, geo_id):
         self.id = i
         self.geo_id = geo_id
@@ -160,7 +147,7 @@ class Simulation(Object):
 
 ## Experiment
 
-class HeatLossCurve(Object):
+class HeatLossCurve(oodb.Object):
     def __init__(self, i, design_id):
         self.id = i
         self.design_id = design_id
@@ -168,7 +155,10 @@ class HeatLossCurve(Object):
     def resolve(self, db):
         self.design = db.get_object(self.design_id)
         
-class Experiment(Object):
+    def Re(self):
+        return self.design.Re()
+
+class Experiment(oodb.Object):
     def __init__(self, i, design_id):
         self.id = i
         self.design_id = design_id
@@ -188,7 +178,8 @@ class Experiment(Object):
     def pressure_drop(self):
         return self.get('pressure_inlet') - self.get('pressure_outlet')
 
-
+    def Re(self):
+        return self.design.Re()
 
 
 
