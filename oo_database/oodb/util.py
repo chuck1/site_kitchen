@@ -77,7 +77,8 @@ def next_file(root):
     return m+1
 
 def next_filename(root):
-    ret = os.path.join(root,"data",str(next_file) + ".pkl")
+    ret = os.path.join(root,"data",str(next_file(root)) + ".pkl")
+    print("next filename:", ret)
     return ret
 
 def save_to_next(root, l):

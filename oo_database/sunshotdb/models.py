@@ -4,7 +4,6 @@ import logging
 
 import oodb.util
 import Sci.Fluids
-#import Fluids
 
 class FluidSettings:
     def __init__(self, string):

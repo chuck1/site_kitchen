@@ -3,6 +3,8 @@ import inspect
 
 import oodb
 
+
+
 class Object:
 
     def print_dict(self):
@@ -27,10 +29,4 @@ class Object:
         else:
             #logging.info('not method')
             return a
-
-    def objects(self):
-        for o in oodb.DB.objects():
-            if isinstance(o, type(self)):
-                yield o
-
 

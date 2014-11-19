@@ -4,8 +4,8 @@ import inspect
 import numpy as np
 import logging
 
-import oodb.classes
-import oodb.class_util
+#import oodb.classes
+#import oodb.class_util
 import oodb.util
 import oodb.gui
 
@@ -72,15 +72,24 @@ class Database:
             raise Exception()
 
         return o,ind
+    
+    def objects(self, filters={}, objtype=None):
 
-    def objects(self, filters={}):
-        if filters:
-            for o in self.lst:
-                for k,v in filters.items():
-                    if o.get(k) == v:
-                        yield o
-        else:
-            for o in self.lst:
+        
+        def test1(o):
+            for k,v in filters.items():
+                if o.get(k) != v:
+                    return False
+            return True
+        
+        def test2(o):
+            if isinstance(o, objtype):
+                return True
+            else:
+                return False
+        
+        for o in self.lst:
+            if test1(o) and test2(o):
                 yield o
 
     def get_object(self, i):
