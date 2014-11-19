@@ -64,7 +64,7 @@ class Table(QtGui.QTableWidget):
 		view = self.parent().db.gen_rows(res1, res2)
 		self.view = view
 		
-		#print(self.rows)
+		print(self.view.r)
 		
 		print('rows:',view.r)
 		

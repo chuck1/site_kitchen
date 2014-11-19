@@ -1,0 +1,1064 @@
+/home/chuck/git/python/oo_database/sunshotdb
+av ['./sunshotdb/gui.py']
+warning
+/home/chuck/git/python/oo_database/sunshotdb/data/1.pkl
+Design.resolve
+__dict__:
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+length_channel 0.0066
+length_out 8e-05
+fluid <Fluids.Fluid object at 0x7f9a920ddd68>
+qpp 1000000.0
+width_channel 0.001
+length_in 8e-05
+height_channel 4e-05
+height_back 0.0001
+fs <oodb.classes.FluidSettings object at 0x7f9a920e5668>
+desc high aspect; rectangular
+id 11
+height_front 0.0001
+temp_in 773.15
+__dict__:
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+length_channel 0.0066
+length_out 8e-05
+fluid <Fluids.Fluid object at 0x7f9a920ddd68>
+qpp 1000000.0
+width_channel 0.001
+length_in 8e-05
+height_channel 4e-05
+height_back 0.0001
+fs <oodb.classes.FluidSettings object at 0x7f9a920e5668>
+desc high aspect; rectangular
+id 11
+height_front 0.0001
+temp_in 773.15
+Design.resolve
+__dict__:
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+length_channel 0.0075
+length_out 8e-05
+fluid <Fluids.Fluid object at 0x7f9a920e5828>
+qpp 1000000.0
+width_channel 0.001
+length_in 8e-05
+height_channel 4e-05
+height_back 0.0001
+fs <oodb.classes.FluidSettings object at 0x7f9a920e5c50>
+desc high aspect; rectangular
+id 13
+height_front 0.0001
+temp_in 773.15
+__dict__:
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+length_channel 0.0075
+length_out 8e-05
+fluid <Fluids.Fluid object at 0x7f9a920e5828>
+qpp 1000000.0
+width_channel 0.001
+length_in 8e-05
+height_channel 4e-05
+height_back 0.0001
+fs <oodb.classes.FluidSettings object at 0x7f9a920e5c50>
+desc high aspect; rectangular
+id 13
+height_front 0.0001
+temp_in 773.15
+Design.resolve
+__dict__:
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+length_channel 0.0084
+length_out 8e-05
+fluid <Fluids.Fluid object at 0x7f9a920e5d30>
+qpp 1000000.0
+width_channel 0.001
+length_in 8e-05
+height_channel 4e-05
+height_back 0.0001
+fs <oodb.classes.FluidSettings object at 0x7f9a920e8198>
+desc high aspect; rectangular
+id 15
+height_front 0.0001
+temp_in 773.15
+__dict__:
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+length_channel 0.0084
+length_out 8e-05
+fluid <Fluids.Fluid object at 0x7f9a920e5d30>
+qpp 1000000.0
+width_channel 0.001
+length_in 8e-05
+height_channel 4e-05
+height_back 0.0001
+fs <oodb.classes.FluidSettings object at 0x7f9a920e8198>
+desc high aspect; rectangular
+id 15
+height_front 0.0001
+temp_in 773.15
+Design.resolve
+__dict__:
+fluid_str co2
+width_wall 5e-05
+temp_out 923.15
+length_channel 0.013
+length_out 0.00025
+fluid <Fluids.Fluid object at 0x7f9a920e8278>
+qpp 1000000.0
+width_channel 5e-05
+length_in 0.00025
+height_channel 0.00025
+height_back 0.0001
+fs <oodb.classes.FluidSettings object at 0x7f9a920e86a0>
+desc low aspect; rectangular
+id 17
+height_front 0.0001
+temp_in 773.15
+__dict__:
+fluid_str co2
+width_wall 5e-05
+temp_out 923.15
+length_channel 0.013
+length_out 0.00025
+fluid <Fluids.Fluid object at 0x7f9a920e8278>
+qpp 1000000.0
+width_channel 5e-05
+length_in 0.00025
+height_channel 0.00025
+height_back 0.0001
+fs <oodb.classes.FluidSettings object at 0x7f9a920e86a0>
+desc low aspect; rectangular
+id 17
+height_front 0.0001
+temp_in 773.15
+Design.resolve
+__dict__:
+fluid_str co2
+width_wall 5e-05
+temp_out 923.15
+length_channel 0.018
+length_out 0.00025
+fluid <Fluids.Fluid object at 0x7f9a920e8780>
+qpp 1000000.0
+width_channel 5e-05
+length_in 0.00025
+height_channel 0.00025
+height_back 0.0001
+fs <oodb.classes.FluidSettings object at 0x7f9a920e8ba8>
+desc low aspect; rectangular
+id 19
+height_front 0.0001
+temp_in 773.15
+__dict__:
+fluid_str co2
+width_wall 5e-05
+temp_out 923.15
+length_channel 0.018
+length_out 0.00025
+fluid <Fluids.Fluid object at 0x7f9a920e8780>
+qpp 1000000.0
+width_channel 5e-05
+length_in 0.00025
+height_channel 0.00025
+height_back 0.0001
+fs <oodb.classes.FluidSettings object at 0x7f9a920e8ba8>
+desc low aspect; rectangular
+id 19
+height_front 0.0001
+temp_in 773.15
+Design.resolve
+__dict__:
+fluid_str co2
+width_wall 5e-05
+temp_out 923.15
+length_channel 0.023
+length_out 0.00025
+fluid <Fluids.Fluid object at 0x7f9a920e8c88>
+qpp 1000000.0
+width_channel 5e-05
+length_in 0.00025
+height_channel 0.00025
+height_back 0.0001
+fs <oodb.classes.FluidSettings object at 0x7f9a920ec0f0>
+desc low aspect; rectangular
+id 21
+height_front 0.0001
+temp_in 773.15
+__dict__:
+fluid_str co2
+width_wall 5e-05
+temp_out 923.15
+length_channel 0.023
+length_out 0.00025
+fluid <Fluids.Fluid object at 0x7f9a920e8c88>
+qpp 1000000.0
+width_channel 5e-05
+length_in 0.00025
+height_channel 0.00025
+height_back 0.0001
+fs <oodb.classes.FluidSettings object at 0x7f9a920ec0f0>
+desc low aspect; rectangular
+id 21
+height_front 0.0001
+temp_in 773.15
+Design.resolve
+__dict__:
+height_channel 0.0002
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+qpp 1000000.0
+height_front 0.0001
+length_out 0.0002
+fluid <Fluids.Fluid object at 0x7f9a920ec240>
+NT 6
+SE 0.0002
+length_in 0.0002
+ST 0.0004
+NL 18
+fs <oodb.classes.FluidSettings object at 0x7f9a920ec6d8>
+desc pin
+id 24
+D 0.0001
+SL 0.00011
+height_back 0.0001
+temp_in 773.15
+__dict__:
+height_channel 0.0002
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+qpp 1000000.0
+height_front 0.0001
+length_out 0.0002
+fluid <Fluids.Fluid object at 0x7f9a920ec240>
+NT 6
+SE 0.0002
+length_in 0.0002
+ST 0.0004
+NL 18
+fs <oodb.classes.FluidSettings object at 0x7f9a920ec6d8>
+desc pin
+id 24
+D 0.0001
+SL 0.00011
+height_back 0.0001
+temp_in 773.15
+Design.resolve
+__dict__:
+height_channel 0.0002
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+qpp 1000000.0
+height_front 0.0001
+length_out 0.0002
+fluid <Fluids.Fluid object at 0x7f9a920ec860>
+NT 6
+SE 0.0002
+length_in 0.0002
+ST 0.0004
+NL 28
+fs <oodb.classes.FluidSettings object at 0x7f9a920ecc88>
+desc pin
+id 26
+D 0.0001
+SL 0.00011
+height_back 0.0001
+temp_in 773.15
+__dict__:
+height_channel 0.0002
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+qpp 1000000.0
+height_front 0.0001
+length_out 0.0002
+fluid <Fluids.Fluid object at 0x7f9a920ec860>
+NT 6
+SE 0.0002
+length_in 0.0002
+ST 0.0004
+NL 28
+fs <oodb.classes.FluidSettings object at 0x7f9a920ecc88>
+desc pin
+id 26
+D 0.0001
+SL 0.00011
+height_back 0.0001
+temp_in 773.15
+Design.resolve
+__dict__:
+height_channel 0.0002
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+qpp 1000000.0
+height_front 0.0001
+length_out 0.0002
+fluid <Fluids.Fluid object at 0x7f9a920ecd30>
+NT 6
+SE 0.0002
+length_in 0.0002
+ST 0.0004
+NL 38
+fs <oodb.classes.FluidSettings object at 0x7f9a920f1198>
+desc pin
+id 28
+D 0.0001
+SL 0.00011
+height_back 0.0001
+temp_in 773.15
+__dict__:
+height_channel 0.0002
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+qpp 1000000.0
+height_front 0.0001
+length_out 0.0002
+fluid <Fluids.Fluid object at 0x7f9a920ecd30>
+NT 6
+SE 0.0002
+length_in 0.0002
+ST 0.0004
+NL 38
+fs <oodb.classes.FluidSettings object at 0x7f9a920f1198>
+desc pin
+id 28
+D 0.0001
+SL 0.00011
+height_back 0.0001
+temp_in 773.15
+Design.resolve
+__dict__:
+height_channel 0.0002
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+qpp 1000000.0
+height_front 0.0001
+length_out 0.0002
+fluid <Fluids.Fluid object at 0x7f9a920f1240>
+NT 6
+SE 0.0002
+length_in 0.0002
+ST 0.0004
+NL 18
+fs <oodb.classes.FluidSettings object at 0x7f9a920f1668>
+desc pin
+id 30
+D 0.0001
+SL 0.0002
+height_back 0.0001
+temp_in 773.15
+__dict__:
+height_channel 0.0002
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+qpp 1000000.0
+height_front 0.0001
+length_out 0.0002
+fluid <Fluids.Fluid object at 0x7f9a920f1240>
+NT 6
+SE 0.0002
+length_in 0.0002
+ST 0.0004
+NL 18
+fs <oodb.classes.FluidSettings object at 0x7f9a920f1668>
+desc pin
+id 30
+D 0.0001
+SL 0.0002
+height_back 0.0001
+temp_in 773.15
+Design.resolve
+__dict__:
+height_channel 0.0002
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+qpp 1000000.0
+height_front 0.0001
+length_out 0.0002
+fluid <Fluids.Fluid object at 0x7f9a920f1710>
+NT 6
+SE 0.0002
+length_in 0.0002
+ST 0.0004
+NL 28
+fs <oodb.classes.FluidSettings object at 0x7f9a920f1b38>
+desc pin
+id 32
+D 0.0001
+SL 0.0002
+height_back 0.0001
+temp_in 773.15
+__dict__:
+height_channel 0.0002
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+qpp 1000000.0
+height_front 0.0001
+length_out 0.0002
+fluid <Fluids.Fluid object at 0x7f9a920f1710>
+NT 6
+SE 0.0002
+length_in 0.0002
+ST 0.0004
+NL 28
+fs <oodb.classes.FluidSettings object at 0x7f9a920f1b38>
+desc pin
+id 32
+D 0.0001
+SL 0.0002
+height_back 0.0001
+temp_in 773.15
+Design.resolve
+__dict__:
+height_channel 0.0002
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+qpp 1000000.0
+height_front 0.0001
+length_out 0.0002
+fluid <Fluids.Fluid object at 0x7f9a920f1be0>
+NT 6
+SE 0.0002
+length_in 0.0002
+ST 0.0004
+NL 38
+fs <oodb.classes.FluidSettings object at 0x7f9a91fb3048>
+desc pin
+id 34
+D 0.0001
+SL 0.0002
+height_back 0.0001
+temp_in 773.15
+__dict__:
+height_channel 0.0002
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+qpp 1000000.0
+height_front 0.0001
+length_out 0.0002
+fluid <Fluids.Fluid object at 0x7f9a920f1be0>
+NT 6
+SE 0.0002
+length_in 0.0002
+ST 0.0004
+NL 38
+fs <oodb.classes.FluidSettings object at 0x7f9a91fb3048>
+desc pin
+id 34
+D 0.0001
+SL 0.0002
+height_back 0.0001
+temp_in 773.15
+Design.resolve
+__dict__:
+height_channel 0.0002
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+qpp 1000000.0
+height_front 0.0001
+length_out 0.0002
+fluid <Fluids.Fluid object at 0x7f9a91fb30f0>
+NT 6
+SE 0.0002
+length_in 0.0002
+ST 0.0004
+NL 18
+fs <oodb.classes.FluidSettings object at 0x7f9a91fb3518>
+desc pin
+id 36
+D 0.0001
+SL 0.0004
+height_back 0.0001
+temp_in 773.15
+__dict__:
+height_channel 0.0002
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+qpp 1000000.0
+height_front 0.0001
+length_out 0.0002
+fluid <Fluids.Fluid object at 0x7f9a91fb30f0>
+NT 6
+SE 0.0002
+length_in 0.0002
+ST 0.0004
+NL 18
+fs <oodb.classes.FluidSettings object at 0x7f9a91fb3518>
+desc pin
+id 36
+D 0.0001
+SL 0.0004
+height_back 0.0001
+temp_in 773.15
+Design.resolve
+__dict__:
+height_channel 0.0002
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+qpp 1000000.0
+height_front 0.0001
+length_out 0.0002
+fluid <Fluids.Fluid object at 0x7f9a91fb35c0>
+NT 6
+SE 0.0002
+length_in 0.0002
+ST 0.0004
+NL 28
+fs <oodb.classes.FluidSettings object at 0x7f9a91fb39e8>
+desc pin
+id 38
+D 0.0001
+SL 0.0004
+height_back 0.0001
+temp_in 773.15
+__dict__:
+height_channel 0.0002
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+qpp 1000000.0
+height_front 0.0001
+length_out 0.0002
+fluid <Fluids.Fluid object at 0x7f9a91fb35c0>
+NT 6
+SE 0.0002
+length_in 0.0002
+ST 0.0004
+NL 28
+fs <oodb.classes.FluidSettings object at 0x7f9a91fb39e8>
+desc pin
+id 38
+D 0.0001
+SL 0.0004
+height_back 0.0001
+temp_in 773.15
+Design.resolve
+__dict__:
+height_channel 0.0002
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+qpp 1000000.0
+height_front 0.0001
+length_out 0.0002
+fluid <Fluids.Fluid object at 0x7f9a91fb3a90>
+NT 6
+SE 0.0002
+length_in 0.0002
+ST 0.0004
+NL 38
+fs <oodb.classes.FluidSettings object at 0x7f9a91fb3eb8>
+desc pin
+id 40
+D 0.0001
+SL 0.0004
+height_back 0.0001
+temp_in 773.15
+__dict__:
+height_channel 0.0002
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+qpp 1000000.0
+height_front 0.0001
+length_out 0.0002
+fluid <Fluids.Fluid object at 0x7f9a91fb3a90>
+NT 6
+SE 0.0002
+length_in 0.0002
+ST 0.0004
+NL 38
+fs <oodb.classes.FluidSettings object at 0x7f9a91fb3eb8>
+desc pin
+id 40
+D 0.0001
+SL 0.0004
+height_back 0.0001
+temp_in 773.15
+Design.resolve
+__dict__:
+height_channel 0.0002
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+qpp 1000000.0
+height_front 0.0001
+length_out 0.0002
+fluid <Fluids.Fluid object at 0x7f9a91fb3f60>
+NT 8
+SE 0.0002
+length_in 0.0002
+ST 0.0002
+NL 45
+fs <oodb.classes.FluidSettings object at 0x7f9a91fb83c8>
+desc pin
+id 42
+D 0.0001
+SL 0.0002
+height_back 0.0001
+temp_in 773.15
+__dict__:
+height_channel 0.0002
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+qpp 1000000.0
+height_front 0.0001
+length_out 0.0002
+fluid <Fluids.Fluid object at 0x7f9a91fb3f60>
+NT 8
+SE 0.0002
+length_in 0.0002
+ST 0.0002
+NL 45
+fs <oodb.classes.FluidSettings object at 0x7f9a91fb83c8>
+desc pin
+id 42
+D 0.0001
+SL 0.0002
+height_back 0.0001
+temp_in 773.15
+Design.resolve
+__dict__:
+height_channel 0.0002
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+qpp 1000000.0
+height_front 0.0001
+length_out 0.0002
+fluid <Fluids.Fluid object at 0x7f9a91fb8470>
+NT 8
+SE 0.00015
+length_in 0.0002
+ST 0.0002
+NL 49
+fs <oodb.classes.FluidSettings object at 0x7f9a91fb8898>
+desc pin
+id 44
+D 0.0001
+SL 0.0002
+height_back 0.0001
+temp_in 773.15
+__dict__:
+height_channel 0.0002
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+qpp 1000000.0
+height_front 0.0001
+length_out 0.0002
+fluid <Fluids.Fluid object at 0x7f9a91fb8470>
+NT 8
+SE 0.00015
+length_in 0.0002
+ST 0.0002
+NL 49
+fs <oodb.classes.FluidSettings object at 0x7f9a91fb8898>
+desc pin
+id 44
+D 0.0001
+SL 0.0002
+height_back 0.0001
+temp_in 773.15
+Design.resolve
+__dict__:
+height_channel 0.0002
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+qpp 1000000.0
+height_front 0.0001
+length_out 0.0002
+fluid <Fluids.Fluid object at 0x7f9a91fb8978>
+NT 8
+SE 0.0002
+length_in 0.0002
+ST 0.0002
+NL 40
+fs <oodb.classes.FluidSettings object at 0x7f9a91fb8d68>
+desc pin
+id 46
+D 0.0001
+SL 0.0002
+height_back 0.0001
+temp_in 773.15
+__dict__:
+height_channel 0.0002
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+qpp 1000000.0
+height_front 0.0001
+length_out 0.0002
+fluid <Fluids.Fluid object at 0x7f9a91fb8978>
+NT 8
+SE 0.0002
+length_in 0.0002
+ST 0.0002
+NL 40
+fs <oodb.classes.FluidSettings object at 0x7f9a91fb8d68>
+desc pin
+id 46
+D 0.0001
+SL 0.0002
+height_back 0.0001
+temp_in 773.15
+Design.resolve
+__dict__:
+height_channel 0.0002
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+qpp 1000000.0
+height_front 0.0001
+length_out 0.0002
+fluid <Fluids.Fluid object at 0x7f9a91fb8e10>
+NT 8
+SE 0.0001
+length_in 0.0002
+ST 0.0002
+NL 49
+fs <oodb.classes.FluidSettings object at 0x7f9a91fb9278>
+desc pin
+id 48
+D 0.0001
+SL 0.0002
+height_back 0.0001
+temp_in 773.15
+__dict__:
+height_channel 0.0002
+fluid_str co2
+width_wall 0.0001
+temp_out 923.15
+qpp 1000000.0
+height_front 0.0001
+length_out 0.0002
+fluid <Fluids.Fluid object at 0x7f9a91fb8e10>
+NT 8
+SE 0.0001
+length_in 0.0002
+ST 0.0002
+NL 49
+fs <oodb.classes.FluidSettings object at 0x7f9a91fb9278>
+desc pin
+id 48
+D 0.0001
+SL 0.0002
+height_back 0.0001
+temp_in 773.15
+Design.resolve
+__dict__:
+fluid_str co2
+width_wall 0.000316
+length_channel 0.01
+height_channel 0.00010999999999999999
+fluid <Fluids.Fluid object at 0x7f9a91fb9860>
+width_channel 0.0003
+desc rect o2.m1.sa.v1
+id 114
+fs <oodb.classes.FluidSettings object at 0x7f9a91fb9c88>
+width 0.02
+__dict__:
+fluid_str co2
+width_wall 0.000316
+length_channel 0.01
+height_channel 0.00010999999999999999
+fluid <Fluids.Fluid object at 0x7f9a91fb9860>
+width_channel 0.0003
+desc rect o2.m1.sa.v1
+id 114
+fs <oodb.classes.FluidSettings object at 0x7f9a91fb9c88>
+width 0.02
+Design.resolve
+__dict__:
+fluid_str co2
+width_wall 0.000638
+length_channel 0.01
+height_channel 0.00015
+fluid <Fluids.Fluid object at 0x7f9a91fb9cf8>
+width_channel 0.0003
+desc rect o2.m1.sa.v2
+id 115
+fs <oodb.classes.FluidSettings object at 0x7f9a91fc0160>
+width 0.02
+__dict__:
+fluid_str co2
+width_wall 0.000638
+length_channel 0.01
+height_channel 0.00015
+fluid <Fluids.Fluid object at 0x7f9a91fb9cf8>
+width_channel 0.0003
+desc rect o2.m1.sa.v2
+id 115
+fs <oodb.classes.FluidSettings object at 0x7f9a91fc0160>
+width 0.02
+Design.resolve
+__dict__:
+fluid_str co2
+width_wall 0.000931
+length_channel 0.01
+height_channel 0.00017999999999999998
+fluid <Fluids.Fluid object at 0x7f9a91fc01d0>
+width_channel 0.0003
+desc rect o2.m1.sa.v3
+id 116
+fs <oodb.classes.FluidSettings object at 0x7f9a91fc05f8>
+width 0.02
+__dict__:
+fluid_str co2
+width_wall 0.000931
+length_channel 0.01
+height_channel 0.00017999999999999998
+fluid <Fluids.Fluid object at 0x7f9a91fc01d0>
+width_channel 0.0003
+desc rect o2.m1.sa.v3
+id 116
+fs <oodb.classes.FluidSettings object at 0x7f9a91fc05f8>
+width 0.02
+Design.resolve
+__dict__:
+fluid_str co2
+width_wall 0.000316
+length_channel 0.01
+height_channel 0.00010999999999999999
+fluid <Fluids.Fluid object at 0x7f9a91fc0668>
+width_channel 0.0003
+desc rect o2.m1.sb.v1
+id 117
+fs <oodb.classes.FluidSettings object at 0x7f9a91fc0a90>
+width 0.02
+__dict__:
+fluid_str co2
+width_wall 0.000316
+length_channel 0.01
+height_channel 0.00010999999999999999
+fluid <Fluids.Fluid object at 0x7f9a91fc0668>
+width_channel 0.0003
+desc rect o2.m1.sb.v1
+id 117
+fs <oodb.classes.FluidSettings object at 0x7f9a91fc0a90>
+width 0.02
+Design.resolve
+__dict__:
+fluid_str co2
+width_wall 0.000638
+length_channel 0.01
+height_channel 0.00015
+fluid <Fluids.Fluid object at 0x7f9a91fc0b00>
+width_channel 0.0003
+desc rect o2.m1.sb.v2
+id 118
+fs <oodb.classes.FluidSettings object at 0x7f9a91fc0f28>
+width 0.02
+__dict__:
+fluid_str co2
+width_wall 0.000638
+length_channel 0.01
+height_channel 0.00015
+fluid <Fluids.Fluid object at 0x7f9a91fc0b00>
+width_channel 0.0003
+desc rect o2.m1.sb.v2
+id 118
+fs <oodb.classes.FluidSettings object at 0x7f9a91fc0f28>
+width 0.02
+Design.resolve
+__dict__:
+fluid_str co2
+width_wall 0.000931
+length_channel 0.01
+height_channel 0.00017999999999999998
+fluid <Fluids.Fluid object at 0x7f9a91fc0f98>
+width_channel 0.0003
+desc rect o2.m1.sb.v3
+id 119
+fs <oodb.classes.FluidSettings object at 0x7f9a91fc2400>
+width 0.02
+__dict__:
+fluid_str co2
+width_wall 0.000931
+length_channel 0.01
+height_channel 0.00017999999999999998
+fluid <Fluids.Fluid object at 0x7f9a91fc0f98>
+width_channel 0.0003
+desc rect o2.m1.sb.v3
+id 119
+fs <oodb.classes.FluidSettings object at 0x7f9a91fc2400>
+width 0.02
+Design.resolve
+__dict__:
+fluid_str co2
+width_wall 0.000526
+length_channel 0.02
+height_channel 0.00021999999999999998
+fluid <Fluids.Fluid object at 0x7f9a91fc2470>
+width_channel 0.0005
+desc rect o2.m2.sa.v1
+id 120
+fs <oodb.classes.FluidSettings object at 0x7f9a91fc2898>
+width 0.02
+__dict__:
+fluid_str co2
+width_wall 0.000526
+length_channel 0.02
+height_channel 0.00021999999999999998
+fluid <Fluids.Fluid object at 0x7f9a91fc2470>
+width_channel 0.0005
+desc rect o2.m2.sa.v1
+id 120
+fs <oodb.classes.FluidSettings object at 0x7f9a91fc2898>
+width 0.02
+Design.resolve
+__dict__:
+fluid_str co2
+width_wall 0.001
+length_channel 0.02
+height_channel 0.00028
+fluid <Fluids.Fluid object at 0x7f9a91fc2908>
+width_channel 0.0005
+desc rect o2.m2.sa.v2
+id 121
+fs <oodb.classes.FluidSettings object at 0x7f9a91fc2d30>
+width 0.02
+__dict__:
+fluid_str co2
+width_wall 0.001
+length_channel 0.02
+height_channel 0.00028
+fluid <Fluids.Fluid object at 0x7f9a91fc2908>
+width_channel 0.0005
+desc rect o2.m2.sa.v2
+id 121
+fs <oodb.classes.FluidSettings object at 0x7f9a91fc2d30>
+width 0.02
+Design.resolve
+__dict__:
+fluid_str co2
+width_wall 0.0016669999999999999
+length_channel 0.02
+height_channel 0.00035999999999999997
+fluid <Fluids.Fluid object at 0x7f9a91fc2da0>
+width_channel 0.0005
+desc rect o2.m2.sa.v3
+id 122
+fs <oodb.classes.FluidSettings object at 0x7f9a91fc4208>
+width 0.02
+__dict__:
+fluid_str co2
+width_wall 0.0016669999999999999
+length_channel 0.02
+height_channel 0.00035999999999999997
+fluid <Fluids.Fluid object at 0x7f9a91fc2da0>
+width_channel 0.0005
+desc rect o2.m2.sa.v3
+id 122
+fs <oodb.classes.FluidSettings object at 0x7f9a91fc4208>
+width 0.02
+Design.resolve
+__dict__:
+fluid_str co2
+width_wall 0.000526
+length_channel 0.02
+height_channel 0.00021999999999999998
+fluid <Fluids.Fluid object at 0x7f9a91fc4278>
+width_channel 0.0005
+desc rect o2.m2.sb.v1
+id 123
+fs <oodb.classes.FluidSettings object at 0x7f9a91fc46a0>
+width 0.02
+__dict__:
+fluid_str co2
+width_wall 0.000526
+length_channel 0.02
+height_channel 0.00021999999999999998
+fluid <Fluids.Fluid object at 0x7f9a91fc4278>
+width_channel 0.0005
+desc rect o2.m2.sb.v1
+id 123
+fs <oodb.classes.FluidSettings object at 0x7f9a91fc46a0>
+width 0.02
+Design.resolve
+__dict__:
+fluid_str co2
+width_wall 0.001
+length_channel 0.02
+height_channel 0.00028
+fluid <Fluids.Fluid object at 0x7f9a91fc4710>
+width_channel 0.0005
+desc rect o2.m2.sb.v2
+id 124
+fs <oodb.classes.FluidSettings object at 0x7f9a91fc4b38>
+width 0.02
+__dict__:
+fluid_str co2
+width_wall 0.001
+length_channel 0.02
+height_channel 0.00028
+fluid <Fluids.Fluid object at 0x7f9a91fc4710>
+width_channel 0.0005
+desc rect o2.m2.sb.v2
+id 124
+fs <oodb.classes.FluidSettings object at 0x7f9a91fc4b38>
+width 0.02
+Design.resolve
+__dict__:
+fluid_str co2
+width_wall 0.0016669999999999999
+length_channel 0.02
+height_channel 0.00035999999999999997
+fluid <Fluids.Fluid object at 0x7f9a91fc4ba8>
+width_channel 0.0005
+desc rect o2.m2.sb.v3
+id 125
+fs <oodb.classes.FluidSettings object at 0x7f9a91fc4fd0>
+width 0.02
+__dict__:
+fluid_str co2
+width_wall 0.0016669999999999999
+length_channel 0.02
+height_channel 0.00035999999999999997
+fluid <Fluids.Fluid object at 0x7f9a91fc4ba8>
+width_channel 0.0005
+desc rect o2.m2.sb.v3
+id 125
+fs <oodb.classes.FluidSettings object at 0x7f9a91fc4fd0>
+width 0.02
+text1 'oodb.class_util.experiments'
+text1 "['id', 'desc', 'mass_flow_rate', 'pressure_drop']"
+5
+rows: 5
+name 'desc' is not defined
+(<class 'NameError'>, NameError("name 'desc' is not defined",), <traceback object at 0x7f9a91fda408>)
+str: desc
+name 'mass_flow_rate' is not defined
+(<class 'NameError'>, NameError("name 'mass_flow_rate' is not defined",), <traceback object at 0x7f9a91fda488>)
+str: mass_flow_rate
+row: 0
+row: 1
+row: 2
+row: 3
+row: 4

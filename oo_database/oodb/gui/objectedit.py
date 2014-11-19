@@ -6,7 +6,6 @@ import pylab as pl
 import oodb
 import oodb.gui
 
-help(oodb.gui)
 
 class Table(QtGui.QTableWidget):
     def __init__(self, parent):

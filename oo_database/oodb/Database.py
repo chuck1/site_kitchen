@@ -41,8 +41,8 @@ class Database:
 	def __init__(self):
         
 		self.lst = []
-		for name in oodb.util.get_data_filenames():
-			   
+		for name in oodb.util.get_data_filenames(oodb.ROOT):
+			print(name)
 			with open(name, 'rb') as f:
 				# a list of objects
 				lst = pickle.load(f)
@@ -135,7 +135,7 @@ class Database:
 	def save(self):
 		print('save')
 		# rewrite database
-		oodb.util.rm_data_files()
+		oodb.util.rm_data_files(oodb.ROOT)
 		oodb.util.save_to_next(self.lst)
 		
 	def replace(obj, r):

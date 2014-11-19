@@ -21,15 +21,15 @@ def convert(s):
 
         try:
                 e = eval(s)
-                print(e)
+                logging.info(e)
                 return e
         except Exception as e:
-                print(e)
-                print(sys.exc_info())
+                logging.info(e)
+                logging.info(sys.exc_info())
                 pass
         
 
-        print('str:',s)
+        logging.info('str:',s)
         
         return s
 
@@ -69,7 +69,7 @@ class TableWidgetItemRaw(TableWidgetItem):
                 self.first_change = False
                 return
         
-        print(self,'handleChanged')
+        logging.info("{} {}".format(self,'handleChanged'))
         setattr(
             self.obj,
             self.field_name,

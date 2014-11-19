@@ -2,7 +2,7 @@ import math
 import inspect
 
 import oodb.util
-import Fluids
+import Sci.Fluids
 
 class FluidSettings:
     def __init__(self, string):

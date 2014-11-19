@@ -4,6 +4,7 @@ import re
 import sys
 from lxml import etree
 import numpy as np
+import logging
 
 modules_dir = os.environ["HOME"] + '/Programming/Python/Modules/'
 media_dir = modules_dir + 'Sci/media/'
@@ -67,7 +68,7 @@ class Poly:
 				Z = np.append(Z,z)
 			return Z
 		else:
-			print type(X)
+			logging.info(type(X))
 			raise TypeError()
 	def integrate( self, X ):
 		Y = self.eval( X )
@@ -114,8 +115,8 @@ class Fluid:
 		if prop_name in self.dict:
 			prop = self.dict[prop_name]
 		else:
-			print "properties:"
-			print self.dict
+			logging.info("properties:")
+			logging.info(self.dict)
 			raise Exception("property not found")
 		
 		
@@ -126,7 +127,7 @@ class Fluid:
 	def list(self):
 		"""list properties"""
 		for k,v in self.dict.items():
-			print k
+			logging.info(k)
 		
 	def enthalpy_change( self, T0, T1 ):
 		T0 = np.array(T0)
@@ -141,7 +142,7 @@ class Fluid:
 		mu = self.get('dynamic_viscosity',T)
 		k = self.get('thermal_conductivity',T)
 		
-		print cp,mu,k
+		logging.info("{} {} {}".format(cp,mu,k))
 
 		Pr = cp * mu / k
 		return Pr

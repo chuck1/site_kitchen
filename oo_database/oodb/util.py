@@ -1,6 +1,7 @@
 import os
 import pickle
 import inspect
+import logging
 
 # get next available filename
 
@@ -61,10 +62,10 @@ def processRange(l):
 
         return None
 
-def next_file():
+def next_file(root):
     m = 0
 
-    for dirpath, dirnames, filenames in os.walk('data'):
+    for dirpath, dirnames, filenames in os.walk(os.path.join(root,'data')):
         for filename in filenames:
             #print(filename)
             h,t = os.path.splitext(filename)
@@ -75,34 +76,38 @@ def next_file():
     
     return m+1
 
-def next_filename():
-    return 'data/{0}.pkl'.format(next_file())
+def next_filename(root):
+    ret = os.path.join(root,"data",str(next_file) + ".pkl")
+    return ret
 
-def save_to_next(l):
+def save_to_next(root, l):
     
-    f = open(next_filename(), 'wb')
+    f = open(next_filename(root), 'wb')
     
     pickle.dump(l, f)
     
     f.close()
 
-def get_next_id():
-    with open('id.txt', 'r') as f:
+def get_next_id(root):
+    filename = os.path.join(root, 'id.txt')
+
+    with open(filename, 'r') as f:
         s = f.read()
     
     i = int(s)
     
-    with open('id.txt', 'w') as f:
+    with open(filename, 'w') as f:
         f.write('{}'.format(i+1))
 
     return i
 
-def reset_id():
-    with open('id.txt', 'w') as f:
+def reset_id(root):
+    with open(os.path.join(root, 'id.txt'), 'w') as f:
         f.write('0')
 
-def get_data_filenames():
-    for dirpath, dirnames, filenames in os.walk('data'):
+def get_data_filenames(root):
+    logging.info("get_data_filenames {}".format(root))
+    for dirpath, dirnames, filenames in os.walk(os.path.join(root,'data')):
         for filename in filenames:
             h,t = os.path.splitext(filename)
             if t == '.pkl':
@@ -110,8 +115,8 @@ def get_data_filenames():
                 name = os.path.join(dirpath, filename)
                 yield name
 
-def rm_data_files():
-    for name in get_data_filenames():
+def rm_data_files(root):
+    for name in get_data_filenames(root):
         os.remove(name)
 
 

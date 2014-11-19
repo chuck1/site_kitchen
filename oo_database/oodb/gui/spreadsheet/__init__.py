@@ -3,6 +3,9 @@ import numpy as np
 from PyQt4 import QtGui, QtCore
 import pylab as pl
 
+import logging
+import argparse
+
 import oodb
 import oodb.gui.objectedit
 
@@ -23,8 +26,9 @@ class Format:
 
 		return str(data)
 		
-		print(type(value))
-		print(type(data))
+		logging.info(type(value))
+		logging.info(type(data))
+
 		raise Exception('Format.prnt')
 
 
@@ -61,8 +65,8 @@ class Tab(QtGui.QWidget):
         def resizeEvent(self, e):
                 w = e.size().width()
                 h = e.size().height()
-                print(self, w, h)
-
+                logging.info("{} {} {}".format(self, w, h))
+        
                 #self.tb2.resize(w, self.h[1])
                 
                 #self.tab.resize(w, h - sum(self.h[:2]))
@@ -125,7 +129,8 @@ class TabWidget(QtGui.QTabWidget):
         def resizeEvent(self, e):
                 w = e.size().width()
                 h = e.size().height()
-                print(self, w, h)
+                
+                logging.info("{} {} {}".format(self, w, h))
 
                 self.currentWidget().updateGeometry()
 
@@ -134,26 +139,27 @@ class TabWidget(QtGui.QTabWidget):
                 #self.tab.resize(w, h - sum(self.h[:2]))
 
         def moveEvent(self, e):
-                x = e.pos().x()
-                y = e.pos().y()
-                #print('move', x, y)
+            x = e.pos().x()
+            y = e.pos().y()
+
+            logging.info("move {} {}".format(x, y))
         
         def event(self, e):
-                return super(TabWidget, self).event(e)
+            return super(TabWidget, self).event(e)
 
         def putInSlot(self, o, x, y):
-                X = sum(self.w[y][:x])
-                Y = sum(self.h[:y])
-                w = self.w[y][x]
-                h = self.h[y]
+            X = sum(self.w[y][:x])
+            Y = sum(self.h[:y])
+            w = self.w[y][x]
+            h = self.h[y]
                 
-                o.move(X,Y + 30)
-                o.resize(w, h)
+            o.move(X,Y + 30)
+            o.resize(w, h)
 
-                print('x y', x, y)
-                print('X Y', X, Y)
-                print('w h', w, h)
-                print('w h', self.w, self.h)
+            logging.info("x y".format(x, y))
+            logging.info("X Y".format(X, Y))
+            logging.info("w h".format(w, h))
+            logging.info("w h".format(self.w, self.h))
 
         def initUI(self):
 
@@ -197,12 +203,9 @@ class Window(oodb.gui.Window):
         def resizeEvent(self, e):
                 w = e.size().width()
                 h = e.size().height()
-                print(self, w, h)
-
-                #self.tb2.resize(w, self.h[1])
                 
-                #self.tab.resize(w, h - sum(self.h[:2]))
-
+                logging.info("{} {} {}".format(self, w, h))
+ 
         def createMenuBar(self):
                 self.menubar = QtGui.QMenuBar(self)
 
@@ -250,6 +253,15 @@ class Window(oodb.gui.Window):
 class Application(QtGui.QApplication):
         def __init__(self, av):
                 super(Application, self).__init__(av)
+
+                parser = argparse.ArgumentParser()
+                parser.add_argument('-v', action="store_true")
+                args = parser.parse_args()
+
+                if args.v:
+                    logging.basicConfig(level = logging.DEBUG)
+                else:
+                    logging.basicConfig(level = logging.WARNING)
 
 
 
