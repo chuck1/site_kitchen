@@ -9,6 +9,11 @@ import logging
 modules_dir = os.environ["HOME"] + '/Programming/Python/Modules/'
 media_dir = modules_dir + 'Sci/media/'
 
+FILE = os.path.abspath(__file__)
+h,t = os.path.split(FILE)
+media_dir = os.path.join(h,'media')
+print(media_dir)
+
 def get_child_by_attr(root,attr,value):
 	for child in list(root):
 		if child.get(attr) == value:
@@ -94,7 +99,7 @@ class Fluid:
 		filename = filename + ".xml"
 		
 		
-		tree = etree.parse( media_dir + filename )
+		tree = etree.parse( os.path.join(media_dir, filename) )
 		root = tree.getroot()
 	
 

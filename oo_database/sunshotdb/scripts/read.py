@@ -13,8 +13,13 @@ obj = list(oodb.DB.objects(objtype=sunshotdb.models.PinFin))
 
 for o in obj:
     #print(o, o.geo.design, o.__dict__)
-    print(o, o.get('width'))
+    #print(o, o.get('PL'), o.get('Re'))
+    #print(o, o.get('Re'))
+    print(o, o.pod_to_data())
     pass
 
+
+
+#oodb.DB.save()
 
 

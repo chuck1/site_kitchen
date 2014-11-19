@@ -24,6 +24,7 @@ class Object:
             try:
                 a = getattr(self, name)
             except AttributeError as err:
+                self.print_dict()
                 raise err
 
         if inspect.ismethod(a):
@@ -34,5 +35,17 @@ class Object:
             return a
 
     def has(self, name):
+        if name in self.data:
+            return True
+        
         return hasattr(self, name)
+
+    def pod_to_data(self):
+        d = dict(self.__dict__)
+        for k,v in d.items():
+            if isinstance(v, float):
+                print("float",k,v)
+                self.data[k] = v
+                delattr(self, k)
+
 

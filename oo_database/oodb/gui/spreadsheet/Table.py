@@ -29,7 +29,7 @@ class Table(QtGui.QTableWidget):
             #for c in range(rng.leftColumn(), rng.rightColumn() + 1):
             for r in range(rng.topRow(), rng.bottomRow() + 1):
                 print('r',r)
-                obj = self.objectAt(r)
+                obj = self.objectAt(r-1)
                 print(obj)
                 if obj:
                     self.windows.append(oodb.gui.objectedit.Window(obj))
@@ -213,11 +213,14 @@ class Table(QtGui.QTableWidget):
             print('QtGui.QTableWidget: itemSelectionChanged')
 
     def objectAt(self, r):
-            v = self.rows[r][0]
-            if isinstance(v, oodb.Value):
-                    return v.obj
-
-            return None
+        print(r)
+        print(len(self.view.rows))
+        v = self.view.rows[r][0]
+        
+        if isinstance(v, oodb.Value):
+            return v.obj
+        
+        return None
             
     def handleItemChanged(self, item):
             if isinstance(item, oodb.gui.TableWidgetItemRaw):

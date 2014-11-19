@@ -25,13 +25,15 @@ class Design(oodb.Object):
     def resolve(self, db):
         logging.info('Design.resolve')
         try:
-            self.fluid = Sci.Fluids.Fluid(self.fluid_str)
-            self.fs = FluidSettings(self.fluid_str)
-        except:
+            fluid_str = self.get('fluid_str')
+            self.fluid = Sci.Fluids.Fluid(fluid_str)
+            self.fs = FluidSettings(fluid_str)
+        except Exception as err:
             self.print_dict()
             logging.info('__dict__:')
             for k,v in self.__dict__.items():
                 logging.info("{} {}".format(k,v))
+            #raise err
                 
     def display(self):
         for k,v in self.__dict__.items():
@@ -103,10 +105,31 @@ class PinFin(Design):
 
         return self.get('ST') * self.NT + 2.0 * self.SE
 
-        
+    def foo(self):
 
+        if not hasattr(self,'data'):
+            print('doesnt have data')
+            self.data = {}
+        
+    
     def length(self):
-        return self.SL * self.NL
+        try:
+            SL = self.SL
+            self.data['PL'] = self.SL / self.get('D')
+            print('PL saved')
+        except:
+            pass
+        
+        return self.get('SL') * self.get('NL')
+        
+    def SL(self):
+
+        if self.has('PL'):
+            return self.get('PL') * self.get('D')
+        else:
+            PL = math.sqrt(3.0) / 2.0 * self.get('PT')
+            return PL * self.get('D')
+        
 
     def D_h(self):
         return self.D
