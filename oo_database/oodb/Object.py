@@ -6,6 +6,9 @@ import oodb
 
 
 class Object:
+    def __init__(self, i):
+        self.id = i
+        self.data = {}
 
     def print_dict(self):
         logging.info('__dict__:')
@@ -16,12 +19,12 @@ class Object:
         #logging.info('get')
 
         try:
-            a = getattr(self, name)
-        except AttributeError as err:
-            raise err
-            return None
-
-        
+            a = self.data[name]
+        except:
+            try:
+                a = getattr(self, name)
+            except AttributeError as err:
+                raise err
 
         if inspect.ismethod(a):
             #logging.info('method', a())
@@ -29,4 +32,7 @@ class Object:
         else:
             #logging.info('not method')
             return a
+
+    def has(self, name):
+        return hasattr(self, name)
 

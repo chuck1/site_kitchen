@@ -90,7 +90,20 @@ class PinFin(Design):
         Design.__init__(self, i)
 
     def width(self):
-        return self.ST * self.NT + 2.0 * self.SE
+        
+
+        if self.has('ST'):
+            self.PT = self.get('ST') / self.get('D')
+        else:
+            if self.has('PT'):
+                self.ST = self.get('PT') * self.get('D')
+
+        self.get('PT')
+        self.get('ST')
+
+        return self.get('ST') * self.NT + 2.0 * self.SE
+
+        
 
     def length(self):
         return self.SL * self.NL
@@ -104,6 +117,9 @@ class PinFin(Design):
     def A_cs(self):
         return math.pi * self.gap()**2 / 4.0
 
+    def test(self):
+        self.D
+        self.PT
 
 ### Geo
 
