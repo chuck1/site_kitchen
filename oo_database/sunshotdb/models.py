@@ -138,6 +138,7 @@ class Simulation(oodb.Object):
         return self.geo.design.qpp * emis / (self.geo.design.qpp + radi + conv)
 
     def resolve(self, db):
+        logging.info("Simulation.resolve")
         self.geo = db.get_object(self.geo_id)
 
     def Re(self):

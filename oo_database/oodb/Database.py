@@ -73,7 +73,7 @@ class Database:
 
         return o,ind
     
-    def objects(self, filters={}, objtype=None):
+    def objects(self, filters={}, objtype=None, tests=[]):
 
         
         def test1(o):
@@ -83,14 +83,25 @@ class Database:
             return True
         
         def test2(o):
+            if not objtype:
+                return True
+
             if isinstance(o, objtype):
                 return True
             else:
                 return False
-        
+
+        def test3(o):
+            for t in tests:
+                if not t(o):
+                    return False
+            return True
+
         for o in self.lst:
-            if test1(o) and test2(o):
-                yield o
+            if test1(o):
+                if test2(o):
+                    if test3(o):
+                        yield o
 
     def get_object(self, i):
         o,_ = self.get_object_index(i)
@@ -147,7 +158,7 @@ class Database:
         #logging.info(attr_names)
         #logging.info(str.format(*attr_names))
 
-        rows = list(list(get_value(s, an) for an in attr_names) for s in gen(self.lst))
+        rows = list(list(get_value(s, an) for an in attr_names) for s in gen)
 
         return View(headers, rows)
 

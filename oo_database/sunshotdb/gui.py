@@ -8,7 +8,7 @@ import oodb.gui.spreadsheet
 import sunshotdb
 
 s0 = 'oodb.class_util.designs'
-s0 = 'oodb.class_util.experiments'
+s0 = 'sunshotdb.models.Simulation'
 
 s1 = "'id', ('type',lambda x: str(type(x))), 'Re', 'desc', 'mdot'"
 

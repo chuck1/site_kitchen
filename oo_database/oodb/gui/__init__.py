@@ -1,5 +1,6 @@
 import sys
 from PyQt4 import Qt, QtGui, QtCore
+import logging
 
 #import oodb.gui.spreadsheet
 #import oodb.gui.objectedit

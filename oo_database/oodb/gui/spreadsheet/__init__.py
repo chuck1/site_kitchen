@@ -9,6 +9,7 @@ import argparse
 import oodb
 import oodb.gui.objectedit
 
+from oodb.gui.spreadsheet.Tab import Tab
 from oodb.gui.spreadsheet.Table import Table
 
 class Format:
@@ -31,86 +32,6 @@ class Format:
 
 		raise Exception('Format.prnt')
 
-
-        
-
-
-
-class TabLayout(QtGui.QVBoxLayout):
-        def __init__(self, parent):
-                super(TabLayout, self).__init__(parent)
-
-
-class Tab(QtGui.QWidget):
-        def __init__(self, parent, s0, s1):
-                super(Tab, self).__init__(parent)
-
-                self.s0 = s0
-                self.s1 = s1
-
-                self.w = [[300,100,100],[600],[600]]
-                self.h = [60,60,600]
-
-                self.db = oodb.Database()
-
-                #self.widget = QtGui.QWidget(self)
-
-                self.layout = TabLayout(self)
-
-                self.setLayout(self.layout)
-
-                self.createGeneratorTextBox()
-                self.createTable()
-
-        def resizeEvent(self, e):
-                w = e.size().width()
-                h = e.size().height()
-                logging.info("{} {} {}".format(self, w, h))
-        
-                #self.tb2.resize(w, self.h[1])
-                
-                #self.tab.resize(w, h - sum(self.h[:2]))
-                
-        def createGeneratorTextBox(self):
-
-                self.editext = []
-                
-                # first
-                self.editext.append(QtGui.QLineEdit(self.s0, self))
-
-                self.layout.addWidget(self.editext[0])
-                
-                self.editext[0].resize(self.w[0][0], 60)
-                
-                self.editext[0].show()
-
-                # second
-
-
-                
-                self.text_fields = QtGui.QTextEdit(self.s1, self)
-                
-                #self.putInSlot(self.tb2, 0, 1)
-                self.layout.addWidget(self.text_fields, 1)
-                
-                self.text_fields.show()
-                
-                
-                
-        def createTable(self):
-                
-                self.tab = Table(self)
-
-                self.tab.refresh()
-
-                #self.putInSlot(self.tab, 0, 2)
-                self.layout.addWidget(self.tab, 5)
-                
-                self.tab.show()
-
-
-        def plot(self):
-                self.tab.plot()
                 
 class TabWidget(QtGui.QTabWidget):
     
@@ -216,8 +137,8 @@ class Window(oodb.gui.Window):
                 saveAction = QtGui.QAction(QtGui.QIcon('save.png'), '&Save', self)        
                 saveAction.setShortcut('Ctrl+S')
                 saveAction.setStatusTip('Save')
-                saveAction.triggered.connect(self.tabwidget.currentWidget().db.save)
-
+                saveAction.triggered.connect(oodb.DB.save)
+            
                 exitAction = QtGui.QAction(QtGui.QIcon('exit.png'), '&Exit', self)        
                 exitAction.setShortcut('Ctrl+Q')
                 exitAction.setStatusTip('Exit application')
@@ -226,7 +147,7 @@ class Window(oodb.gui.Window):
                 refreshAction = QtGui.QAction(QtGui.QIcon('refresh.png'), '&Refresh', self)        
                 refreshAction.setShortcut('Ctrl+R')
                 refreshAction.setStatusTip('Refresh')
-                refreshAction.triggered.connect(self.tabwidget.currentWidget().tab.refresh)
+                refreshAction.triggered.connect(self.tabwidget.currentWidget().table.refresh)
 
                 plotAction = QtGui.QAction(QtGui.QIcon('plot.png'), '&Plot', self)        
                 plotAction.setShortcut('Ctrl+P')
