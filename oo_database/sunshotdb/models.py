@@ -19,8 +19,8 @@ class FluidSettings:
 
 class Design(oodb.Object):
     def __init__(self, i):
+        super(Design, self).__init__(i)
         logging.info('Design.__init__')
-        self.id = i
 
     def resolve(self, db):
         logging.info('Design.resolve')
@@ -63,15 +63,20 @@ class Design(oodb.Object):
     # 
     def A_heated(self):
         return self.get('width') * self.get('length')
-    
+    def test(self):
+        self.get('width')
+        self.get('length')
+
 
 class Rectangular(Design):
     def __init__(self, i):
-        Design.__init__(self, i)
+        super(Rectangular, self).__init__(i)
 
+    ## the full width of the heated area
+    # hidden by full design objects; this should be in Geo
     def width(self):
         return self.get('width_channel') + self.get('width_wall')
-
+    
     def length(self):
         return self.get('length_channel')
 
@@ -85,6 +90,29 @@ class Rectangular(Design):
 
     def A_cs(self):
         return self.get('width_channel') * self.get('height_channel')
+
+    def test(self):
+        super(Rectangular, self).test()
+        self.get('width_channel')
+        self.get('length_channel')
+        self.get('width_wall')
+
+class Circular(Design):
+    def __init__(self, i):
+        super(Circular, self).__init__(i)
+    
+    def D_h(self):
+        return self.get('D')
+
+    def NT(self):
+        return (self.get('D') - self.get('width_channel')) / (self.get('width_channel') + self.get('width_wall')) + 1
+
+    def A_cs(self):
+        return math.pi * self.get('D')**2 / 4.0
+    
+    def test(self):
+        self.get('D')
+        self.get('width_wall')
 
 class PinFin(Design):
     def __init__(self, i):
@@ -111,8 +139,6 @@ class PinFin(Design):
             print('doesnt have data')
             self.data = {}
         
-    
-        
     def ST(self):
         return self.get('PT') * self.get('D')
     def SL(self):
@@ -133,8 +159,12 @@ class PinFin(Design):
         return math.pi * self.gap()**2 / 4.0
 
     def test(self):
-        self.D
-        self.PT
+        self.get('D')
+
+        if self.has('ST'):
+            self.data['PT'] = self.get('ST') / self.get('D')
+
+        self.get('PT')
 
 ### Geo
 
@@ -146,16 +176,14 @@ class Geo(oodb.Object):
 
     def resolve(self, db):
         self.design = db.get_object(self.design_id)
+    def test(self):
+        pass
 
-    def Re(self):
-        return self.design.Re()
-    
 ### Simulation
 
 class Simulation(oodb.Object):
     def __init__(self, i, geo_id):
         super(Simulation, self).__init__(i)
-        self.id = i
         self.geo_id = geo_id
 
     def length(self):
@@ -183,12 +211,17 @@ class Simulation(oodb.Object):
 
     def pressure_drop(self):
         return self.get('pressure_inlet') - self.get('pressure_outlet')
+    def test(self):
+
+        if self.has('temperature_heated_awa'):
+            self.get('temperature_heated_awa'):
+        
+        self.get('temperature_heated_awa')
 
 ## Experiment
 
 class HeatLossCurve(oodb.Object):
     def __init__(self, i, design_id):
-        self.id = i
         self.design_id = design_id
 
     def resolve(self, db):
@@ -199,7 +232,6 @@ class HeatLossCurve(oodb.Object):
 
 class Experiment(oodb.Object):
     def __init__(self, i, design_id):
-        self.id = i
         self.design_id = design_id
 
         self.heat_loss_curve = None

@@ -1,3 +1,4 @@
+import sys
 import logging
 import inspect
 
@@ -11,9 +12,12 @@ class Object:
         self.data = {}
 
     def print_dict(self):
-        logging.info('__dict__:')
+        print('__dict__:')
         for k,v in self.__dict__.items():
-            logging.info("{} {}".format(k,v))
+            print("{:16}{!s:16}".format(k,v))
+        print('data:')
+        for k,v in self.data.items():
+            print("{:16}{!s:16}".format(k,v))
 
     def get(self, name):
         #logging.info('get')
@@ -55,5 +59,10 @@ class Object:
                 print("float",k,v)
                 self.data[k] = v
                 delattr(self, k)
+            if isinstance(v, int):
+                if k == 'id':
+                    print("int",k,v)
+                    self.data[k] = v
+                    delattr(self, k)
 
 
