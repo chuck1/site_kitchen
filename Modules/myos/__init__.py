@@ -14,7 +14,15 @@ def glob(patstr, search = "."):
 				yield f
 
 
+def pathlist(h):
+    l = []
+    while h:
+        h,t = os.path.split(h)
+        l.insert(0,t)
+
+    return l
+
+
 if __name__=="__main__":
-	
-	print list(glob(".*"))
+	print(list(glob(".*")))
 
