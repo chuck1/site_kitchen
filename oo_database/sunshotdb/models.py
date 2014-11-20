@@ -64,28 +64,27 @@ class Design(oodb.Object):
     def A_heated(self):
         return self.get('width') * self.get('length')
     
-    
-    
+
 class Rectangular(Design):
     def __init__(self, i):
         Design.__init__(self, i)
 
     def width(self):
-        return self.width_channel + self.width_wall
+        return self.get('width_channel') + self.get('width_wall')
 
     def length(self):
-        return self.length_channel
+        return self.get('length_channel')
 
     def D_h(self):
         
-        P = 2.0 * (self.width_channel + self.height_channel)
+        P = 2.0 * (self.get('width_channel') + self.get('height_channel'))
         return 4 * self.A_cs() / P
 
     def NT(self):
-        return (self.get('width') - self.width_channel) / (self.width_channel + self.width_wall) + 1
+        return (self.get('width') - self.get('width_channel')) / (self.get('width_channel') + self.get('width_wall')) + 1
 
     def A_cs(self):
-        return self.width_channel * self.height_channel
+        return self.get('width_channel') * self.get('height_channel')
 
 class PinFin(Design):
     def __init__(self, i):
@@ -164,12 +163,16 @@ class Simulation(oodb.Object):
 
     def receiver_efficiency(self):
         emis = 0.95
-        
-        radi = 5.67e-8 * 0.95 * (pow(self.temp_heated_awa, 4) - pow(298.0, 4))
 
-        conv = 15.0 * (self.temp_heated_awa - 298.0)
+        T = self.get('temperature_heated_awa')
         
-        return self.geo.design.qpp * emis / (self.geo.design.qpp + radi + conv)
+        radi = 5.67e-8 * 0.95 * (pow(T, 4) - pow(298.0, 4))
+        
+        conv = 15.0 * (T - 298.0)
+        
+        qpp = self.geo.design.fs.qpp
+        
+        return qpp * emis / (qpp + radi + conv)
 
     def resolve(self, db):
         logging.info("Simulation.resolve")
@@ -178,6 +181,8 @@ class Simulation(oodb.Object):
     def Re(self):
         return self.geo.design.Re()
 
+    def pressure_drop(self):
+        return self.get('pressure_inlet') - self.get('pressure_outlet')
 
 ## Experiment
 
