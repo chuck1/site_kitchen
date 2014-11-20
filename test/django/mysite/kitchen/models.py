@@ -20,6 +20,7 @@ class Recipe(models.Model):
 class Ingredient(models.Model):
     recipe = models.ForeignKey(Recipe)
     item = models.ForeignKey(Item)
+    unit = models.ForeignKey(Unit)
     def __unicode__(self):
         return self.recipe.name
 

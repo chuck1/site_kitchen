@@ -1,0 +1,11 @@
+[
+{"pk": 1, "model": "kitchen.unit", "fields": {"name": "tablespoon"}},
+{"pk": 2, "model": "kitchen.unit", "fields": {"name": "teaspoon"}},
+{"pk": 3, "model": "kitchen.unit", "fields": {"name": "each"}},
+{"pk": 4, "model": "kitchen.unit", "fields": {"name": "cup"}},
+{"pk": 1, "model": "kitchen.item", "fields": {"name": "p"}},
+{"pk": 2, "model": "kitchen.item", "fields": {"name": "j"}},
+{"pk": 3, "model": "kitchen.item", "fields": {"name": "bread"}},
+{"pk": 1, "model": "kitchen.recipe", "fields": {"name": "pbj"}},
+{"pk": 1, "model": "kitchen.ingredient", "fields": {"item": 1, "recipe": 1, "unit": 1}}
+]
