@@ -91,19 +91,20 @@ class PinFin(Design):
     def __init__(self, i):
         Design.__init__(self, i)
 
+    def length(self):
+        return self.get('SL') * self.get('NL')
     def width(self):
-        
+        #if self.has('ST'):
+        #    self.PT = self.get('ST') / self.get('D')
+        #else:
+        #    if self.has('PT'):
+        #        self.ST = self.get('PT') * self.get('D')
+        return self.get('ST') * self.get('NT') + 2.0 * self.get('SE')
 
-        if self.has('ST'):
-            self.PT = self.get('ST') / self.get('D')
-        else:
-            if self.has('PT'):
-                self.ST = self.get('PT') * self.get('D')
-
-        self.get('PT')
-        self.get('ST')
-
-        return self.get('ST') * self.NT + 2.0 * self.SE
+    def NT(self):
+        return self.get('width') / self.get('ST')
+    def NL(self):
+        return self.get('length') / self.get('SL')
 
     def foo(self):
 
@@ -112,18 +113,10 @@ class PinFin(Design):
             self.data = {}
         
     
-    def length(self):
-        try:
-            SL = self.SL
-            self.data['PL'] = self.SL / self.get('D')
-            print('PL saved')
-        except:
-            pass
         
-        return self.get('SL') * self.get('NL')
-        
+    def ST(self):
+        return self.get('PT') * self.get('D')
     def SL(self):
-
         if self.has('PL'):
             return self.get('PL') * self.get('D')
         else:
@@ -132,10 +125,10 @@ class PinFin(Design):
         
 
     def D_h(self):
-        return self.D
+        return self.get('D')
 
     def gap(self):
-        return self.D - self.ST
+        return self.get('D') - self.get('ST')
 
     def A_cs(self):
         return math.pi * self.gap()**2 / 4.0
@@ -148,6 +141,7 @@ class PinFin(Design):
 
 class Geo(oodb.Object):
     def __init__(self, i, design_id):
+        super(Geo, self).__init__(i)
         self.id = i
         self.design_id = design_id
 
@@ -161,6 +155,7 @@ class Geo(oodb.Object):
 
 class Simulation(oodb.Object):
     def __init__(self, i, geo_id):
+        super(Simulation, self).__init__(i)
         self.id = i
         self.geo_id = geo_id
 

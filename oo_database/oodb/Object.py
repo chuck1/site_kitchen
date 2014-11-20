@@ -43,8 +43,8 @@ class Object:
     def pod_to_data(self):
         d = dict(self.__dict__)
         for k,v in d.items():
-            if isinstance(v, float):
-                print("float",k,v)
+            if isinstance(v, str):
+                print("str",k,v)
                 self.data[k] = v
                 delattr(self, k)
 

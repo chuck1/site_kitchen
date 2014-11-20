@@ -9,13 +9,14 @@ l = lambda o: isinstance(o.geo.design, sunshotdb.models.PinFin)
 
 obj = list(oodb.DB.objects(objtype=sunshotdb.models.Simulation, tests=[l]))
 
-obj = list(oodb.DB.objects(objtype=sunshotdb.models.PinFin))
+#obj = list(oodb.DB.objects(objtype=sunshotdb.models.PinFin))
+obj = list(oodb.DB.objects())
 
 for o in obj:
     #print(o, o.geo.design, o.__dict__)
     #print(o, o.get('PL'), o.get('Re'))
-    #print(o, o.get('Re'))
-    print(o, o.pod_to_data())
+    #print(o, o.id, o.get('Re'), o.get('length'))
+    print(o, o.id)
     pass
 
 

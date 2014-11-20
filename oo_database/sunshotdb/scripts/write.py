@@ -2,15 +2,15 @@
 import oodb
 import sunshotdb
 
-o = sunshotdb.models.PinFin(oodb.util.get_next_id(oodb.ROOT))
+g = oodb.DB.get_object(145)
 
+o = sunshotdb.models.Simulation(oodb.util.get_next_id(oodb.ROOT), g.id)
+
+print(g,g.id)
 print(o)
 print(o.id)
 
-o.D = 7E-4
-o.PT = 1.5
+o.data['desc'] = 'simulation number unknown'
 
-o.test()
-
-oodb.util.save_to_next(oodb.ROOT, [o])
+#oodb.util.save_to_next(oodb.ROOT, [o])
 
