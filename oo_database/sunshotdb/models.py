@@ -47,7 +47,7 @@ class Design(oodb.Object):
         T = self.temp_avg()
         
         rho = self.fluid.get('density', T)
-        mu = self.fluid.get('viscosity', T)
+        mu = self.fluid.get('dynamic_viscosity', T)
         
         return rho * self.D_h() * self.v() / mu
 
@@ -67,9 +67,9 @@ class Design(oodb.Object):
     def A_heated(self):
         return self.get('width') * self.get('length')
     def test(self):
-        self.get('width')
-        self.get('length')
-
+        print(self.get('width'))
+        print(self.get('length'))
+        print(self.get('Re'))
 
 class Rectangular(Design):
     def __init__(self, i):

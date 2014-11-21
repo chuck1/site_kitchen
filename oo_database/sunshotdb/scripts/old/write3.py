@@ -28,15 +28,15 @@ print(g,g.id)
 print(o,o.id)
 
 o.data['desc'] = 'conjugate; full design; maybe sim#0005'
-o.data['pressure_inlet'] = 
+o.data['pressure_inlet'] = 5e4
 #o.data['pressure_channel_inlet'] = 
 #o.data['pressure_channel_outlet'] = 
 o.data['pressure_outlet'] = 0.0
-o.data['temperature_inlet'] = 
-o.data['temperature_outlet'] = 
+o.data['temperature_inlet'] = 573.15
+o.data['temperature_outlet'] = 873.15
 #o.data['temperature_channel_inlet'] = 
 #o.data['temperature_channel_outlet'] = 
-o.data['temperature_heated_awa'] = 
+o.data['temperature_heated_awa'] = 814
 
 
 d.resolve()

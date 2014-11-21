@@ -26,7 +26,7 @@
 			1.57929444396221430e-14
 		</poly>
 	</property>
-	<property name="viscosity">
+	<property name="dynamic_viscosity">
 		<poly>
 			9.55831425432602280e-06,
 			2.53018382003983190e-08,

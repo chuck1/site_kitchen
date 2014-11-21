@@ -17,7 +17,8 @@ for o in obj:
     #print(o, o.get('PL'), o.get('Re'))
     #print(o, o.id, o.get('Re'), o.get('length'))
     #print(o, o.id, o.pod_to_data())
-    print(o, o.id, o.test())
+    #print(o, o.id, o.test())
+    print(o, o.id)
     #print(o, o.id, o.get('width_channel'), o.get('height_channel'), o.get('desc'))
     pass
 
