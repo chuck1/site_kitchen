@@ -47,10 +47,12 @@ class Database:
             with open(name, 'rb') as f:
                 # a list of objects
                 lst = pickle.load(f)
-
                 self.lst += lst
                 
             #logging.info(lst)
+
+        #for o in self.lst:
+        #    print(o.id)
 
         for o in self.lst:
             o.resolve(self)
@@ -68,6 +70,8 @@ class Database:
                 break
 
         if not found:
+            return None,None
+
             logging.info(i)
             raise Exception()
 

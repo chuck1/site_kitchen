@@ -2,7 +2,10 @@ import math
 import inspect
 import logging
 
-import oodb.util
+import oodb
+
+import sunshotdb
+
 import Sci.Fluids
 
 class FluidSettings:
@@ -11,7 +14,7 @@ class FluidSettings:
             self.qpp        = 1e6
             self.temp_in    = 773.15
             self.temp_out   = 923.15
-        if string == 'ms':
+        if string == 'ms1':
             self.qpp        = 4e6
             self.temp_in    = 573.15
             self.temp_out   = 873.15
@@ -22,7 +25,7 @@ class Design(oodb.Object):
         super(Design, self).__init__(i)
         logging.info('Design.__init__')
 
-    def resolve(self, db):
+    def resolve(self, db=None):
         logging.info('Design.resolve')
         try:
             fluid_str = self.get('fluid_str')
@@ -33,7 +36,7 @@ class Design(oodb.Object):
             logging.info('__dict__:')
             for k,v in self.__dict__.items():
                 logging.info("{} {}".format(k,v))
-            #raise err
+            raise err
                 
     def display(self):
         for k,v in self.__dict__.items():
@@ -174,7 +177,9 @@ class Geo(oodb.Object):
         self.id = i
         self.design_id = design_id
 
-    def resolve(self, db):
+    def resolve(self, db=None):
+        db = db if db else oodb.DB
+        #print(self.design_id)
         self.design = db.get_object(self.design_id)
     def test(self):
         pass
@@ -202,8 +207,9 @@ class Simulation(oodb.Object):
         
         return qpp * emis / (qpp + radi + conv)
 
-    def resolve(self, db):
+    def resolve(self, db=None):
         logging.info("Simulation.resolve")
+        db = db if db else oodb.DB
         self.geo = db.get_object(self.geo_id)
 
     def Re(self):
@@ -213,20 +219,20 @@ class Simulation(oodb.Object):
         return self.get('pressure_inlet') - self.get('pressure_outlet')
     def test(self):
 
-        if self.has('temp_heated_awa'):
-            self.data['temperature_heated_awa'] = self.get('temp_heated_awa')
+        #if self.has('temp_heated_awa'):
+        #    self.data['temperature_heated_awa'] = self.get('temp_heated_awa')
         
-        self.get('temperature_heated_awa')
+        print(self.get('temperature_heated_awa'))
+        print(self.get('receiver_efficiency'))
 
 ## Experiment
 
 class HeatLossCurve(oodb.Object):
     def __init__(self, i, design_id):
         self.design_id = design_id
-
-    def resolve(self, db):
+    def resolve(self, db=None):
+        db = db if db else oodb.DB
         self.design = db.get_object(self.design_id)
-        
     def Re(self):
         return self.design.Re()
     def test(self):
@@ -235,24 +241,20 @@ class HeatLossCurve(oodb.Object):
 class Experiment(oodb.Object):
     def __init__(self, i, design_id):
         self.design_id = design_id
-
         self.heat_loss_curve = None
         self.heat_loss_curve_id = None
-
-    def resolve(self, db):
+    def resolve(self, db=None):
+        db = db if db else oodb.DB
         self.design = db.get_object(self.design_id)
-
         if self.heat_loss_curve_id:
             self.heat_loss_curve = db.get_object(self.heat_loss_curve_id)
-
     def length(self):
         return self.design.get('length')
-
     def pressure_drop(self):
         return self.get('pressure_inlet') - self.get('pressure_outlet')
-
-    def Re(self):
-        return self.design.Re()
-
+    #def Re(self):
+    #    return self.design.Re()
+    def test(self):
+        pass
 
 

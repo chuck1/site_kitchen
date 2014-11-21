@@ -1,14 +1,20 @@
 
+print(__file__)
+
 import os
 import sys
 
 import oodb
 
-import sunshotdb.models
+def setglobals():
+    oodb.NAME = 'sunshotdb'
+    oodb.ROOT,_ = os.path.split(__file__)
+    oodb.DB = oodb.Database()
 
-oodb.NAME = 'sunshotdb'
+setglobals()
 
-oodb.ROOT,_ = os.path.split(__file__)
+#import sunshotdb.models
 
-oodb.DB = oodb.Database()
+
+
 
