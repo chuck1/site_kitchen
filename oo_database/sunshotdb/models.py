@@ -213,8 +213,8 @@ class Simulation(oodb.Object):
         return self.get('pressure_inlet') - self.get('pressure_outlet')
     def test(self):
 
-        if self.has('temperature_heated_awa'):
-            self.get('temperature_heated_awa'):
+        if self.has('temp_heated_awa'):
+            self.data['temperature_heated_awa'] = self.get('temp_heated_awa')
         
         self.get('temperature_heated_awa')
 
@@ -229,6 +229,8 @@ class HeatLossCurve(oodb.Object):
         
     def Re(self):
         return self.design.Re()
+    def test(self):
+        pass
 
 class Experiment(oodb.Object):
     def __init__(self, i, design_id):
