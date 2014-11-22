@@ -3,7 +3,10 @@ import itertools
 from django.shortcuts import render
 import django.db.models
 import django.views.generic
+
 from kitchen.models import *
+
+import kitchen.graph
 
 # ir (inventory - recipe order)
 # t target inventory
@@ -41,7 +44,10 @@ def recipeorder():
 
 
 def shoppinglist():
-    
+   
+    kitchen.graph.create()
+
+
     objects = sorted(itertools.chain(gen_ings(), gen_trans()))
     
     grouped = itertools.groupby(objects, lambda o: o[0])
