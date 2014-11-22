@@ -23,6 +23,7 @@ class Item(models.Model):
 
 class Recipe(models.Model):
     name = models.CharField(max_length=256)
+    lcm = models.FloatField(default=1.0)
     def __unicode__(self):
         return "Recipe:" + self.name
     def can_make(self, a, ir_dict):
@@ -45,6 +46,8 @@ class Recipe(models.Model):
 class RecipeOrder(models.Model):
     recipe = models.ForeignKey(Recipe)
     amount = models.FloatField()
+    def __unicode__(self):
+        return self.recipe.name + ": " + str(self.amount)
 
 class Ingredient(models.Model):
     recipe = models.ForeignKey(Recipe)

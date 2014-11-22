@@ -1,7 +1,8 @@
 import math
 import itertools
 
-from django.shortcuts import render
+from django.core.urlresolvers import reverse
+from django.shortcuts import render, get_object_or_404, HttpResponseRedirect
 import django.db.models
 import django.views.generic
 
@@ -80,8 +81,8 @@ def test_in(G, item, d, ir_dict):
         
         a = -d / ing.amount_std
         
-        myceil(a,0.15)
-
+        a = myceil(a, rec.lcm)
+        
         yield rec, a, rec.can_make(-d / ing.amount_std, ir_dict)
 
 
@@ -121,7 +122,22 @@ def shoppinglist_view(request):
     
     return render(request, 'kitchen/shoppinglist.html', context)
 
+def create_recipe_order(request, recipe_id):
     
+    r = get_object_or_404(Recipe, pk=recipe_id)
+
+    try:
+        amount = request.POST['amount']
+    except KeyError:
+        return render(request, 'kitchen/shoppinglist.html', {'items':[]})
+    else:
+        ro = RecipeOrder()
+        ro.recipe = r
+        ro.amount = amount
+        ro.save()
+
+        return HttpResponseRedirect(reverse('kitchen:shoppinglist_view'))
     
+
 
 

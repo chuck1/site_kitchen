@@ -1,10 +1,29 @@
+<link rel="stylesheet" type="text/css" href="/static/admin/css/base.css" />
+<link rel="stylesheet" type="text/css" href="/static/admin/css/dashboard.css" />
+
+<div class="module">
 <table>
-{% for ing in items %}
+{% for itm, a, recs in items %}
 <tr>
-	<td>{{ ing }}</td>
+	<td>{{ itm }}</td>
+	<td>{{ a }}</td>
+	<td><table>
+		{% for rec, a, can in recs %}
+		<form action="{% url 'kitchen:create_recipe_order' rec.id %}" method="post">
+			{% csrf_token %}
+			<tr>
+				<td>{{ rec }}</td>
+				<td>{{ a }}</td>
+				<td><input type="submit" value="Create"/></td>
+			</tr>
+			<input type="hidden" name="amount" value="{{ a }}"/>
+		</form>
+		{% endfor %}
+	</table></td>
 </tr>
 {% endfor %}
 </table>
+</div>
 
 {% load staticfiles %}
 
