@@ -19,12 +19,28 @@ class Unit(models.Model):
 class Item(models.Model):
     name = models.CharField(max_length=256)
     def __unicode__(self):
-        return self.name
+        return "Item:" + self.name
 
 class Recipe(models.Model):
     name = models.CharField(max_length=256)
     def __unicode__(self):
-        return self.name
+        return "Recipe:" + self.name
+    def can_make(self, a, ir_dict):
+        print("can_make")
+        print(ir_dict)
+
+        ings = Ingredient.objects.filter(recipe=self, amount__gt=0)
+        print(ings)
+
+        for ing in ings:
+            need = a * ing.amount_std
+
+            ir = ir_dict[ing.item]
+            
+            if ir < need:
+                return False
+
+        return True
 
 class RecipeOrder(models.Model):
     recipe = models.ForeignKey(Recipe)

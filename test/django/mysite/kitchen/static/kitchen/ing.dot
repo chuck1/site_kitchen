@@ -1,0 +1,12 @@
+strict digraph  {
+	"Recipe:pbj" -> "Item:pbj"	 [object=pbj];
+	"Recipe:jar of p to p" -> "Item:p"	 [object="jar of p to p"];
+	"Recipe:jar of j to j" -> "Item:j"	 [object="jar of j to j"];
+	"Recipe:loaf of bread to bread" -> "Item:bread"	 [object="loaf of bread to bread"];
+	"Item:jar of p" -> "Recipe:jar of p to p"	 [object="jar of p to p"];
+	"Item:jar of j" -> "Recipe:jar of j to j"	 [object="jar of j to j"];
+	"Item:p" -> "Recipe:pbj"	 [object=pbj];
+	"Item:loaf of bread" -> "Recipe:loaf of bread to bread"	 [object="loaf of bread to bread"];
+	"Item:j" -> "Recipe:pbj"	 [object=pbj];
+	"Item:bread" -> "Recipe:pbj"	 [object=pbj];
+}
