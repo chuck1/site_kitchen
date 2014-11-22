@@ -1,3 +1,15 @@
-{% for i in inv %}
-{{ i }}
+<table>
+{% for item, a, gpr in agg %}
+<tr>
+	<td>{{ item }}</td>
+	<td>{{ a }}</td>
+	<td>
+	<table>
+		{% for g in gpr %}
+			<tr><td>{{ g }}</td></tr>
+		{% endfor %}
+	</table>
+	</td>
+</tr>
 {% endfor %}
+</table>
