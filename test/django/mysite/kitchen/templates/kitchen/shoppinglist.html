@@ -1,31 +1,42 @@
-<link rel="stylesheet" type="text/css" href="/static/admin/css/base.css" />
-<link rel="stylesheet" type="text/css" href="/static/admin/css/dashboard.css" />
+<!DOCTYPE html>
+<html lang="en-us" >
 
-<div class="module">
-<table>
-{% for itm, a, recs in items %}
-<tr>
-	<td>{{ itm }}</td>
-	<td>{{ a }}</td>
-	<td><table>
-		{% for rec, a, can in recs %}
-		<form action="{% url 'kitchen:create_recipe_order' rec.id %}" method="post">
-			{% csrf_token %}
-			<tr>
-				<td>{{ rec }}</td>
-				<td>{{ a }}</td>
-				<td><input type="submit" value="Create"/></td>
-			</tr>
-			<input type="hidden" name="amount" value="{{ a }}"/>
-		</form>
-		{% endfor %}
-	</table></td>
-</tr>
-{% endfor %}
-</table>
-</div>
+<head>
+	<link rel="stylesheet" type="text/css" href="/static/admin/css/base.css" />
+	<link rel="stylesheet" type="text/css" href="/static/admin/css/dashboard.css" />
+</head>
 
-{% load staticfiles %}
+<body class="dashboard">
+	<div id="content-main">
+	<div class="module">
+	<table>
+	<tr><th>Item</th><th>Amount</th><th>Recipes</th></tr>
+	{% for itm, a, recs in items %}
+	<tr>
+		<td>{{ itm }}</td>
+		<td>{{ a }}</td>
+		<td><table>
+			{% for rec, a, can in recs %}
+			<form action="{% url 'kitchen:create_recipe_order' rec.id %}" method="post">
+				{% csrf_token %}
+				<tr>
+					<td>{{ rec }}</td>
+					<td>{{ a }}</td>
+					<td><input type="submit" value="Create"/></td>
+				</tr>
+				<input type="hidden" name="amount" value="{{ a }}"/>
+			</form>
+			{% endfor %}
+		</table></td>
+	</tr>
+	{% endfor %}
+	</table>
+	</div>
+	
+	{% load staticfiles %}
+	
+	<img src="{% static "kitchen/ing.png" %}" alt="ing.png"/>
+	</div>
+</body>
 
-<img src="{% static "kitchen/ing.png" %}" alt="ing.png"/>
-
+</html>

@@ -27,11 +27,12 @@ class Recipe(models.Model):
     def __unicode__(self):
         return "Recipe:" + self.name
     def can_make(self, a, ir_dict):
-        print("can_make")
-        print(ir_dict)
+        #print("can_make")
+        #print(ir_dict)
 
         ings = Ingredient.objects.filter(recipe=self, amount__gt=0)
-        print(ings)
+        
+        #print(ings)
 
         for ing in ings:
             need = a * ing.amount_std
@@ -55,16 +56,17 @@ class Ingredient(models.Model):
     unit = models.ForeignKey(Unit)
     amount = models.FloatField()
     def __unicode__(self):
-        return self.recipe.name
+        return self.recipe.name + ": " + self.item.name
     def _get_amount_std(self):
         return self.amount * self.unit.convert
     amount_std = property(_get_amount_std)
-
+    
 class Transaction(models.Model):
     item = models.ForeignKey(Item)
     unit = models.ForeignKey(Unit)
     amount = models.FloatField()
-   
+    def __unicode__(self):
+        return self.item.name + ":" + str(self.amount_std)
     def _get_amount_std(self):
         return self.amount * self.unit.convert
     amount_std = property(_get_amount_std)
