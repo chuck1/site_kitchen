@@ -17,15 +17,11 @@ def bib(request):
     def process(pubs):
         for pub in pubs:
             s = pub.bib
-            print(s)
             s = s.replace('\r\n', '</br>\r\n')
             s += '<br/>'
-            print(s)
             yield s
     
-    context = {
-            'bibs': process(pubs)
-            }
+    context = {'bibs': process(pubs)}
 
-    return render(request, 'lit/bib.html', context)
+    return render(request, 'lit/bib.bib', context)
 

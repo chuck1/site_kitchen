@@ -11,13 +11,16 @@ class Author(models.Model):
 
 class Tag(models.Model):
     name = models.CharField(max_length=64)
+    def __unicode__(self):
+        return self.name
 
 class Publication(models.Model):
     title = models.CharField(max_length=512)
     bib = models.TextField()
-    authors = models.ManyToManyField(Author)
-    tags = models.ManyToManyField(Tag)
-
+    authors = models.ManyToManyField(Author, blank=True)
+    tags = models.ManyToManyField(Tag, blank=True)
+    def __unicode__(self):
+        return "title:" + self.title
 
 
 
