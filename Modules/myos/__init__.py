@@ -11,7 +11,8 @@ def glob(patstr, search = "."):
 			f = os.path.join(root, f)
 			#print f
 			if pat.match(f):
-				yield f
+				yield os.path.abspath(f)
+				#yield f
 
 
 def pathlist(h):
