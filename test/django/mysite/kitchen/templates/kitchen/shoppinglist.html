@@ -2,19 +2,20 @@
 <html lang="en-us" >
 
 <head>
-	<link rel="stylesheet" type="text/css" href="/static/admin/css/base.css" />
-	<link rel="stylesheet" type="text/css" href="/static/admin/css/dashboard.css" />
+<!--	<link rel="stylesheet" type="text/css" href="/static/admin/css/base.css" />
+	<link rel="stylesheet" type="text/css" href="/static/admin/css/dashboard.css" />-->
 </head>
 
 <body class="dashboard">
 	<div id="content-main">
 	<div class="module">
 	<table>
-	<tr><th>Item</th><th>Amount</th><th>Recipes</th></tr>
-	{% for itm, a, recs in items %}
+	<tr><th>Item</th><th>Amount</th><th>Unit</th><th>Recipes</th></tr>
+	{% for itm, a, u, recs in items %}
 	<tr>
 		<td>{{ itm }}</td>
 		<td>{{ a }}</td>
+		<td>{{ u }}</td>
 		<td><table>
 			{% for rec, a, can in recs %}
 			<form action="{% url 'kitchen:create_recipe_order' rec.id %}" method="post">
@@ -35,7 +36,7 @@
 	
 	{% load staticfiles %}
 	
-	<img src="{% static "kitchen/ing.png" %}" alt="ing.png"/>
+	<!--<img src="{% static "kitchen/ing.png" %}" alt="ing.png"/>-->
 	</div>
 </body>
 

@@ -18,12 +18,19 @@ class Unit(models.Model):
 
 class Item(models.Model):
     name = models.CharField(max_length=256)
+    unit = models.ForeignKey(Unit, null=True)
+
     def __unicode__(self):
-        return "Item:" + self.name
+        #return "Item:" + self.name
+        return self.name
 
 class Recipe(models.Model):
     name = models.CharField(max_length=256)
+    source = models.CharField(max_length=256, blank=True)
     lcm = models.FloatField(default=1.0)
+    ingredients = models.ManyToManyField(Item, through='Ingredient')
+    text = models.TextField(blank=True)
+
     def __unicode__(self):
         return "Recipe:" + self.name
     def can_make(self, a, ir_dict):
@@ -36,6 +43,10 @@ class Recipe(models.Model):
 
         for ing in ings:
             need = a * ing.amount_std
+
+            if not ing.item in ir_dict:
+                if need > 0:
+                    return False
 
             ir = ir_dict[ing.item]
             
@@ -70,4 +81,11 @@ class Transaction(models.Model):
     def _get_amount_std(self):
         return self.amount * self.unit.convert
     amount_std = property(_get_amount_std)
+
+
+
+
+
+
+
 

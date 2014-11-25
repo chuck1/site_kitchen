@@ -100,7 +100,7 @@ def shoppinglist():
 
         recs = list(test_in(G, item, d, ir_dict))
         
-        yield item, d, recs
+        yield item, d / item.unit.convert, item.unit, recs
 
 # Create your views here.
 
@@ -138,6 +138,5 @@ def create_recipe_order(request, recipe_id):
 
         return HttpResponseRedirect(reverse('kitchen:shoppinglist_view'))
     
-
 
 

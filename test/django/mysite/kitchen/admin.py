@@ -12,11 +12,27 @@ from kitchen.models import Transaction
 
 admin.site.register(MeasurementType)
 admin.site.register(Unit)
-admin.site.register(Item)
-admin.site.register(Recipe)
+#admin.site.register(Item)
+#admin.site.register(Recipe)
 admin.site.register(RecipeOrder)
 admin.site.register(Ingredient)
 admin.site.register(Transaction)
+
+
+
+class IngredientInline(admin.TabularInline):
+    model = Ingredient
+    extra = 1
+
+class ItemAdmin(admin.ModelAdmin):
+    inlines = (IngredientInline,)
+
+class RecipeAdmin(admin.ModelAdmin):
+    inlines = (IngredientInline,)
+
+
+admin.site.register(Item, ItemAdmin)
+admin.site.register(Recipe, RecipeAdmin)
 
 
 
