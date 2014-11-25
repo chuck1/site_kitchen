@@ -66,6 +66,7 @@ class Ingredient(models.Model):
     item = models.ForeignKey(Item)
     unit = models.ForeignKey(Unit)
     amount = models.FloatField()
+    optional = models.BooleanField(default=False)
     def __unicode__(self):
         return self.recipe.name + ": " + self.item.name
     def _get_amount_std(self):
