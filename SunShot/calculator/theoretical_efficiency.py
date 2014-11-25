@@ -39,10 +39,8 @@ def line_temp_vs_eta():
 
     H = np.arange(C, 2500)
 
-    qpp = 1e6
     ep = 1.0
-    
-    K = get_K(qpp)
+    K = 4e-4
     
     pl.plot(H, e_carnot(H), 'k-')
     pl.plot(H, e_rec(H, K, ep), 'k--')
@@ -55,9 +53,37 @@ def line_temp_vs_eta():
     pl.xlabel(r"$T_H$ (K)")
     pl.ylabel(r"$\eta$")
 
-    save("temp_vs_eta.png")
+    save("temp_vs_eta_K_{:.0e}.png".format(K))
 
     pl.show()
+
+def nondim_line_temp_vs_eta():
+
+    H = np.arange(C, 2500)
+
+    qpp = 1e6
+    ep = 1.0
+    
+    K = get_K(qpp)
+    K = 4e-4
+
+    x = np.divide(H,C)
+
+    pl.plot(x, e_carnot(H), 'k-')
+    pl.plot(x, e_rec(H, K, ep), 'k--')
+    pl.plot(x, e(H, K, ep), 'k-.')
+    
+    pl.ylim([0,1])
+    
+    pl.legend(['carnot','rec','overall'], loc=0)
+   
+    pl.xlabel(r"$T_H/T_C$")
+    pl.ylabel(r"$\eta$")
+
+    save("nondim_temp_vs_eta_K_{:.0e}.png".format(K))
+
+    pl.show()
+
 
 def save(filename):
     pl.savefig(filename)
@@ -120,8 +146,9 @@ def line_logK_vs_temp():
 
 
 line_temp_vs_eta()
-cont()
-line_logK_vs_temp()
+#nondim_line_temp_vs_eta()
+#cont()
+#line_logK_vs_temp()
 
 
 
