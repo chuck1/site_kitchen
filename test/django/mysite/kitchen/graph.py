@@ -27,8 +27,9 @@ class IngGraph():
 	#print(self.G.edges())
 	#print(nx.algorithms.dag.ancestors(self.G, kitchen.models.Item.objects.get(name="pbj")))
 	#print(self.G.predecessors(kitchen.models.Item.objects.get(name="pbj")))
-	    
-	nx.write_dot(self.G, 'kitchen/static/kitchen/ing.dot')
+	
+    def draw(self):
+        nx.write_dot(self.G, 'kitchen/static/kitchen/ing.dot')
 	subprocess.call(['dot', 'kitchen/static/kitchen/ing.dot', '-Tpng', '-okitchen/static/kitchen/ing.png'])
 
 
