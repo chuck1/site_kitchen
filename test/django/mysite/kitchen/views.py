@@ -102,8 +102,6 @@ def shoppinglist():
         
         yield item, d / item.unit.convert, item.unit, recs
 
-# Create your views here.
-
 class ItemList(django.views.generic.ListView):
     #model = Transaction
     
@@ -138,5 +136,21 @@ def create_recipe_order(request, recipe_id):
 
         return HttpResponseRedirect(reverse('kitchen:shoppinglist_view'))
     
+def create_transaction(request, item_id):
+    
+    item = get_object_or_404(Recipe, pk=item_id)
+
+    try:
+        amount = request.POST['amount']
+    except KeyError:
+        return render(request, 'kitchen/shoppinglist.html', {'items':[]})
+    else:
+        t = Transaction()
+        t.item = item
+        t.amount = amount
+	t.unit = item.unit
+        t.save()
+
+        return HttpResponseRedirect(reverse('kitchen:shoppinglist_view'))
 
 
