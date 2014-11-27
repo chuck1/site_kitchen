@@ -17,9 +17,19 @@ class Unit(models.Model):
         return self.name
 
 class Item(models.Model):
+
+    CATEGORY_CHOICES = (
+            ('unknown', 'unknown'),
+            ('produce', 'produce'),
+            ('dairy',   'dairy'),
+            ('cheese',  'cheese'),
+            ('bulk',    'bulk'),
+            ('baking',  'baking')
+            )
+
     name = models.CharField(max_length=256)
     unit = models.ForeignKey(Unit, null=True)
-
+    category = models.CharField(max_length=128, choices=CATEGORY_CHOICES)
     def __unicode__(self):
         #return "Item:" + self.name
         return self.name
@@ -82,7 +92,6 @@ class Transaction(models.Model):
     def _get_amount_std(self):
         return self.amount * self.unit.convert
     amount_std = property(_get_amount_std)
-
 
 
 

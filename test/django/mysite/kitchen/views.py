@@ -100,7 +100,7 @@ def shoppinglist():
 
         recs = list(test_in(G, item, d, ir_dict))
         
-        yield item, d / item.unit.convert, item.unit, recs
+        yield item, d / item.unit.convert, item.unit, item.category, recs
 
 class ItemList(django.views.generic.ListView):
     #model = Transaction
@@ -116,8 +116,8 @@ def inventory_view(request):
     
 def shoppinglist_view(request):
 
-    context = {'items': shoppinglist()}
-    
+    context = {'items': sorted(list(shoppinglist()), key = lambda x: x[3])}
+
     return render(request, 'kitchen/shoppinglist.html', context)
 
 def create_recipe_order(request, recipe_id):
@@ -138,8 +138,8 @@ def create_recipe_order(request, recipe_id):
     
 def create_transaction(request, item_id):
     
-    item = get_object_or_404(Recipe, pk=item_id)
-
+    item = get_object_or_404(Item, pk=item_id)
+    
     try:
         amount = request.POST['amount']
     except KeyError:

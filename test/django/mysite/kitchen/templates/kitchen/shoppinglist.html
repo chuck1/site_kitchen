@@ -14,11 +14,14 @@
 	<div class="module">
 	<table>
 	<tr><th>Item</th><th>Amount</th><th>Unit</th><th>Recipes</th></tr>
-	{% for itm, a, u, recs in items %}
+	{% for itm, a, u, c, recs in items %}
 	<tr>
+		<td><input type="checkbox"/></td>
 		<td>{{ itm }}</td>
 		<td>{{ a }}</td>
 		<td>{{ u }}</td>
+		<td>{{ c }}</td>
+		{% if recs %}
 		<td><table>
 			{% for rec, a, can in recs %}
 			<form action="{% url 'kitchen:create_recipe_order' rec.id %}" method="post">
@@ -32,6 +35,7 @@
 			</form>
 			{% endfor %}
 		</table></td>
+		{% endif %}
 	</tr>
 	{% endfor %}
 	</table>
