@@ -12,11 +12,13 @@ def page(request, page):
 
 	context = {}
 
+	filename = '/home/chuck/git/wiki/' + page + '.md'
+	
 	try:
-		with open('/home/chuck/git/wiki_school/' + page + '.md', 'r') as f:
+		with open(filename, 'r') as f:
 			text = f.read()
 	except:
-		context['text'] = repr(page) + ' not found'
+		context['text'] = repr(filename) + ' not found'
 	else:
 		html = markdown.markdown(text)
 
