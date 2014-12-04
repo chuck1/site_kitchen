@@ -2,7 +2,7 @@ from django.db import models
 
 # Create your models here.
 
-
+from django.contrib import admin
 
 class Author(models.Model):
     name1 = models.CharField(max_length=128)
@@ -25,4 +25,5 @@ class Publication(models.Model):
     
     def __unicode__(self):
         return str(self.code) + ":" + self.title
+
 
