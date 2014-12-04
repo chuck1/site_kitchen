@@ -17,8 +17,14 @@ def bib(request):
         for pub in pubs:
             s = pub.bib
             s = s.replace('\r\n', '</br>\r\n')
-            s += '<br/>'
             yield s
+    
+    with open('/home/chuck/git/thesis/thesis/src/bibtex/mybib2.bib', 'w') as f:
+        for pub in pubs:
+            s = pub.bib
+            s = s.replace('\r\n', '\n')
+            s += '\n'
+            f.write(s)
     
     context = {'bibs': process(pubs)}
 
