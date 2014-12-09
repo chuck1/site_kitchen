@@ -20,7 +20,7 @@ def page(request, page):
 	except:
 		context['text'] = repr(filename) + ' not found'
 	else:
-		html = markdown.markdown(text)
+		html = markdown.markdown(text, extensions=['markdown.extensions.tables'])
 
 		context['text'] = html
 
