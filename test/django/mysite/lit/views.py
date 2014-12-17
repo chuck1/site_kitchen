@@ -19,7 +19,7 @@ def bib(request):
             s = s.replace('\r\n', '</br>\r\n')
             yield s
     
-    with open('/home/chuck/git/thesis/thesis/src/bibtex/mybib2.bib', 'w') as f:
+    with open('/home/chuck/git/thesis/src/bibtex/mybib2.bib', 'w') as f:
         for pub in pubs:
             s = pub.bib
             s = s.replace('\r\n', '\n')

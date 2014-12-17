@@ -33,7 +33,7 @@ pl.rc('text', usetex=True)
 pl.rc('font', family='monospace')
 pl.rc('font', family='sans-serif')
 
-fileroot = "/home/chuck/git/thesis/Media/image/background/theory/efficiency/"
+fileroot = "/home/chuck/Documents/SunShot/Media/image/background/theory/efficiency/"
 
 def line_temp_vs_eta():
 
@@ -41,15 +41,20 @@ def line_temp_vs_eta():
 
     ep = 1.0
     K = 4e-4
-   
+
+    print "qpp =", s * C**4 / K
+
     x = H
     #x = np.log10(H)
     #x = np.divide(1.0,H)
     #x = np.power(H/C, 0.25)
 
+    y2 = e(H, K, ep)
+    print x[np.argmax(y2)]
+
     pl.plot(x, e_carnot(H), 'k-')
     pl.plot(x, e_rec(H, K, ep), 'k--')
-    pl.plot(x, e(H, K, ep), 'k-.')
+    pl.plot(x, y2, 'k-.')
     
     pl.ylim([0,1])
     
@@ -57,9 +62,31 @@ def line_temp_vs_eta():
    
     pl.xlabel(r"$T_H$ (K)")
     pl.ylabel(r"$\eta$")
+    
+    # ticks 
 
+    xticks = pl.gca().xaxis.get_majorticklocs()
+
+    H_1 = x[np.argmax(y2)]
+    H_2 = C * (1/K + 1)**0.25
+    
+    locs = [   0.,       C,     500.,          H_1, 1500.,          H_2, 2500.]
+    fmts = ["{0:.0f}", "$T_C$",    "{0:.0f}", "$T_{{H1}}$", "{0:.0f}", "$T_{{H1}}$", "{0:.0f}"]
+    
+    lbls = [x.format(locs[i]) for i,x in enumerate(fmts)]
+
+    print locs
+    print lbls
+    
+    
+    pl.gca().xaxis.set_ticks(locs)
+   
+    
+    pl.xticks(locs, lbls)
+
+    
+    # show
     save("temp_vs_eta_K_{:.0e}.png".format(K))
-
     pl.show()
 
 
