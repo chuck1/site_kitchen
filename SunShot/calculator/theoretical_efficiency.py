@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
 import subprocess
 import os
 import sys
@@ -37,6 +39,9 @@ fileroot = "/home/chuck/Documents/SunShot/Media/image/background/theory/efficien
 
 def line_temp_vs_eta():
 
+    fontPath = "/usr/share/fonts/abc.ttf"
+    font = fm.FontProperties(fname=fontPath, size=16)
+
     H = np.arange(C, 2500)
 
     ep = 1.0
@@ -58,7 +63,7 @@ def line_temp_vs_eta():
     
     pl.ylim([0,1])
     
-    pl.legend(['carnot','rec','overall'], loc=0)
+    leg = pl.legend(['carnot','rec','overall'], loc=0, prop=font)
    
     pl.xlabel(r"$T_H$ (K)")
     pl.ylabel(r"$\eta$")
@@ -70,10 +75,19 @@ def line_temp_vs_eta():
     H_1 = x[np.argmax(y2)]
     H_2 = C * (1/K + 1)**0.25
     
-    locs = [   0.,       C,     500.,          H_1, 1500.,          H_2, 2500.]
-    fmts = ["{0:.0f}", "$T_C$",    "{0:.0f}", "$T_{{H1}}$", "{0:.0f}", "$T_{{H1}}$", "{0:.0f}"]
-    
-    lbls = [x.format(locs[i]) for i,x in enumerate(fmts)]
+    loc_n_fmt = [
+            (0.,"{0:.0f}"),
+            (C,"$T_C$"),
+            (500.,"{0:.0f}"),
+            (H_1,"$T_{{H1}}$"),
+            (1500.,"{0:.0f}"),
+            (H_2,"$T_{{H2}}$"),
+            (2500.,"{0:.0f}")
+            ]
+   
+    locs = list(a for a,b in loc_n_fmt)
+
+    lbls = [x[1].format(x[0]) for i,x in enumerate(loc_n_fmt)]
 
     print locs
     print lbls
@@ -83,8 +97,16 @@ def line_temp_vs_eta():
    
     
     pl.xticks(locs, lbls)
-
+  
     
+    ax = pl.gca()
+
+    ax.xaxis.get_label().set_fontproperties(font)
+    ax.yaxis.get_label().set_fontproperties(font)
+
+    for label in (ax.get_xticklabels() + ax.get_yticklabels()):
+        label.set_fontproperties(font)
+
     # show
     save("temp_vs_eta_K_{:.0e}.png".format(K))
     pl.show()
