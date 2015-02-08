@@ -5,8 +5,9 @@ import re
 import os
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-f')
-parser.add_argument('-e', nargs='+')
+parser.add_argument('-f', help="file")
+parser.add_argument('-e', help="extensions", nargs='+')
+parser.add_argument('-r', help="dry run", action="store_true")
 parser.add_argument('pattern')
 parser.add_argument('repl')
 args = parser.parse_args()
@@ -23,11 +24,12 @@ def replace(filename):
     wtext = re.sub(args.pattern, args.repl, rtext)
 
     #print rtext
-    
+
     if not (wtext == rtext):
         print filename
-        with open(filename, 'w') as f:
-            f.write(wtext)
+        if not args.r:
+            with open(filename, 'w') as f:
+                f.write(wtext)
 
 
 
@@ -46,5 +48,7 @@ if args.f:
     replace(args.f)
 elif args.e:
     replace_files(args.e)
+else:
+    replace_files([".hpp",".cpp"])
 
 
