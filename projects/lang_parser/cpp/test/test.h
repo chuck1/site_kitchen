@@ -5,6 +5,8 @@ namespace ns {
 	class foo{
 		public:
 			foo();
+			~foo();
+			void	fun();
 	};
 }
 
