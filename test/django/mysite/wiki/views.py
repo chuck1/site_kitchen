@@ -12,7 +12,7 @@ def page(request, page):
 
 	context = {}
 
-	filename = '/home/chuck/git/wiki/' + page + '.md'
+	filename = '/home/chuck/git/wiki_private/' + page + '.md'
 	
 	try:
 		with open(filename, 'r') as f:

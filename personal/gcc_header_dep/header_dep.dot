@@ -1,8 +1,0 @@
-digraph header_dep {
-	node [label="\N"];
-	srcfoocc [label="./src/foo.cc"];
-	srcfoohh [label="./src/foo.hh"];
-	srcbarhh [label="./src/bar.hh"];
-	srcfoocc -> srcfoohh;
-	srcfoohh -> srcbarhh;
-}
