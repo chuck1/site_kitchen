@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import argparse
 import subprocess
 import myos
 import shutil
@@ -7,8 +8,10 @@ import os
 
 devnull = open(os.devnull)
 
-def test(filename):
+def test(filename, makefile):
     
+    print filename
+
     with open(filename, 'r') as f:
         lines = f.readlines()
   
@@ -44,7 +47,7 @@ def test(filename):
 
         out = []
 
-        p = subprocess.Popen(['make','-j4'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p = subprocess.Popen(['make','-f',makefile,'-j4'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         #ret = subprocess.call(['make'], stdout=subprocess.DEVNULL, stderr=devnull)
         #ret = subprocess.Popen(['make'], stdout=out, stderr=devnull)
         
@@ -57,18 +60,22 @@ def test(filename):
         if not err:
             print repr(l), "in file", repr(filename), "can be removed"
         else:
+            print repr(err)
             shutil.move(filename + '.original', filename)
 
+parser = argparse.ArgumentParser()
+parser.add_argument('makefile')
+args = parser.parse_args()
 
 c_files = myos.glob(".*\.cpp$")
 
 for c in c_files:
-    test(c)
+    test(c, args.makefile)
 
 h_files = myos.glob(".*\.hpp$")
 
 for h in h_files:
-    test(h)
+    test(h, args.makefile)
 
 
 
