@@ -7,34 +7,17 @@ import sys
 import subprocess
 import argparse
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-d", help="directory")
-parser.add_argument("-p", help="path prefix for label")
-args = parser.parse_args()
 
-if args.d:
-    d = args.d
-else:
-    d = '.'
-
-
-
-cfiles = list(myos.glob(".*\.c$", d))
-ccfiles = list(myos.glob(".*\.cpp$", d))
-cfiles += ccfiles
-
-#['foo.c']
-
-files = cfiles
-filetype = [[1]]*len(cfiles)
 i = 0
 
 dep = []
 
+files = []
+
 #root = '\/nfs\/stak\/students\/r\/rymalc\/usr\/include'
 root = __file__
 
-def process(fileto,flags):
+def process(fileto,flags,filetype):
 	global i
 
 	#print fileto[:4],fileto[:4]=="/usr"
@@ -79,7 +62,12 @@ def process(fileto,flags):
 			#print "i=",i
 
 	elif 2 in flags: #ascend
-		j = files.index(fileto)
+		
+                try:
+                    j = files.index(fileto)
+                except:
+                    files.append(fileto)
+                    j = files.index(fileto)
 
 		print "ascending from \"{0:40}\":{1:10} to \"{2:40}\":{3}".format(
 				files[i],
@@ -100,28 +88,78 @@ def process(fileto,flags):
 
 
 
-for cfile,c in zip(cfiles,range(len(cfiles))):
+def precom(filename):
+    cmd = ['gcc', '-E', '-I.', filename, '>', filename + '.pre']
+    cmd = ['gcc', '-E', '-I.', filename]
+    print "cmd=",cmd
 	
-	print "parsing file \"{0}\"".format(cfile)
+    print "stdout=", filename + '.pre'
 
+    with open(filename + '.pre', 'w') as f:
+        subprocess.call(cmd, stdout=f)
+
+
+def get_c_files():
+    cfiles = list(myos.glob(".*\.c$", d))
+    ccfiles = list(myos.glob(".*\.cpp$", d))
+    cfiles += ccfiles
+    return cfiles
+
+
+
+
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-d", help="directory")
+parser.add_argument("-p", help="path prefix for label")
+parser.add_argument("-c", action='store_true', help="do the precompiling")
+args = parser.parse_args()
+
+if args.d:
+    d = args.d
+else:
+    d = '.'
+
+
+#['foo.c']
+
+#
+
+
+if args.c:
+    
+    c_files = get_c_files()
+    
+    for f in c_files:
+        precom(f)
+ 
+    pre_files = list(f + '.pre' for f in c_files)
+   
+else:
+    pre_files = list(myos.glob(".*\.c\.pre$", d))
+    pre_files += list(myos.glob(".*\.cpp\.pre$", d))
+
+
+filetype = [[1]]*len(pre_files)
+
+print "filetype",filetype
+print "pre_files",pre_files
+
+for pre_file,c in zip(pre_files,range(len(pre_files))):
+	
+	print "parsing file \"{0}\"".format(pre_file)
+        
 	i = c
 	
-	fileroot = cfile[:-2]
-	print "fileroot=",fileroot
+	#fileroot = cfile[:-2]
+	#print "fileroot=",fileroot
 	
-        cmd = ['gcc', '-E', '-I.', cfile, '>', cfile + '.pre']
-        cmd = ['gcc', '-E', '-I.', cfile]
-        print "cmd=",cmd
-	
-        print "stdout=", cfile + '.pre'
-
-        with open(cfile + '.pre', 'w') as f:
-            subprocess.call(cmd, stdout=f)
         
         #subprocess.call(cmd)
         #P = subprocess.Popen(cmd, stdout=PIPE)
-
-	with open(cfile + '.pre','r') as f:
+        
+	with open(pre_file, 'r') as f:
 		lines = f.readlines()
 		#print lines
 	
@@ -145,16 +183,16 @@ for cfile,c in zip(cfiles,range(len(cfiles))):
 			print "g",g
 			flags = []
 			for a in g:
-				if a:
-					#print "a",a
-					flags.append(int(a))
+			    if a:
+				#print "a",a
+				flags.append(int(a))
 			
 			print "flags=", flags
 			fileto = m.group(1)
-			print "line[:-1]=", line[:-1]
+			print "line[:-1]=", repr(line[:-1])
 			#print "match \"{0}\".format(m.group(0))
 				
-			process(fileto,flags)
+			process(fileto,flags,filetype)
 		else:
                         print "no match"
 			pass
@@ -166,9 +204,10 @@ for cfile,c in zip(cfiles,range(len(cfiles))):
 			#
 			#		process(fileto,1)	
 
-print cfiles
-print files
-print dep
+
+#print cfiles
+print "files:", files
+print "dep:",dep
 
 filesclean = []
 for file in files:
@@ -184,17 +223,26 @@ with open('header_dep.dot','w') as f:
 	f.write('digraph {\n\trankdir=BT\n')
 
 	for file,fileclean,i in zip(files,filesclean,range(len(files))):
-		if i in depflat:
-                        if args.p:
-                            file = os.path.relpath(file, args.p)
-			f.write("\t{0} [label=\"{1}\"]\n".format(
-				fileclean,
-				file))
+	    if i in depflat:
+                # if prefix specified, use it to shorten names
+                if args.p:
+                    if not file[0:5] == '/usr/':
+                        file = os.path.relpath(file, args.p)
+		
+                f.write("\t{0} [label=\"{1}\"]\n".format(
+		    fileclean,
+		    file))
+
+                nx graph add node
 
 	for d in dep:
 		f.write("\t{0} -> {1}\n".format(
 			filesclean[d[0]],
 			filesclean[d[1]]))
+
+                
+                nx graph add edge
+
 	f.write('}\n')
 
 #os.system('cat header_dep.dot')

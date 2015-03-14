@@ -1,9 +1,0 @@
-# 1 "./src/foo.cc"
-# 1 "<command-line>"
-# 1 "./src/foo.cc"
-
-# 1 "./src/foo.hh" 1
-
-# 1 "./src/bar.hh" 1
-# 3 "./src/foo.hh" 2
-# 3 "./src/foo.cc" 2
