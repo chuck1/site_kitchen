@@ -1,7 +1,7 @@
 digraph {
 	rankdir=BT
-	homechuckgitchuck1pythonprojectsc_projectsgcc_header_depsrcfoohpp [label="/home/chuck/git/chuck1/python/projects/c_projects/gcc_header_dep/src/foo.hpp"]
-	homechuckgitchuck1pythonprojectsc_projectsgcc_header_depsrcbarhpp [label="/home/chuck/git/chuck1/python/projects/c_projects/gcc_header_dep/src/bar.hpp"]
+	homechuckgitchuck1pythonprojectsc_projectsgcc_header_depsrcfoohpp [label="foo.hpp"]
+	homechuckgitchuck1pythonprojectsc_projectsgcc_header_depsrcbarhpp [label="bar.hpp"]
 	usrincludestdioh [label="/usr/include/stdio.h"]
 	usrincludefeaturesh [label="/usr/include/features.h"]
 	usrincludelibioh [label="/usr/include/libio.h"]

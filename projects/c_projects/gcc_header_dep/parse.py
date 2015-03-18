@@ -6,7 +6,7 @@ import myos
 import sys
 import subprocess
 import argparse
-
+import networkx as nx
 
 i = 0
 
@@ -16,6 +16,13 @@ files = []
 
 #root = '\/nfs\/stak\/students\/r\/rymalc\/usr\/include'
 root = __file__
+
+def prefixed(fn, args):
+    if args.p:
+        if not fn[0:5] == '/usr/':
+            fn = os.path.relpath(fn, args.p)
+    return fn
+
 
 def process(fileto,flags,filetype):
 	global i
@@ -52,11 +59,11 @@ def process(fileto,flags,filetype):
 				if not newdep in dep:
 					dep.append(newdep)
 		
-			print "descend   from \"{0:40}\":{1:10} to \"{2:40}\":{3}".format(
-						files[i],
-						filetype[i],
-						fileto,
-						flags)
+			#print "descend   from \"{0:40}\":{1:10} to \"{2:40}\":{3}".format(
+			#			files[i],
+			#			filetype[i],
+			#			fileto,
+			#			flags)
 			i = h #i.append(h)
 			
 			#print "i=",i
@@ -69,11 +76,11 @@ def process(fileto,flags,filetype):
                     files.append(fileto)
                     j = files.index(fileto)
 
-		print "ascending from \"{0:40}\":{1:10} to \"{2:40}\":{3}".format(
-				files[i],
-				filetype[i],
-				files[j],
-				filetype[j])
+		#print "ascending from \"{0:40}\":{1:10} to \"{2:40}\":{3}".format(
+		#		files[i],
+		#		filetype[i],
+		#		files[j],
+		#		filetype[j])
 
 		
 		
@@ -114,6 +121,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-d", help="directory")
 parser.add_argument("-p", help="path prefix for label")
 parser.add_argument("-c", action='store_true', help="do the precompiling")
+parser.add_argument("-r", help="render dot")
 args = parser.parse_args()
 
 if args.d:
@@ -148,7 +156,7 @@ print "pre_files",pre_files
 
 for pre_file,c in zip(pre_files,range(len(pre_files))):
 	
-	print "parsing file \"{0}\"".format(pre_file)
+	#print "parsing file \"{0}\"".format(pre_file)
         
 	i = c
 	
@@ -172,29 +180,27 @@ for pre_file,c in zip(pre_files,range(len(pre_files))):
 	lines = newlines
 	
 	for line in lines:
-		print "line=",repr(line)
-		
-		
+		#print "line=",repr(line)
 		m = re.search('# \d+ "([\w\/]+\.(cpp|c|h|hpp))"( \d)( \d)?( \d)?',line)
 		if m:
-			print "groups=",len(m.groups())
+			#print "groups=",len(m.groups())
 			g = list(m.groups())
 			g = g[2:]
-			print "g",g
+			#print "g",g
 			flags = []
 			for a in g:
 			    if a:
 				#print "a",a
 				flags.append(int(a))
 			
-			print "flags=", flags
+			#print "flags=", flags
 			fileto = m.group(1)
-			print "line[:-1]=", repr(line[:-1])
+			#print "line[:-1]=", repr(line[:-1])
 			#print "match \"{0}\".format(m.group(0))
 				
 			process(fileto,flags,filetype)
 		else:
-                        print "no match"
+                        #print "no match"
 			pass
 			#m = re.search('# \d+ "([\w\/]+\.(c|cpp|h|hpp))"',line)
 			#if m:
@@ -210,44 +216,78 @@ print "files:", files
 print "dep:",dep
 
 filesclean = []
+filesp = []
 for file in files:
+        filesp.append(prefixed(file,args))
 	file = re.sub('\.','',file)
 	file = re.sub('\/','',file)
 	file = re.sub('-','',file)
-        print file
+        #print file
         filesclean.append(file)
 
 depflat = [d for subl in dep for d in subl]
 
+G=nx.DiGraph()
+
+class Node(object):
+    def __init__(self, filename):
+        self.filename = filename
+    def __str__(self):
+        return self.filename
+
+nodes = {}
+
+
 with open('header_dep.dot','w') as f:
 	f.write('digraph {\n\trankdir=BT\n')
 
-	for file,fileclean,i in zip(files,filesclean,range(len(files))):
+        # create all nodes first
+	for filename,fnp,fileclean,i in zip(files,filesp,filesclean,range(len(files))):
 	    if i in depflat:
                 # if prefix specified, use it to shorten names
                 if args.p:
-                    if not file[0:5] == '/usr/':
-                        file = os.path.relpath(file, args.p)
+                    if not filename[0:5] == '/usr/':
+                        filename = os.path.relpath(filename, args.p)
 		
                 f.write("\t{0} [label=\"{1}\"]\n".format(
 		    fileclean,
-		    file))
+		    filename))
 
-                nx graph add node
-
+                print "create node:", filename
+                n = Node(fnp)
+                G.add_node(n)
+                nodes[filename] = n
+        
+        # create all edges
 	for d in dep:
-		f.write("\t{0} -> {1}\n".format(
+                print "create edge"
+		f0 = filesp[d[0]]
+		f1 = filesp[d[1]]
+                print f0
+                print f1
+                f.write("\t{0} -> {1}\n".format(
 			filesclean[d[0]],
 			filesclean[d[1]]))
 
-                
-                nx graph add edge
+                n0 = nodes[f0]
+                n1 = nodes[f1]
+
+                print n0
+                print n1
+
+                G.add_edge(n0,n1)
 
 	f.write('}\n')
 
 #os.system('cat header_dep.dot')
 
-cmd = ["dot", "-Tpng", "header_dep.dot", "-oheader_dep.png"]
+if args.r:
+    cmd = ["dot", "-Tpng", "header_dep.dot", "-oheader_dep.png"]
+    subprocess.call(cmd)
 
-subprocess.call(cmd)
+d = G.out_degree()
+
+for i in sorted(d.items(), cmp = lambda x,y: cmp(i[0],i[1])):
+    print i,i[0],i[1]
+
 
