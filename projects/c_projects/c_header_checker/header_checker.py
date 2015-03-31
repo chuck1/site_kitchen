@@ -8,6 +8,7 @@ import subprocess
 import myos
 import shutil
 import os
+import logging
 
 devnull = open(os.devnull)
 
@@ -18,7 +19,7 @@ def test(filename, makefile, target_filename):
     global process
     global filename_modified
 
-    print filename
+    logging.debug(filename)
     
     with open(filename, 'r') as f:
         lines = f.readlines()
@@ -37,7 +38,7 @@ def test(filename, makefile, target_filename):
             #print repr(l[10:-2])
         a += 1
     
-    print inc_line_ind
+    logging.debug("{}".format(inc_line_ind))
 
     for ind in inc_line_ind:
 
@@ -49,14 +50,15 @@ def test(filename, makefile, target_filename):
         if not m:
             print "failed to get header name"
             print l
-            sys.exit(1)
+            continue
+            #sys.exit(1)
         
         header_filename = m.group(1)
         if target_filename:
             if header_filename == target_filename:
                 pass
             else:
-                print "skip: {}".format(header_filename)
+                logging.debug("skip: {}".format(header_filename))
                 continue
         
         shutil.copy(filename, filename + '.original')
@@ -72,11 +74,10 @@ def test(filename, makefile, target_filename):
         
         out = []
         
-        
-        
-        process = subprocess.Popen(['make','-f',makefile,'-j4'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        #ret = subprocess.call(['make'], stdout=subprocess.DEVNULL, stderr=devnull)
-        #ret = subprocess.Popen(['make'], stdout=out, stderr=devnull)
+        process = subprocess.Popen(
+                ['make','-f',makefile,'-j4'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE)
         
         print "building..."
         out, err = process.communicate()
@@ -98,7 +99,9 @@ def test(filename, makefile, target_filename):
 # command lnie args
 parser = argparse.ArgumentParser(description="identify and remove unneccesary include directives in a C/C++ project")
 parser.add_argument('makefile')
+
 parser.add_argument('-f', help="specify header file")
+parser.add_argument('-l', help="specify header list file")
 parser.add_argument('-d', help="root directory", default=".")
 parser.add_argument('-v', help="verbosity", action="store_true")
 args = parser.parse_args()
@@ -107,6 +110,7 @@ if args.v:
     logging.basicConfig(level=logging.DEBUG)
 else:
     logging.basicConfig(level=logging.INFO)
+
 
 def signal_handler(signal, frame):
     print 'you pressed ctrl+c'
@@ -122,17 +126,42 @@ def signal_handler(signal, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
-c_files = myos.glob(".*\.cpp$", args.d)
-h_files = myos.glob(".*\.hpp$", args.d)
+c_files = list(myos.glob(".*\.cpp$", args.d))
+h_files = list(myos.glob(".*\.hpp$", args.d))
 
-logging.debug("\n".join(c_files))
-logging.debug("\n".join(h_files))
+#logging.debug("\n".join(c_files))
+#logging.debug("\n".join(h_files))
+logging.info("number of c files: {}".format(len(c_files)))
+logging.info("number of h files: {}".format(len(h_files)))
 
-for c in c_files:
-    test(c, args.makefile, args.f)
 
-for h in h_files:
-    test(h, args.makefile, args.f)
+if args.l:
+
+    with open(args.l, 'r') as f:
+        lines = f.readlines()
+    
+    for line in lines:
+        line = line[:-1]
+        logging.info("test: {}".format(line))
+
+        for c in c_files:
+            test(c, args.makefile, line)
+
+        for h in h_files:
+            test(h, args.makefile, line)
+
+else:
+
+    for c in c_files:
+        test(c, args.makefile, args.f)
+
+    for h in h_files:
+        test(h, args.makefile, args.f)
+
+
+
+
+
 
 
 
