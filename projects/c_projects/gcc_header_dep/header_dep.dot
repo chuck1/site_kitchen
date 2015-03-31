@@ -1,12 +1,8 @@
 digraph {
-	rankdir=BT
-	homechuckgitchuck1pythonprojectsc_projectsgcc_header_depsrcfoohpp [label="foo.hpp"]
-	homechuckgitchuck1pythonprojectsc_projectsgcc_header_depsrcbarhpp [label="bar.hpp"]
-	usrincludestdioh [label="/usr/include/stdio.h"]
-	usrincludefeaturesh [label="/usr/include/features.h"]
-	usrincludelibioh [label="/usr/include/libio.h"]
-	homechuckgitchuck1pythonprojectsc_projectsgcc_header_depsrcfoohpp -> homechuckgitchuck1pythonprojectsc_projectsgcc_header_depsrcbarhpp
-	homechuckgitchuck1pythonprojectsc_projectsgcc_header_depsrcbarhpp -> usrincludestdioh
-	usrincludestdioh -> usrincludefeaturesh
-	usrincludestdioh -> usrincludelibioh
+	rankdir=RL
+	homechuckgitchuck1pythonprojectsc_projectsgcc_header_depsrcfoocpp [label="src/foo.cpp"]
+	includefoohpp [label="include/foo.hpp"]
+	includebarhpp [label="include/bar.hpp"]
+	homechuckgitchuck1pythonprojectsc_projectsgcc_header_depsrcfoocpp -> includefoohpp
+	includefoohpp -> includebarhpp
 }
