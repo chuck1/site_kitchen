@@ -30,9 +30,13 @@ class Item(models.Model):
     name = models.CharField(max_length=256)
     unit = models.ForeignKey(Unit, null=True)
     category = models.CharField(max_length=128, choices=CATEGORY_CHOICES)
+
     def __unicode__(self):
         #return "Item:" + self.name
         return self.name
+
+    class Meta:
+        ordering = ('name',)
 
 class Recipe(models.Model):
     name = models.CharField(max_length=256)
