@@ -39,6 +39,7 @@ INSTALLED_APPS = (
     'kitchen',
     'lit',
     'wiki',
+    'task',
 )
 
 MIDDLEWARE_CLASSES = (

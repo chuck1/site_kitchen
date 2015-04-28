@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en-us" >
+
+{% load staticfiles %}
+
+<head>
+	<link rel="stylesheet" type="text/css" href="{% static "kitchen/style.css" %}" />
+</head>
+
+<body class="dashboard">
+	<div id="content-main">
+	<div class="module">
+	<table style="border:1px solid black">
+	<tr><th>Title</th><th>SP</th><th>SA</th><th>EP</th></tr>
+	{% for task, sp, sa, ep, ea in tasks %}
+	<tr>
+		<td>{{ task.title }}</td>
+		<td>{{ sp }}</td>
+		<td>{{ sa }}</td>
+		<td>{{ ep }}</td>
+		<td>{{ ea }}</td>
+		<td>
+			<form action="{% url 'task:start_now' task.id %}" method="post">
+				{% csrf_token %}
+				<input type="submit" value="START"/></td>
+			</form>
+		</td>
+		<td>
+			<form action="{% url 'task:start_now' task.id %}" method="post">
+				{% csrf_token %}
+				<input type="submit" value="START"/></td>
+			</form>
+		</td>
+	</tr>
+	{% endfor %}
+	</table>
+	</div>
+	</div>
+</body>
+
+</html>
