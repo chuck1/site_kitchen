@@ -17,3 +17,6 @@ class Task(models.Model):
 
     last_modified  = models.DateTimeField('last modified', auto_now = True)
 
+    def __unicode__(self):
+        return self.title
+

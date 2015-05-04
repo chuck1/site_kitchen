@@ -86,7 +86,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = '/var/www/mysite/static/'
 
-
+USE_TZ = True
+TIME_ZONE = 'America/Los_Angeles'
 
 """
 LOGGING = {
@@ -122,6 +123,8 @@ LOGGING = {
             }
         }
 """
+
+
 
 
 

@@ -19,12 +19,13 @@ class Unit(models.Model):
 class Item(models.Model):
 
     CATEGORY_CHOICES = (
-            ('unknown', 'unknown'),
-            ('produce', 'produce'),
-            ('dairy',   'dairy'),
-            ('cheese',  'cheese'),
+            ('baking',  'baking'),
             ('bulk',    'bulk'),
-            ('baking',  'baking')
+            ('cheese',  'cheese'),
+            ('dairy',   'dairy'),
+            ('meat',    'meat'),
+            ('produce', 'produce'),
+            ('unknown', 'unknown'),
             )
 
     name = models.CharField(max_length=256)
@@ -44,6 +45,9 @@ class Recipe(models.Model):
     lcm = models.FloatField(default=1.0)
     ingredients = models.ManyToManyField(Item, through='Ingredient')
     text = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ('name',)
 
     def __unicode__(self):
         return "Recipe:" + self.name

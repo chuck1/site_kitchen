@@ -10,32 +10,56 @@
 <body class="dashboard">
 	<div id="content-main">
 	<div class="module">
+
+	<a href="../../admin/task/task">task admin</a>
+	<a href="../../admin/task/task/add">task admin add task</a>
+
 	<table style="border:1px solid black">
-	<tr><th>Title</th><th>SP</th><th>SA</th><th>EP</th></tr>
-	{% for task, sp, sa, ep, ea in tasks %}
-	<tr>
-		<td>{{ task.title }}</td>
-		<td>{{ sp }}</td>
-		<td>{{ sa }}</td>
-		<td>{{ ep }}</td>
-		<td>{{ ea }}</td>
-		<td>
-			<form action="{% url 'task:start_now' task.id %}" method="post">
-				{% csrf_token %}
-				<input type="submit" value="START"/></td>
-			</form>
-		</td>
-		<td>
-			<form action="{% url 'task:start_now' task.id %}" method="post">
-				{% csrf_token %}
-				<input type="submit" value="START"/></td>
-			</form>
-		</td>
-	</tr>
-	{% endfor %}
+		<tr>
+			<th>Title</th>
+			<th>SP</th>
+			<th>SA</th>
+			<th>EP</th>
+			<th>EA</th>
+			<th>DP</th>
+			<th>DA</th>
+		</tr>
+		{% for task, sp, sa, ep, ea, dp, da in tasks %}
+		<tr>
+			<td>{{ task.title }}</td>
+			<td>{{ sp }}</td>
+			<td>{{ sa }}</td>
+			<td>{{ ep }}</td>
+			<td>{{ ea }}</td>
+			<td>{{ dp }}</td>
+			<td>{{ da }}</td>
+		
+			<td>
+				<form action="{% url 'task:start_now' task.id %}" method="post">
+					{% csrf_token %}
+					<input type="submit" value="START"/>
+				</form>
+			</td>
+			<td>
+				<form action="{% url 'task:end_now' task.id %}" method="post">
+					{% csrf_token %}
+					<input type="submit" value="END"/>
+				</form>
+			</td>
+		</tr>
+		{% endfor %}
 	</table>
 	</div>
 	</div>
+
+
+	<div>
+		<table>
+		{% for w in cal %}
+		{% endfor %}
+		</table>
+	</div>
+
 </body>
 
 </html>
