@@ -85,11 +85,16 @@ def calendar():
         wd = d.weekday()
         cal[w][wd] = d.day
 
+        d = d + datetime.timedelta(days=1)
+        
         if wd == 6:
+            if d.month != m:
+                break
+            
             cal.append([""]*7)
             w = w + 1
-   
-        d = d + datetime.timedelta(days=1)
+
+    
 
     return cal
 
@@ -119,6 +124,7 @@ def end_now(request, task_id):
     
     return HttpResponseRedirect(reverse('task:tasklist_view'))
 
-    
+def index(request):
+    return render(request, 'task/index.html', {})
     
 

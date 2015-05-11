@@ -1,6 +1,6 @@
 
 body {
-	font-family: monospace;
+	font-family: arial;
 }
 
 table, td, th {
@@ -10,4 +10,12 @@ table, td, th {
 td, th {
 	padding: 2px;
 }
+
+.produce { background-color: #00ff00; }
+.cheese  { background-color: #ffff00; }
+.meat    { background-color: #ff0000; }
+.baking  { background-color: #0000ff; }
+.bulk    { background-color: #ff00ff; }
+.unknown { background-color: #888888; }
+
 

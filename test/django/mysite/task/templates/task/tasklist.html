@@ -52,14 +52,26 @@
 	</div>
 	</div>
 
-
 	<div>
 		<table>
-		{% for w in cal %}
-		{% endfor %}
+			<tr>
+				<td>Monday</td>
+				<td>Tuesday</td>
+				<td>Wednesday</td>
+				<td>Thursday</td>
+				<td>Friday</td>
+				<td>Saturday</td>
+				<td>Sunday</td>
+			</tr>
+			{% for w in cal %}
+			<tr>
+				{% for d in w %}
+				<td>{{ d }}</td>
+				{% endfor %}
+			</tr>
+			{% endfor %}
 		</table>
 	</div>
-
 </body>
 
 </html>

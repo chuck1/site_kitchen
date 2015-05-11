@@ -83,8 +83,16 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
+#STATIC_URL = '/django/static/'
 STATIC_URL = '/static/'
+
 STATIC_ROOT = '/var/www/mysite/static/'
+#STATIC_ROOT = 'static/'
+
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, "kitchen/static"),
+    #'/var/www/static/',
+    )
 
 USE_TZ = True
 TIME_ZONE = 'America/Los_Angeles'

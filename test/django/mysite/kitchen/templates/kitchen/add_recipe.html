@@ -1,0 +1,8 @@
+
+<table>
+<form action="/kitchen/create_recipe/" method="post">
+	{% csrf_token %}
+	{{ form }}
+	<input type="submit" value="Submit" />
+</form>
+</table>

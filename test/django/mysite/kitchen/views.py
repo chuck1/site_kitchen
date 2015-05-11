@@ -2,13 +2,15 @@ import math
 import itertools
 
 from django.core.urlresolvers import reverse
-from django.shortcuts import render, get_object_or_404, HttpResponseRedirect
+from django.shortcuts import render
+from django.shortcuts import get_object_or_404, HttpResponseRedirect
 import django.db.models
 import django.views.generic
 
 from kitchen.models import *
 
 import kitchen.graph
+import kitchen.forms
 
 # ir (inventory - recipe order)
 # t target inventory
@@ -26,36 +28,30 @@ def gen_ings():
             yield ing.item, -ing.amount_std * ro.amount
 
 def inventory():
-
     grouped = itertools.groupby(gen_trans(), lambda o: o[0])
     
     for item, gpr in grouped:
         gpr_list = list(gpr)
-        #yield item, sum(a for i,a in gpr_list), list(a for i,a in gpr_list)
         yield item, sum(a for i,a in gpr_list)
 
-
 def recipeorder():
-
     grouped = itertools.groupby(gen_ings(), lambda o: o[0])
     
     for item, gpr in grouped:
         gpr_list = list(gpr)
-        #yield item, sum(a for i,a in gpr_list), list(a for i,a in gpr_list)
         yield item, sum(a for i,a in gpr_list)
 
 # generator of (item, ir) tuples from transactions and recipe orders
 def ir_list():
-    objects = sorted(itertools.chain(gen_ings(), gen_trans()), key = lambda o: o[0].id)
+    objects = sorted(
+            itertools.chain(gen_ings(), gen_trans()),
+            key = lambda o: o[0].id)
     
     grouped = itertools.groupby(objects, lambda o: o[0])
     
     for item, gpr in grouped:
-        gpr_list = list(gpr)
-        #yield item, sum(a for o,a in gpr_list), list(a for o,a in gpr_list)
-    
+        gpr_list = list(gpr)    
         ir = sum(a for o,a in gpr_list)
-        
         yield item, ir
    
 
@@ -120,6 +116,21 @@ def shoppinglist_view(request):
 
     return render(request, 'kitchen/shoppinglist.html', context)
 
+def create_recipe(request):
+    
+    r = get_object_or_404(Recipe)
+
+    try:
+        title = request.POST['title']
+    except KeyError:
+        return render(request, 'kitchen/shoppinglist.html', {'items':[]})
+    else:
+        r = Recipe()
+        r.title = title
+        r.save()
+        
+        return HttpResponseRedirect('/admin/')
+
 def create_recipe_order(request, recipe_id):
     
     r = get_object_or_404(Recipe, pk=recipe_id)
@@ -152,5 +163,21 @@ def create_transaction(request, item_id):
         t.save()
 
         return HttpResponseRedirect(reverse('kitchen:shoppinglist_view'))
+
+def add_recipe(request):
+    if request.method == 'POST':
+        form = kitchen.forms.add_recipe(request.POST)
+        if form.is_valid():
+            return HttpResponseRedirect('/admin/')
+
+    else:
+        form = kitchen.forms.add_recipe()
+
+    return render(request, 'kitchen/add_recipe.html', {'form':form})
+
+def index(request):
+    return render(request, 'kitchen/index.html', {})
+
+
 
 
