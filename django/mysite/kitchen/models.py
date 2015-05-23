@@ -16,6 +16,13 @@ class Unit(models.Model):
     def __unicode__(self):
         return self.name
 
+class Category(models.Model):
+    name   = models.CharField(max_length=256)
+    #parent = models.ForeignKey(Category, null=True)
+
+    def __unicode__(self):
+        return self.name
+
 class Item(models.Model):
 
     CATEGORY_CHOICES = (
@@ -31,6 +38,8 @@ class Item(models.Model):
     name = models.CharField(max_length=256)
     unit = models.ForeignKey(Unit, null=True)
     category = models.CharField(max_length=128, choices=CATEGORY_CHOICES)
+    
+    category2 = models.ForeignKey(Category, null=True)
 
     def __unicode__(self):
         #return "Item:" + self.name

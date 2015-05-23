@@ -3,7 +3,7 @@ import itertools
 
 from django.core.urlresolvers import reverse
 from django.shortcuts import render
-from django.shortcuts import get_object_or_404, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, HttpResponseRedirect, HttpResponse
 import django.db.models
 import django.views.generic
 
@@ -116,20 +116,23 @@ def shoppinglist_view(request):
 
     return render(request, 'kitchen/shoppinglist.html', context)
 
+# create a new recipe
 def create_recipe(request):
     
-    r = get_object_or_404(Recipe)
+    #r = get_object_or_404(Recipe)
 
     try:
-        title = request.POST['title']
+        name = request.POST['name']
     except KeyError:
-        return render(request, 'kitchen/shoppinglist.html', {'items':[]})
+        return render(request, 'kitchen/error.html', {'message':'create recipe: KeyError'})
     else:
         r = Recipe()
-        r.title = title
+        r.name = name
         r.save()
         
-        return HttpResponseRedirect('/admin/')
+        return render(request, 'kitchen/error.html', {'message':'create recipe: Success'})
+        #return HttpResponse('/django/admin/')
+        #return HttpResponseRedirect('/django/admin/')
 
 def create_recipe_order(request, recipe_id):
     
@@ -177,6 +180,84 @@ def add_recipe(request):
 
 def index(request):
     return render(request, 'kitchen/index.html', {})
+
+def item_selector_tree(lst):
+    tree = {
+            'produce':{
+                'monocots':{
+                    'cepa':['white onion','red onion','sweet onion']
+                    },
+                'eudicots':{}
+                },
+            'meat':{}
+            }
+    
+    t = tree
+
+    for l in lst:
+        t = t[l]
+    
+    return t
+
+def item_selector(request):
+
+    selections = []
+    i = 0
+    while 1:
+        name = "selection_{}".format(i)
+        try:
+            s = request.POST[name]
+        except KeyError:
+            break
+            #return render(request, 'kitchen/error.html', {'message':'item selector: KeyError'})
+        else:
+            selections.append(s)
+            i += 1
+    
+    tree = item_selector_tree(selections)
+
+    context = {
+            'level':len(selections),
+            'selections':zip(range(len(selections)), selections)
+            }
+    
+    if isinstance(tree, list):
+        choices = tree
+        context['action'] = 'kitchen:item_selector_test'
+        temp = 'kitchen/item_selector_final_0.html'
+    else:
+        choices = tree.keys()
+        temp = 'kitchen/item_selector.html'
+
+    context['choices'] = choices
+
+    return render(request, temp, context)
+
+def item_selector_final(request):
+    
+    name = request.POST['name']
+
+    cat = Category.objects.get(name=name)
+
+    items = Item.objects.filter(category2=cat)
+
+    context = {
+            'choices': items,
+            'action': 'kitchen:item_selector_test'
+    }
+    
+    temp = 'kitchen/item_selector_final_1.html'
+
+    return render(request, temp, context)
+  
+
+def item_selector_test(request):
+    name = request.POST['name']
+
+    return HttpResponse("you selected item: {}".format(name))
+
+
+
 
 
 

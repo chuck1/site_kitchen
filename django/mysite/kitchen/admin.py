@@ -10,6 +10,8 @@ from kitchen.models import RecipeOrder
 from kitchen.models import Ingredient
 from kitchen.models import Transaction
 
+import kitchen.models
+
 admin.site.register(MeasurementType)
 admin.site.register(Unit)
 #admin.site.register(Item)
@@ -17,6 +19,7 @@ admin.site.register(Unit)
 admin.site.register(RecipeOrder)
 admin.site.register(Ingredient)
 admin.site.register(Transaction)
+admin.site.register(kitchen.models.Category)
 
 
 

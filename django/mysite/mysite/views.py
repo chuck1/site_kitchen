@@ -4,6 +4,6 @@ import django.db.models
 import django.views.generic
 
 def home(request):
-    return django.http.HttpResponse(request, "Hello")
-    #return render(request, 'mysite/home.html', {})
+    #return django.http.HttpResponse(request, "Hello")
+    return render(request, 'mysite/home.html', {})
 

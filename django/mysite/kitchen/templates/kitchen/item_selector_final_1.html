@@ -1,0 +1,10 @@
+<html>
+	{% for c in choices %}
+	<form action="{% url action %}" method="post">
+		{% csrf_token %}
+		<input type="hidden" name="name" value="{{ c }}"/>
+		<input type="submit" value="{{ c }}">
+	</form>
+	{% endfor %}
+</html>
+
