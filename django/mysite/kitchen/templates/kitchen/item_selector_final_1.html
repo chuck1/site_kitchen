@@ -2,7 +2,13 @@
 	{% for c in choices %}
 	<form action="{% url action %}" method="post">
 		{% csrf_token %}
+		<!-- pass_through -->
+		{% for p0,p1 in pass_through %}
+			<input type="hidden" name="{{ p0 }}" value="{{ p1 }}"/>
+		{% endfor %}
+		<!---->
 		<input type="hidden" name="name" value="{{ c }}"/>
+		<input type="hidden" name="item_id" value="{{ c.id }}"/>
 		<input type="submit" value="{{ c }}">
 	</form>
 	{% endfor %}

@@ -1,0 +1,14 @@
+<html>
+	<table>
+	<form action="{% url 'kitchen:ingredient_create' %}" method="post">
+		{% csrf_token %}
+		{{ form }}
+		<input type="hidden" name="recipe_id" value="{{ recipe_id }}">
+		<input type="hidden" name="item_id"   value="{{ item_id }}">
+		<tr>
+			<td><input type="submit" value="submit"></td>
+		</tr>
+	</form>
+	</table>
+</html>
+

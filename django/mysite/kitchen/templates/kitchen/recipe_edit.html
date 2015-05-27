@@ -1,0 +1,9 @@
+<html>
+<form action="{% url 'kitchen:item_selector' %}" method="post">
+	{% csrf_token %}
+	<input type="hidden" name="ud_action" value="kitchen:ingredient_add"/>
+	<input type="hidden" name="ud_recipe_id" value="{{ recipe_id }}"/>
+	<input type="submit" value="add item"/>
+</form>
+</html>
+
