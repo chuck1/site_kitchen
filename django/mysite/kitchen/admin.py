@@ -20,6 +20,7 @@ admin.site.register(RecipeOrder)
 admin.site.register(Ingredient)
 admin.site.register(Transaction)
 admin.site.register(kitchen.models.Category)
+admin.site.register(kitchen.models.CategoryRelation)
 
 
 

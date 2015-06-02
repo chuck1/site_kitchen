@@ -7,12 +7,13 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('kitchen', '0001_initial'),
+        ('kitchen', '0002_remove_item_category'),
     ]
 
     operations = [
-        migrations.RemoveField(
+        migrations.RenameField(
             model_name='item',
-            name='category2',
+            old_name='category2',
+            new_name='category',
         ),
     ]

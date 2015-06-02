@@ -17,6 +17,18 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=256)),
             ],
             options={
+                'ordering': ('name',),
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='CategoryRelation',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('child', models.ForeignKey(related_name='+', to='kitchen.Category')),
+                ('parent', models.ForeignKey(related_name='+', to='kitchen.Category')),
+            ],
+            options={
             },
             bases=(models.Model,),
         ),

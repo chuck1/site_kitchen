@@ -1,11 +1,15 @@
 {#{% extends "base.html" %}#}
 
 {% block content %}
-<h2>Publishers</h2>
-<ul>
+<h2>Items</h2>
+<table>
 {% for item in object_list %}
-<li>{{ item.name }}</li>
+	<tr>
+		<td>{{ item.name }}</td>
+		<td>{{ item.get_category }}</td>
+	</tr>
+{% empty %}
 {% endfor %}
-</ul>
+</table>
 {% endblock %}
 

@@ -16,34 +16,56 @@ class Unit(models.Model):
     def __unicode__(self):
         return self.name
 
+#class CategoryBase(models.Model):
+#    class Meta:
+#        #abstract = True
+#        pass
+
+#class CategoryRelation(models.Model):
+#    parent = models.ForeignKey(CategoryBase,related_name='+')
+#    child  = models.ForeignKey(CategoryBase,related_name='+')
+
+#class Category(CategoryBase):
 class Category(models.Model):
     name   = models.CharField(max_length=256)
     #parent = models.ForeignKey(Category, null=True)
 
+    class Meta:
+        ordering = ('name',)
+
     def __unicode__(self):
         return self.name
 
-class Item(models.Model):
+class CategoryRelation(models.Model):
+    parent = models.ForeignKey(Category,related_name='+')
+    child  = models.ForeignKey(Category,related_name='+')
 
-    CATEGORY_CHOICES = (
-            ('baking',  'baking'),
-            ('bulk',    'bulk'),
-            ('cheese',  'cheese'),
-            ('dairy',   'dairy'),
-            ('meat',    'meat'),
-            ('produce', 'produce'),
-            ('unknown', 'unknown'),
-            )
+    def __unicode__(self):
+        return self.parent.name + " --- " + self.child.name
+   
+
+class Item(models.Model):
 
     name = models.CharField(max_length=256)
     unit = models.ForeignKey(Unit, null=True)
-    category = models.CharField(max_length=128, choices=CATEGORY_CHOICES)
-    
-    category2 = models.ForeignKey(Category, null=True)
+
+    category = models.ForeignKey(Category, null=True)
 
     def __unicode__(self):
         #return "Item:" + self.name
         return self.name
+
+    def get_category(self):
+        
+        c = self.category
+
+        while True:
+            lst_cr = CategoryRelation.objects.filter(child = c)
+            
+            if not lst_cr:
+                return c
+            else:
+                c = lst_cr[0].parent
 
     class Meta:
         ordering = ('name',)

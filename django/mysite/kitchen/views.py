@@ -231,8 +231,13 @@ def item_selector(request):
             selections.append(s)
             i += 1
     
-    tree = kitchen.funcs.item_selector_tree(selections)
+    #tree = kitchen.funcs.item_selector_tree(selections)
 
+    if selections:
+        tree = kitchen.funcs.item_selector_tree2(selections[-1])
+    else:
+        tree = kitchen.funcs.item_selector_tree2(None)
+    
     context = {
             'level':len(selections),
             'selections':zip(range(len(selections)), selections),
@@ -240,12 +245,13 @@ def item_selector(request):
             'extra': pass_through,#request.POST.items(),
             }
     
-    if isinstance(tree, list):
+    #if isinstance(tree, list):
+    if not tree:
         choices = tree
         context['action'] = 'kitchen:item_selector_test'
         temp = 'kitchen/item_selector_final_0.html'
     else:
-        choices = tree.keys()
+        choices = tree
         temp = 'kitchen/item_selector.html'
 
     context['choices'] = choices
@@ -264,7 +270,7 @@ def item_selector_final(request):
 
     action = request.POST['ud_action']
 
-    cat = Category.objects.get(name=name)
+    cat = kitchen.models.Category.objects.get(name=name)
 
     items = Item.objects.filter(category2=cat)
 
@@ -291,6 +297,14 @@ def recipe_list(request):
 def recipe_edit(request, recipe_id):
     return render(request, 'kitchen/recipe_edit.html', {'recipe_id': recipe_id})
 
+def item_list(request):
+    
+    items = kitchen.funcs.item_list()
+
+    context = {'items':items}
+    
+    return render(request, 'kitchen/item_list.html', context)
+
 def ingredient_add(request):
 
     recipe_id = request.POST['ud_recipe_id']
@@ -306,6 +320,37 @@ def ingredient_add(request):
             }
 
     return render(request, 'kitchen/ingredient_add.html', context)
+
+
+
+def tree(request):
+    
+    c_lst = Category.objects.all()
+
+    cr_lst = CategoryRelation.objects.all()
+
+    c_lst_0 = []
+
+    for c in c_lst:
+        if not category_is_child(c):
+            c_lst_0.append((
+                c,
+                category_get_children(c),
+                Item.objects.filter(category=c)
+                ))
+
+    context = {'c_lst_0': c_lst_0}
+
+    return render(request, 'kitchen/tree.html', context)
+
+
+
+
+
+
+
+
+
 
 
 

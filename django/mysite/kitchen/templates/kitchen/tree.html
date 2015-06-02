@@ -1,0 +1,64 @@
+
+<head>
+	<style>
+		table, td {
+			border: solid 1px;
+		}
+		.cat {
+			background-color:#DDDDFF;
+		}
+		.item {
+			background-color:#DDFFDD;
+		}
+	</style>
+</head>
+
+<table>
+	{% for c0,l0,il0 in c_lst_0 %}
+	<tr>
+		<td>{{ c0.name }}</td>
+		<td><table>
+			{% for c1,l1,il1 in l0 %}
+			<tr>
+				<td class="cat">{{ c1.name }}</td>
+				<td><table>
+					{% for c2,l2,il2 in l1 %}
+					<tr>
+						<td class="cat">{{ c2.name }}</td>
+						<td><table>
+							{% for c3,l3,il3 in l2 %}
+							<tr>
+								<td class="cat">{{ c3.name }}</td>
+								<td><table>
+									{% for c4,l4,il4 in l3 %}
+									<tr>
+										<td class="cat">{{ c4.name }}</td>
+										<td><table>
+											{% for c5,l5 in l4 %}
+											<tr>
+												<td class="cat">{{ c5.name }}</td>
+											</tr>
+										{% endfor %}
+										</table></td>
+										{% include "kitchen/tree_items.html" with items=il4 %}
+									</tr>
+								{% endfor %}
+								</table></td>
+								{% include "kitchen/tree_items.html" with items=il3 %}
+							</tr>
+						{% endfor %}
+						</table></td>
+						{% include "kitchen/tree_items.html" with items=il2 %}
+					</tr>
+					{% endfor %}
+				</table></td>
+				{% include "kitchen/tree_items.html" with items=il1 %}
+			</tr>
+			{% endfor %}
+		</table></td>
+		{% include "kitchen/tree_items.html" with items=il0 %}
+	</tr>
+	{% endfor %}
+</table>
+
+

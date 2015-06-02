@@ -1,0 +1,16 @@
+<td>
+	<table>
+		{% for item in items %}
+		<tr>
+			<td class="item">
+				<!--<form action="/django/admin/kitchen/item/{{ item.id }}/" method="post">
+					{% csrf_token %}
+					<input type="submit" value="{{ item.name }}"></input>
+				</form>-->
+				<a href="/django/admin/kitchen/item/{{ item.id }}/">{{ item.name }}</a>
+			</td>
+		</tr>
+		{% endfor %}
+	</table>
+</td>
+
