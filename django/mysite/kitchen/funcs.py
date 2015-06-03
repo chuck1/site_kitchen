@@ -48,6 +48,14 @@ def category_top():
 
     return ret
 
+def category_top_for(c):
+    if not category_is_child(c):
+        return c
+    
+    cr_lst = kitchen.models.CategoryRelation.objects.filter(child=c)
+    
+    return category_top_for(cr_lst[0].parent)
+
 def item_selector_tree2(cat_name):
     if not cat_name:
         return category_top()
@@ -55,7 +63,7 @@ def item_selector_tree2(cat_name):
     cat = kitchen.models.Category.objects.filter(name=cat_name)
     
     return category_get_children_list(cat[0])
-    
+     
 
 def item_selector_tree(lst):
 

@@ -17,11 +17,17 @@
 		<a href="../../admin/kitchen/recipeorder/add">add recipe order</a><br>
 
 	<table>
-	<tr><th>Item</th><th>Amount</th><th>Unit</th><th>Recipes</th></tr>
+	<tr>
+		<th></th>
+		<th>Item</th>
+		<th>Amount</th>
+		<th>Unit</th>
+		<th>Recipes</th>
+	</tr>
 	{% for itm, a, u, c, recs in items %}
 	<tr>
 		<td><input type="checkbox"/></td>
-		<td>{{ itm }}</td>
+		<td><a href="../../admin/kitchen/item/{{ itm.id }}/">{{ itm }}</a></td>
 		<td>{{ a }}</td>
 		<td>{{ u }}</td>
 		<td class="{{ c }}">{{ c }}</td>

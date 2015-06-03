@@ -2,15 +2,12 @@
 	{% for c in choices %}
 	<form action="{% url 'kitchen:item_selector' %}" method="post">
 		{% csrf_token %}
-		{% for s0,s1 in selections %}
-			<input type="hidden" name="selection_{{ s0 }}" value="{{ s1 }}"/>
-		{% endfor %}
 		<!-- pass_through -->
 		{% for p0,p1 in pass_through %}
 			<input type="hidden" name="{{ p0 }}" value="{{ p1 }}"/>
 		{% endfor %}
 		<!---->
-		<input type="hidden" name="selection_{{ level }}" value="{{ c }}"/>
+		<input type="hidden" name="cat" value="{{ c }}"/>
 		<input type="submit" value="{{ c }}">
 	</form>
 	{% endfor %}

@@ -12,21 +12,27 @@ from kitchen.models import Transaction
 
 import kitchen.models
 
-admin.site.register(MeasurementType)
-admin.site.register(Unit)
+admin.site.register(kitchen.models.MeasurementType)
+admin.site.register(kitchen.models.Unit)
 #admin.site.register(Item)
 #admin.site.register(Recipe)
-admin.site.register(RecipeOrder)
-admin.site.register(Ingredient)
-admin.site.register(Transaction)
+admin.site.register(kitchen.models.RecipeOrder)
+admin.site.register(kitchen.models.Ingredient)
+admin.site.register(kitchen.models.Transaction)
 admin.site.register(kitchen.models.Category)
 admin.site.register(kitchen.models.CategoryRelation)
+#admin.site.register(kitchen.models.StoreCategory)
 
 
 
 class IngredientInline(admin.TabularInline):
-    model = Ingredient
+    model = kitchen.models.Ingredient
     extra = 1
+
+class StoreCategoryInline(admin.TabularInline):
+    model = kitchen.models.StoreCategory
+    extra = 1
+
 
 class ItemAdmin(admin.ModelAdmin):
     inlines = (IngredientInline,)
@@ -34,9 +40,13 @@ class ItemAdmin(admin.ModelAdmin):
 class RecipeAdmin(admin.ModelAdmin):
     inlines = (IngredientInline,)
 
+class StoreAdmin(admin.ModelAdmin):
+    inlines = (StoreCategoryInline,)
 
-admin.site.register(Item, ItemAdmin)
-admin.site.register(Recipe, RecipeAdmin)
+
+admin.site.register(kitchen.models.Item,   ItemAdmin)
+admin.site.register(kitchen.models.Recipe, RecipeAdmin)
+admin.site.register(kitchen.models.Store,  StoreAdmin)
 
 
 

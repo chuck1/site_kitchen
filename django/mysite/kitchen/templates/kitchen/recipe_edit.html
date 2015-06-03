@@ -1,9 +1,42 @@
 <html>
-<form action="{% url 'kitchen:item_selector' %}" method="post">
-	{% csrf_token %}
-	<input type="hidden" name="ud_action" value="kitchen:ingredient_add"/>
-	<input type="hidden" name="ud_recipe_id" value="{{ recipe_id }}"/>
-	<input type="submit" value="add item"/>
-</form>
+	<head>
+		<style>
+			table, td {
+				border: 1px solid black;
+			}
+			.left {
+				float: left;
+				width: 200px;
+			}
+			.center {
+				float: left;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="left">
+			<a href="../../">kitchen</a><br>
+			<a href="../../../admin/kitchen">kitchen admin</a>
+		</div>
+		<div class="center">
+			<h1>recipe</h1>
+			<h2>{{ recipe.name }}</h2>
+			<table>
+				{% for ing in ingredients %}
+				<tr>
+					<td><a href="../../../admin/kitchen/item/{{ing.item.id}}/">{{ ing.item.name }}</a></td>
+					<td>{{ ing.unit }}</td>
+					<td>{{ ing.amount }}</td>
+				</tr>
+				{% endfor %}
+			</table>
+			<form action="{% url 'kitchen:item_selector' %}" method="post">
+				{% csrf_token %}
+				<input type="hidden" name="ud_action" value="kitchen:ingredient_add"/>
+				<input type="hidden" name="ud_recipe_id" value="{{ recipe.id }}"/>
+				<input type="submit" value="add item"/>
+			</form>
+		</div>
+	</body>
 </html>
 

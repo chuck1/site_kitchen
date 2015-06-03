@@ -82,6 +82,8 @@ def test_in(G, item, d, ir_dict):
         
         yield rec, a, rec.can_make(-d / ing.amount_std, ir_dict)
 
+class shoppinglist_data(object):
+    def __init__(self, 
 
 def shoppinglist():
 
@@ -95,9 +97,11 @@ def shoppinglist():
         
         #in_e = G.G.in_edges(item, data=True)
 
-        recs = list(test_in(G, item, d, ir_dict))
+        recipes = list(test_in(G, item, d, ir_dict))
         
-        yield item, d / item.unit.convert, item.unit, item.category, recs
+        cat = kitchen.funcs.category_top_for(item.category)
+
+        yield item, d / item.unit.convert, item.unit, cat, recipes
 
 class ItemList(django.views.generic.ListView):
     #model = Transaction
@@ -113,9 +117,25 @@ def inventory_view(request):
     
 def shoppinglist_view(request):
 
-    context = {'items': sorted(list(shoppinglist()), key = lambda x: x[3])}
-
+    try:
+        store_id = request.POST['store_id']
+    except:
+        store_id = None
+    
+    context = {'items': sorted(list(shoppinglist(store_id)), key = lambda x: x[3].id)}
+    
     return render(request, 'kitchen/shoppinglist.html', context)
+
+def recipe_list(request):
+    recipes = Recipe.objects.all()
+    return render(request, 'kitchen/recipe_list.html', {'recipes':recipes})
+
+def recipe_edit(request, recipe_id):
+    recipe = get_object_or_404(Recipe, pk=int(recipe_id))
+    return render(request, 'kitchen/recipe_edit.html', {
+        'recipe':      recipe,
+        'ingredients': Ingredient.objects.filter(recipe=recipe),
+        })
 
 # create a new recipe
 def create_recipe(request):
@@ -131,9 +151,10 @@ def create_recipe(request):
         r.name = name
         r.save()
         
-        return render(request, 'kitchen/error.html', {'message':'create recipe: Success'})
+        #return render(request, 'kitchen/error.html', {'message':'create recipe: Success'})
+        #return recipe_edit(request, r.id)
         #return HttpResponse('/django/admin/')
-        #return HttpResponseRedirect('/django/admin/')
+        return HttpResponseRedirect("/django/kitchen/{}/recipe_edit/".format(r.id))
 
 def ingredient_create(request):
     
@@ -160,7 +181,7 @@ def ingredient_create(request):
 
         i.save()
 
-        return HttpResponseRedirect('/django/kitchen/')
+        return HttpResponseRedirect("/django/kitchen/{}/recipe_edit/".format(recipe_id))
 
 def create_recipe_order(request, recipe_id):
     
@@ -200,7 +221,6 @@ def add_recipe(request):
         form = kitchen.forms.add_recipe(request.POST)
         if form.is_valid():
             return HttpResponseRedirect('/admin/')
-
     else:
         form = kitchen.forms.add_recipe()
 
@@ -208,55 +228,6 @@ def add_recipe(request):
 
 def index(request):
     return render(request, 'kitchen/index.html', {})
-
-
-def item_selector(request):
-
-    # pass through
-    pass_through = []
-    for p in request.POST.items():
-        if p[0][0:3] == 'ud_':
-            pass_through.append(p)
-
-    selections = []
-    i = 0
-    while 1:
-        name = "selection_{}".format(i)
-        try:
-            s = request.POST[name]
-        except KeyError:
-            break
-            #return render(request, 'kitchen/error.html', {'message':'item selector: KeyError'})
-        else:
-            selections.append(s)
-            i += 1
-    
-    #tree = kitchen.funcs.item_selector_tree(selections)
-
-    if selections:
-        tree = kitchen.funcs.item_selector_tree2(selections[-1])
-    else:
-        tree = kitchen.funcs.item_selector_tree2(None)
-    
-    context = {
-            'level':len(selections),
-            'selections':zip(range(len(selections)), selections),
-            'pass_through': pass_through,#request.POST.items(),
-            'extra': pass_through,#request.POST.items(),
-            }
-    
-    #if isinstance(tree, list):
-    if not tree:
-        choices = tree
-        context['action'] = 'kitchen:item_selector_test'
-        temp = 'kitchen/item_selector_final_0.html'
-    else:
-        choices = tree
-        temp = 'kitchen/item_selector.html'
-
-    context['choices'] = choices
-
-    return render(request, temp, context)
 
 def item_selector_final(request):
  
@@ -266,13 +237,13 @@ def item_selector_final(request):
         if p[0][0:3] == 'ud_':
             pass_through.append(p)
    
-    name = request.POST['name']
+    cat_name = request.POST['cat']
 
     action = request.POST['ud_action']
 
-    cat = kitchen.models.Category.objects.get(name=name)
+    cat = kitchen.models.Category.objects.get(name=cat_name)
 
-    items = Item.objects.filter(category2=cat)
+    items = Item.objects.filter(category=cat)
 
     context = {
             'choices': items,
@@ -283,6 +254,51 @@ def item_selector_final(request):
     temp = 'kitchen/item_selector_final_1.html'
 
     return render(request, temp, context)
+
+def item_selector(request):
+
+    # pass through
+    pass_through = []
+    for p in request.POST.items():
+        if p[0][0:3] == 'ud_':
+            pass_through.append(p)
+
+    try:
+        cat = request.POST['cat']
+    except KeyError:
+        cat = None
+        #return render(request, 'kitchen/error.html', {'message':'item selector: KeyError'})
+    
+    #tree = kitchen.funcs.item_selector_tree(selections)
+
+    tree = kitchen.funcs.item_selector_tree2(cat)
+    
+    context = {
+            'cat': cat,
+            'pass_through': pass_through,#request.POST.items(),
+            'extra': pass_through,#request.POST.items(),
+            }
+    
+    #if isinstance(tree, list):
+    if not tree:
+
+        return item_selector_final(request)
+
+
+        if not cat:
+            return render(request, 'kitchen/error.html', {'message':'item selector: no category'})
+
+        choices = kitchen.funcs.category_get_items(cat)
+        context['action'] = 'kitchen:item_selector_test'
+        temp = 'kitchen/item_selector_final_0.html'
+    else:
+        choices = tree
+        temp = 'kitchen/item_selector.html'
+
+    context['choices'] = choices
+
+    return render(request, temp, context)
+
   
 
 def item_selector_test(request):
@@ -290,12 +306,6 @@ def item_selector_test(request):
 
     return HttpResponse("you selected item: {}".format(name))
 
-def recipe_list(request):
-    recipes = Recipe.objects.all()
-    return render(request, 'kitchen/recipe_list.html', {'recipes':recipes})
-
-def recipe_edit(request, recipe_id):
-    return render(request, 'kitchen/recipe_edit.html', {'recipe_id': recipe_id})
 
 def item_list(request):
     

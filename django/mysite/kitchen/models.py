@@ -132,6 +132,24 @@ class Transaction(models.Model):
         return self.amount * self.unit.convert
     amount_std = property(_get_amount_std)
 
+class Store(models.Model):
+    name = models.CharField(max_length=256)
+    categories = models.ManyToManyField(Category, through='StoreCategory')
+ 
+    def __unicode__(self):
+        return self.name
+   
+class StoreCategory(models.Model):
+    store    = models.ForeignKey(Store)
+    category = models.ForeignKey(Category)
+    order    = models.FloatField()
+    
+
+
+
+
+
+
 
 
 
