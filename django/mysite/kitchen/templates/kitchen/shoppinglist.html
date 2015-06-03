@@ -7,14 +7,32 @@
 	<link rel="stylesheet" type="text/css" href="{% static "kitchen/style.css" %}" />
 <!--	<link rel="stylesheet" type="text/css" href="/static/admin/css/base.css" />
 	<link rel="stylesheet" type="text/css" href="/static/admin/css/dashboard.css" />-->
+	<style>
+		.color0 { background-color: #ffcccc; }
+		.color1 { background-color: #ffddbb; }
+		.color2 { background-color: #ffffcc; }
+		.color3 { background-color: #ccffcc; }
+		.color4 { background-color: #C0E0FF; }
+		.color5 { background-color: #ffccff; }
+	</style>
 </head>
 
 <body class="dashboard">
 	<div id="content-main">
 	<div class="module">
 
-		<a href="../../admin/kitchen">admin</a><br>
-		<a href="../../admin/kitchen/recipeorder/add">add recipe order</a><br>
+	<a href="../../admin/kitchen">admin</a><br>
+	<a href="../../admin/kitchen/recipeorder/add">add recipe order</a><br>
+
+	<form action="{% url 'kitchen:shoppinglist_view' %}" method="post" id="select_store">
+		{% csrf_token %}
+		<input type="submit" value="select">
+	</form>
+	<select name="store_id" form="select_store">
+		{% for store in stores %}
+		<option value="{{ store.id }}">{{ store.name }}</option>
+		{% endfor %}
+	</select>
 
 	<table>
 	<tr>
@@ -22,18 +40,18 @@
 		<th>Item</th>
 		<th>Amount</th>
 		<th>Unit</th>
-		<th>Recipes</th>
+		<th>Category</th>
 	</tr>
-	{% for itm, a, u, c, recs in items %}
-	<tr>
+	{% for item in items %}
+	<tr class="{{ item.color }}">
 		<td><input type="checkbox"/></td>
-		<td><a href="../../admin/kitchen/item/{{ itm.id }}/">{{ itm }}</a></td>
-		<td>{{ a }}</td>
-		<td>{{ u }}</td>
-		<td class="{{ c }}">{{ c }}</td>
-		{% if recs %}
+		<td><a href="../../admin/kitchen/item/{{ item.item.id }}/">{{ item.item.name }}</a></td>
+		<td>{{ item.amount }}</td>
+		<td>{{ item.unit }}</td>
+		<td class="{{ c }}">{{ item.cat }}</td>
+		{% if item.recipes %}
 		<td><table>
-			{% for rec, a, can in recs %}
+			{% for rec, a, can in item.recipes %}
 			<form action="{% url 'kitchen:create_recipe_order' rec.id %}" method="post">
 				{% csrf_token %}
 				<tr>

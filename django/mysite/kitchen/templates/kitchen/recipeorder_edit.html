@@ -1,0 +1,39 @@
+
+<html>
+	<head>
+		<style>
+			table, td {
+				border: 1px solid black;
+				border-collapse: collapse;
+			}
+			td {
+				padding: 3px;
+			}
+		</style>
+	</head>
+	<body>
+		{{ recipeorder.status }}
+		<form action="{% url 'kitchen:recipeorder_edit' recipeorder.id %}" method="post" id="form">
+		{% csrf_token %}
+		<table>
+			{% for ing in ingredients %}
+			<tr>
+				<td>{{ ing.item.name }}</td>
+				<td>{{ ing.unit.name }}</td>
+				<td>{{ ing.amount }}</td>
+				<td>
+					<select name="ing_{{ ing.id }}_unit_id" form="form">
+						{% for unit in units %}
+						<option value="{{ unit.id }}" {% if unit == ing.unit %}selected{% endif %}>{{ unit.name }}</option>
+						{% endfor %}
+					</select>
+				</td>
+				<td><input type="number" name="ing_{{ ing.id }}_amount" value="{{ ing.amount }}"></td>
+			</tr>
+			{% endfor %}
+		</table>
+		<input type="submit" name="btnComplete" value="complete">
+		</form>
+	</body>
+</html>
+

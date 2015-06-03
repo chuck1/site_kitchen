@@ -105,8 +105,22 @@ class Recipe(models.Model):
         return True
 
 class RecipeOrder(models.Model):
+
+    PLANNED  = '0'
+    COMPLETE = '1'
+    CANCELED = '2'
+    STATUS_CHOICES = (
+        (PLANNED,  'planned'),
+        (COMPLETE, 'complete'),
+        (CANCELED, 'canceled'),
+        )
+                        
     recipe = models.ForeignKey(Recipe)
     amount = models.FloatField()
+    status = models.CharField(max_length=1,
+        choices=STATUS_CHOICES,
+        default=PLANNED)
+
     def __unicode__(self):
         return self.recipe.name + ": " + str(self.amount)
 
@@ -122,6 +136,17 @@ class Ingredient(models.Model):
         return self.amount * self.unit.convert
     amount_std = property(_get_amount_std)
     
+class RecipeOrderTransaction(models.Model):
+    recipeorder = models.ForeignKey(RecipeOrder)
+    ingredient  = models.ForeignKey(Ingredient)
+    unit        = models.ForeignKey(Unit)
+    amount      = models.FloatField()
+
+    def _get_amount_std(self):
+        return self.amount * self.unit.convert
+
+    amount_std = property(_get_amount_std)
+
 class Transaction(models.Model):
     item = models.ForeignKey(Item)
     unit = models.ForeignKey(Unit)
@@ -143,6 +168,9 @@ class StoreCategory(models.Model):
     store    = models.ForeignKey(Store)
     category = models.ForeignKey(Category)
     order    = models.FloatField()
+
+    class Meta:
+        ordering = ('order',)
     
 
 

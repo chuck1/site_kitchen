@@ -1,3 +1,4 @@
+import itertools
 
 import kitchen.models
 
@@ -65,61 +66,78 @@ def item_selector_tree2(cat_name):
     return category_get_children_list(cat[0])
      
 
-def item_selector_tree(lst):
+# ir (inventory - recipe order)
+# t target inventory
+# b buying threshhold
+def demand(ir, t=0, b=0):
+    return 0 if ir > b else t - ir
 
-    branch_produce = {
-                'monocots':{
-                    'cepa':   ['white onion','red onion','sweet onion'],
-                    'sativum':['garlic'],
-                    },
-                'eudicots':{
-                    'asterids':{
-                        'solanales':{
-                            'annuum':      ['green bell pepper', 'red bell pepper'],
-                            'lycopersicum':['tomato'],
-                            },
-                        'apiales':{
-                            'carota':    ['carrot'],
-                            'graveolens':['celery'],
-                            },
-                        },
-                    'rosids':{
-                        'malus':{
-                            'domestica':['apple']
-                            }
-                        }
-                    },
-                }
+def gen_transactions():
+    for trans in kitchen.models.Transaction.objects.all():
+        yield trans.item, trans.amount_std
+
+def gen_recipeorder_transactions():
+    for trans in kitchen.models.RecipeOrderTransaction.objects.all():
+        yield trans.ingredient.item, trans.amount_std
+
+def gen_ingredients():
+    for ro in kitchen.models.RecipeOrder.objects.filter(status=kitchen.models.RecipeOrder.PLANNED):
+        for ing in kitchen.models.Ingredient.objects.filter(recipe=ro.recipe):
+            yield ing.item, -ing.amount_std * ro.amount
+
+
+def inventory():
+    grouped = itertools.groupby(gen_transactions(), lambda o: o[0])
     
-    branch_meat = {
-            'cow':    {},
-            'pig':    {},
-            'chicken':{},
-            'fish':   {},
-            }
+    for item, gpr in grouped:
+        gpr_list = list(gpr)
+
+
+def recipeorder():
+    grouped = itertools.groupby(gen_ingredients(), lambda o: o[0])
     
-    branch_cheese = {
-            }
+    for item, gpr in grouped:
+        gpr_list = list(gpr)
+        yield item, sum(a for i,a in gpr_list)
 
-    branch_dairy = {
-            }
-
-    branch_bean = {
-            }
-
-    tree = {
-            'produce':branch_produce,
-            'meat':   branch_meat,
-            'cheese': branch_cheese,
-            'dairy':  branch_dairy,
-            'bean':   branch_bean,
-            'canned fruit': {},
-            }
+# generator of (item, ir) tuples from transactions and recipe orders
+def ir_list():
+    items = sorted(
+            itertools.chain(gen_ingredients(), gen_transactions()),
+            key = lambda o: o[0].id)
     
-    t = tree
-
-    for l in lst:
-        t = t[l]
+    grouped = itertools.groupby(items, lambda o: o[0])
     
-    return t
+    for item, amounts in grouped:
+        amounts_list = list(amounts)
+        amount = sum(amount for item,amount in amounts_list)
+        yield item, amount
+   
+
+def demand_list():
+    
+    for item, ir in ir_list():
+        
+        d = demand(ir)
+        
+        if d > 0:
+            yield item, ir, d
+
+def myceil(x, m):
+    d = x/m
+    r = d % 1.0
+    y = (d - r + math.ceil(r)) * m
+    print("myceil x",x,"m",m,"y",y)
+    return y
+
+def test_in(G, item, d, ir_dict):
+    for rec, itm, dic in G.G.in_edges(item, data=True):
+        ing = dic['object']
+        
+        a = -d / ing.amount_std
+        
+        a = myceil(a, rec.lcm)
+        
+        yield rec, a, rec.can_make(-d / ing.amount_std, ir_dict)
+
 

@@ -1,0 +1,17 @@
+<html>
+<body>
+<table>
+{% for ro in recipeorders %}
+<tr>
+	<td>{{ ro.recipe.name }}</td>
+	<td>
+		<form action="{% url 'kitchen:recipeorder_edit' ro.id %}" method="post">
+			{% csrf_token %}
+			<input type="submit" value="edit">
+		</form>
+	</td>
+</tr>
+{% endfor %}
+</table>
+</body>
+</html>

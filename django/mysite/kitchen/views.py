@@ -13,79 +13,9 @@ import kitchen.graph
 import kitchen.forms
 import kitchen.funcs
 
-# ir (inventory - recipe order)
-# t target inventory
-# b buying threshhold
-def demand(ir, t=0, b=0):
-    return 0 if ir > b else t - ir
 
-def gen_trans():
-    for trans in Transaction.objects.all():
-        yield trans.item, trans.amount_std
 
-def gen_ings():
-    for ro in RecipeOrder.objects.all():
-        for ing in Ingredient.objects.filter(recipe=ro.recipe):
-            yield ing.item, -ing.amount_std * ro.amount
-
-def inventory():
-    grouped = itertools.groupby(gen_trans(), lambda o: o[0])
-    
-    for item, gpr in grouped:
-        gpr_list = list(gpr)
-        yield item, sum(a for i,a in gpr_list)
-
-def recipeorder():
-    grouped = itertools.groupby(gen_ings(), lambda o: o[0])
-    
-    for item, gpr in grouped:
-        gpr_list = list(gpr)
-        yield item, sum(a for i,a in gpr_list)
-
-# generator of (item, ir) tuples from transactions and recipe orders
-def ir_list():
-    objects = sorted(
-            itertools.chain(gen_ings(), gen_trans()),
-            key = lambda o: o[0].id)
-    
-    grouped = itertools.groupby(objects, lambda o: o[0])
-    
-    for item, gpr in grouped:
-        gpr_list = list(gpr)    
-        ir = sum(a for o,a in gpr_list)
-        yield item, ir
-   
-
-def demand_list():
-    
-    for item, ir in ir_list():
-        
-        d = demand(ir)
-        
-        if d > 0:
-            yield item, ir, d
-
-def myceil(x, m):
-    d = x/m
-    r = d % 1.0
-    y = (d - r + math.ceil(r)) * m
-    print("myceil x",x,"m",m,"y",y)
-    return y
-
-def test_in(G, item, d, ir_dict):
-    for rec, itm, dic in G.G.in_edges(item, data=True):
-        ing = dic['object']
-        
-        a = -d / ing.amount_std
-        
-        a = myceil(a, rec.lcm)
-        
-        yield rec, a, rec.can_make(-d / ing.amount_std, ir_dict)
-
-class shoppinglist_data(object):
-    def __init__(self, 
-
-def shoppinglist():
+def shoppinglist(store_id = None):
 
     G = kitchen.graph.IngGraph()
     
@@ -100,8 +30,25 @@ def shoppinglist():
         recipes = list(test_in(G, item, d, ir_dict))
         
         cat = kitchen.funcs.category_top_for(item.category)
-
-        yield item, d / item.unit.convert, item.unit, cat, recipes
+        
+        try:
+            store = kitchen.models.Store.objects.get(pk=store_id)
+            storecat = kitchen.models.StoreCategory.objects.filter(store=store, category=cat)
+            try:
+                order = storecat[0].order
+            except:
+                order = 100000000
+        except:
+            order = 100000000
+        
+        #yield item, d / item.unit.convert, item.unit, cat, recipes, order
+        yield shoppinglist_data(
+                item,
+                d / item.unit.convert,
+                item.unit,
+                cat,
+                recipes,
+                order)
 
 class ItemList(django.views.generic.ListView):
     #model = Transaction
@@ -109,9 +56,9 @@ class ItemList(django.views.generic.ListView):
     def get_queryset(self):
         return Item.objects.all()
 
-def inventory_view(request):
+def inventory(request):
 
-    context = {'agg': list(inventory())}
+    context = {'items': list(kitchen.funcs.inventory())}
     
     return render(request, 'kitchen/inventory.html', context)
     
@@ -121,10 +68,29 @@ def shoppinglist_view(request):
         store_id = request.POST['store_id']
     except:
         store_id = None
+
+    items = sorted(list(shoppinglist(store_id)), key = lambda x: x.order)
     
-    context = {'items': sorted(list(shoppinglist(store_id)), key = lambda x: x[3].id)}
+    a = -1
+    c = None
+    for i in items:
+        if i.cat != c:
+            a = (a+1) % 6
+            c = i.cat
+
+        i.color = "color{}".format(a)
+
+    context = {
+            'items':  items,
+            'stores': kitchen.models.Store.objects.all(),
+            'store_id': store_id
+            }
     
     return render(request, 'kitchen/shoppinglist.html', context)
+
+def recipeorder_list(request):
+    recipeorders = kitchen.models.RecipeOrder.objects.filter(status=kitchen.models.RecipeOrder.PLANNED)
+    return render(request, 'kitchen/recipeorder_list.html', {'recipeorders':recipeorders})
 
 def recipe_list(request):
     recipes = Recipe.objects.all()
@@ -331,7 +297,14 @@ def ingredient_add(request):
 
     return render(request, 'kitchen/ingredient_add.html', context)
 
-
+def recipeorder_edit(request, recipeorder_id):
+    recipeorder = get_object_or_404(RecipeOrder, pk=recipeorder_id)
+    context = {
+            'recipeorder': recipeorder,
+            'ingredients': kitchen.models.Ingredient.objects.filter(recipe=recipeorder.recipe),
+            'units':       kitchen.models.Unit.objects.all()
+            }
+    return render(request, "kitchen/recipeorder_edit.html", context)
 
 def tree(request):
     

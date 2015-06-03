@@ -11,11 +11,11 @@ td, th {
 	padding: 2px;
 }
 
-.produce { background-color: #00ff00; }
-.cheese  { background-color: #ffff00; }
-.meat    { background-color: #ff0000; }
-.baking  { background-color: #0000ff; }
-.bulk    { background-color: #ff00ff; }
-.unknown { background-color: #888888; }
+.color0 { background-color: #008800; }
+.color1 { background-color: #00ff00; }
+.color2 { background-color: #00ff00; }
+.color3 { background-color: #00ff00; }
+.color4 { background-color: #00ff00; }
+.color5 { background-color: #00ff00; }
 
 
