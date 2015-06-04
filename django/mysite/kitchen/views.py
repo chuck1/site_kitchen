@@ -13,8 +13,6 @@ import kitchen.graph
 import kitchen.forms
 import kitchen.funcs
 
-
-
 def shoppinglist(store_id = None):
 
     G = kitchen.graph.IngGraph()
@@ -51,7 +49,6 @@ def shoppinglist(store_id = None):
                 order)
 
 class ItemList(django.views.generic.ListView):
-    #model = Transaction
     
     def get_queryset(self):
         return Item.objects.all()
@@ -105,8 +102,6 @@ def recipe_edit(request, recipe_id):
 
 # create a new recipe
 def create_recipe(request):
-    
-    #r = get_object_or_404(Recipe)
 
     try:
         name = request.POST['name']
@@ -124,8 +119,6 @@ def create_recipe(request):
 
 def ingredient_create(request):
     
-    #r = get_object_or_404(Recipe)
-
     try:
         recipe_id = request.POST['recipe_id']
         item_id   = request.POST['item_id']
@@ -269,16 +262,11 @@ def item_selector(request):
 
 def item_selector_test(request):
     name = request.POST['name']
-
     return HttpResponse("you selected item: {}".format(name))
 
-
 def item_list(request):
-    
     items = kitchen.funcs.item_list()
-
     context = {'items':items}
-    
     return render(request, 'kitchen/item_list.html', context)
 
 def ingredient_add(request):
@@ -297,12 +285,36 @@ def ingredient_add(request):
 
     return render(request, 'kitchen/ingredient_add.html', context)
 
+def parse_ing_id(s):
+    if s[0:4] == "ing_":
+        if s[5] == "_":
+            return int(s[4])
+        elif s[6] == "_":
+            return int(s[4:5])
+        else:
+            return None
+    else:
+        return None
+
 def recipeorder_edit(request, recipeorder_id):
     recipeorder = get_object_or_404(RecipeOrder, pk=recipeorder_id)
+
+    try:
+        request.POST['btnComplete']
+    except:
+        pass
+    else:
+        ings = {}
+        for k,v in request.POST.items():
+            if 
+                ings[int(k[])]
+
+
     context = {
             'recipeorder': recipeorder,
             'ingredients': kitchen.models.Ingredient.objects.filter(recipe=recipeorder.recipe),
-            'units':       kitchen.models.Unit.objects.all()
+            'units':       kitchen.models.Unit.objects.all(),
+            'ings':        ings,
             }
     return render(request, "kitchen/recipeorder_edit.html", context)
 
@@ -325,16 +337,6 @@ def tree(request):
     context = {'c_lst_0': c_lst_0}
 
     return render(request, 'kitchen/tree.html', context)
-
-
-
-
-
-
-
-
-
-
 
 
 

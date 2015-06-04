@@ -2,10 +2,7 @@
 
 import spreadsheet as ss
 
-s = ss.Sheet()
+s = ss.Service()
 
-s.set(1,1,"hi")
-
-
-print s.html("")
+s.run()
 
