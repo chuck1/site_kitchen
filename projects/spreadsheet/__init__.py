@@ -3,6 +3,24 @@ import array
 import xml.etree.ElementTree as et
 import pickle
 import re
+import numpy as np
+import md5
+import struct
+
+name_srv_w = "/tmp/python_spreadsheet_srv_w"
+name_cli_w = "/tmp/python_spreadsheet_cli_w"
+
+def cli_read():
+    with open(name_srv_w, 'rb') as f:
+        return f.read()
+
+def cli_write(s):
+    with open(name_cli_w, 'wb') as f:
+        f.write(s)
+
+
+def strhex(s):
+    return " ".join("{:02x}".format(ord(c)) for c in s)
 
 def match_int(s):
     return re.match('^\d+$', s)
@@ -17,6 +35,74 @@ def match_float(s):
         return m2
     else:
         return None
+
+class InvalidUsr(Exception):
+    pass
+class InvalidPwd(Exception):
+    pass
+
+def encrypt(p):
+    tok1 = 'abc'
+    tok2 = '123'
+    m = md5.new(tok1 + p + tok2)
+    d = m.digest()
+    print "encrypt len",len(d)
+    return d
+
+def decode_pwd_file():
+    print "decode"
+    fn = os.path.join(os.path.dirname(__file__),'data','pwd.txt')
+    with open(fn, 'rb') as f:
+        buf = f.read()
+   
+    dic = {}
+
+    while True:
+        try:
+            u,d = struct.unpack_from("16s16s", buf)
+            
+            buf = buf[32:]
+            
+            print "u",repr(u)
+            print strhex(d)
+            
+            dic[u]=d
+        except:
+            print "eof"
+            break
+    
+    return dic
+
+
+def check_pwd(u,p):
+
+    u = u.ljust(16)[0:16]
+
+    dic = decode_pwd_file()
+
+    d = encrypt(p)
+
+    if u in dic.keys():
+        if d == dic[u]:
+            pass
+        else:
+            print strhex(dic[u])
+            print strhex(d)
+            raise InvalidPwd()
+    else:
+        raise InvalidUsr()
+
+def create_usr(u,p):
+    u = u.ljust(16)[0:16]
+    d = encrypt(p)
+
+    fn = os.path.join(os.path.dirname(__file__),'data','pwd.txt')
+    
+    print "saving u",u
+    print strhex(d)
+    
+    with open(fn, 'ab') as f:
+        f.write(struct.pack("16s16s",u,d))
 
 class Cell(object):
     def __init__(self, s=None):
@@ -46,7 +132,8 @@ class Cell(object):
 
     def get_value(self, sheet):
         if self.dtype == 'formula':
-            func_cell = lambda r,c: sheet.get_cell(r,c).get_value(sheet)
+            #func_cell = lambda r,c: sheet.get_cell(r,c).get_value(sheet)
+            func_cell = lambda r,c: sheet.get_cell_value(r,c)
             _globals = {'cell':func_cell}
             return eval(self.v[1:], _globals)
         else:
@@ -60,29 +147,38 @@ class Cell(object):
 
 class Sheet(object):
     def __init__(self):
-        self.table = [[Cell()]]
-
-    def num_col(self):
-        a = 0
-        for row in self.table:
-            a = max(a,len(row))
-        return a
+        self.table = np.array([[Cell()]])
+        #self.table = np.array([[Cell()]], dtype=Cell)
 
     def add_row(self):
-        row = [Cell()]*self.num_col()
-        self.table.append(row)
+        l = np.shape(self.table)[1]
+        
+        a = [[None]*l]
+
+        for r in range(1):
+            for c in range(l):
+                a[r][c] = Cell()
+                a[r][c].set_value(None)
+
+        self.table = np.append(self.table, a, axis=0)
 
     def add_col(self):
-        for row in self.table:
-            c = Cell()
-            c.set_value(None)
-            row.append(c)
+        l = np.shape(self.table)[0]
+
+        a = np.empty((l,1), dtype=Cell)
+
+        for r in range(l):
+            for c in range(1):
+                a[r,c] = Cell()
+                a[r,c].set_value(None)
+
+        self.table = np.append(self.table, a, axis=1)
 
     def set_cell(self, r, c, v):
         while len(self.table) <= r:
             self.add_row()
         
-        while self.num_col() <= c:
+        while np.shape(self.table)[1] <= c:
             self.add_col()
 
         self.table[r][c].set_value(v)
@@ -99,7 +195,32 @@ class Sheet(object):
             return "col index error"
         
         return col
-    
+
+    def get_cells(self,r,c):
+        try:
+            return self.table[r,c]
+        except:
+            return "index error"
+
+    def get_cell_value(self, r, c):
+        if isinstance(r, int) and isinstance(c, int):
+            return self.get_cell(r,c).get_value(self)
+        else:
+            cells = self.get_cells(r,c)
+
+            f = np.vectorize(lambda c: c.get_value(self))
+            
+            #print "vectorize"
+            #print cells
+
+            try:
+                a = f(cells)
+                return a
+            except TypeError:
+                return "TypeError"
+            except ValueError:
+                return "ValueError"
+
     def html_col(self, row, r, c, func):
 
         td = 0
@@ -138,7 +259,7 @@ class Sheet(object):
             
             tr = et.Element('tr')
 
-            for c in range(self.num_col()):
+            for c in range(np.shape(self.table)[1]):
                 tr.append(self.html_col(row, r, c, func))
             
             table.append(tr)
@@ -146,12 +267,25 @@ class Sheet(object):
         return et.tostring(table)
 
 
+class Request(object):
+    def __init__(self, s, usr=None):
+        self.s = s
+        self.usr = usr
+
+    def do(self):
+        cli_write(pickle.dumps(self))
+
+        self.res = cli_read()
+
 class Service(object):
     def __init__(self):
-        self.sheet = Sheet()
+        self.sheets = {}
 
         self.fifo_name_srv_w = "/tmp/python_spreadsheet_srv_w"
         self.fifo_name_cli_w = "/tmp/python_spreadsheet_cli_w"
+
+        os.remove(self.fifo_name_srv_w)
+        os.remove(self.fifo_name_cli_w)
 
         try:
             os.mkfifo(self.fifo_name_srv_w)
@@ -180,39 +314,76 @@ class Service(object):
             #a = array.array('i')
 
             s = self.read()
+            req = pickle.loads(s)
             #a.fromstring(s)
-
-            print 's =',s
-
-            if s == 'get sheet':
-                s_out = pickle.dumps(self.sheet)
-                self.write(s_out)
-            elif s == 'add row':
-                self.sheet.add_row()
-                self.write('0')
-            elif s == 'add col':
-                self.sheet.add_col()
-                self.write('0')
-            elif s == 'set cell':
-                #cell = self.read()
-                #text = self.read()
-                #print 'cell =',cell,'text =',text
-                self.write('0')
+        
+            print 's =',req.s
+            
+            if req.usr:
+                # get or create sheet for user
+                try:
+                    sheet = self.sheets[req.usr]
+                except:
+                    sheet = Sheet()
+                    self.sheets[req.usr] = sheet
                 
-                cell = self.read()
-                self.write('0')
+            
+
+                if req.s == 'get sheet':
+                    s_out = pickle.dumps(sheet)
+                    self.write(s_out)
+
+                elif req.s == 'add row':
+                    sheet.add_row()
+                    self.write('0')
+            
+                elif req.s == 'add col':
+                    sheet.add_col()
+                    self.write('0')
+
+                elif req.s == 'set cell':
+                    #cell = self.read()
+                    #text = self.read()
+                    #print 'cell =',cell,'text =',text
                 
-                text = self.read()
-                self.write('0')
+                    cell = req.cell
+                    text = req.text
+                
+                    self.write('0')
                
-                print 'cell =',cell
-                print 'text =',text
+                    print 'cell =',cell
+                    print 'text =',text
 
-                r,c = self.parse_cell(cell)
+                    r,c = self.parse_cell(cell)
 
-                print 'r,c = ',r,c
+                    print 'r,c = ',r,c
           
-                self.sheet.set_cell(r, c, text)
+                    sheet.set_cell(r, c, text)
+                else:
+                    self.write('unknown command')
+
+            elif req.s == 'login':
+                u = req.u
+                p = req.p
+                
+                print 'usr',u
+                print 'pwd',p
+
+                try:
+                    check_pwd(u,p)
+                except InvalidUsr:
+                    print 'invalid usr'
+                    create_usr(u,p)
+                    self.write('login success')
+                except InvalidPwd:
+                    print 'invalid pwd'
+                    self.write('invalid pwd')
+                else:
+                    print 'success'
+                    self.write('login success')
+
+            else:
+                print "unknown command or forgot to set req.usr"
 
             #print a
 
