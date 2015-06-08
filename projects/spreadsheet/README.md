@@ -2,6 +2,8 @@
 
 A spreadsheet web application powered by python
 
+[instance running on my home server (will often be down)](http://67.160.178.216/cgi-bin/test.py)
+
 ## Features
 
 - cloud storage of spreadsheets
