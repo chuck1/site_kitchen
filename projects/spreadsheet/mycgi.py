@@ -120,12 +120,14 @@ def cookie_session(usr):
     expiration = datetime.datetime.now() + datetime.timedelta(minutes=30)
     cookie = Cookie.SimpleCookie()
     cookie["session"] = random.randint(0,1000000000)
-    cookie["session"]["domain"] = "127.0.0.1"
+    #cookie["session"]["domain"] = "127.0.0.1"
+    cookie["session"]["domain"] = "67.160.178.216"
     cookie["session"]["path"] = "/"
     cookie["session"]["expires"] = expiration.strftime("%a, %d-%b-%Y %H:%M:%S PST")
 
     cookie["username"] = usr
-    cookie["username"]["domain"] = "127.0.0.1"
+    #cookie["username"]["domain"] = "127.0.0.1"
+    cookie["username"]["domain"] = "67.160.178.216"
     cookie["username"]["path"] = "/"
     cookie["username"]["expires"] = expiration.strftime("%a, %d-%b-%Y %H:%M:%S PST")
 
@@ -133,11 +135,11 @@ def cookie_session(usr):
 
 ###################################################3333
 
-def gen():
+def gen(cookie_in):
 
     form = cgi.FieldStorage()
     keys = form.keys()
-    cookie_in = Cookie.SimpleCookie(os.environ.get("HTTP_COOKIE"))
+    #cookie_in = Cookie.SimpleCookie(os.environ.get("HTTP_COOKIE"))
     
     try:
         username = cookie_in["username"].value
