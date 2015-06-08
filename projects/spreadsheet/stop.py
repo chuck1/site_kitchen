@@ -5,9 +5,12 @@ import sys
 sys.path.append("/home/chuck/git/python/projects")
 
 import spreadsheet as ss
-import spreadsheet.service
 
-s = ss.service.Service()
+if __name__ == '__main__':
+    req = ss.Request('stop')
+    try:
+        req.do()
+    except:
+        pass
 
-s.run()
 
