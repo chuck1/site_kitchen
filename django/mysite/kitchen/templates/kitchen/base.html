@@ -1,0 +1,35 @@
+{% load staticfiles %}
+
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="{% static "kitchen/style.css" %}"/>
+		<style>
+			div.left {
+				float: left;
+				width: 200px;
+			}
+			div.center {
+				margin-left: 200px;
+			}
+			form {
+				margin: 0px;
+			}
+			{% block style %}
+			{% endblock %}
+		</style>
+	</head>
+	<body>
+		<div class="left">
+			<a href="{% url 'kitchen:index' %}">home</a><br>
+			<a href="{% url 'kitchen:shoppinglist' %}">shoppinglist</a><br>
+			<a href="{% url 'kitchen:recipe_list' %}">recipe list</a><br>
+			<a href="{% url 'kitchen:recipeorder_list' %}">recipeorder list</a><br>
+
+		</div>
+		<div class="center">
+			{% block content %}
+			{% endblock %}
+		</div>
+	</body>
+</html>
+

@@ -12,20 +12,30 @@ from kitchen.models import *
 import kitchen.graph
 import kitchen.forms
 import kitchen.funcs
+import kitchen.classes
 
 def shoppinglist(store_id = None):
 
     G = kitchen.graph.IngGraph()
     
-    dlist = list(demand_list())
+    dlist = list(kitchen.funcs.demand_list())
     
-    ir_dict = dict((item, ir) for item, ir in ir_list())
+    ir_dict = dict((item, ir) for item, ir in kitchen.funcs.ir_list())
     
     for item, ir, d in dlist:
         
+        # d = amount in item.unit units
+
+        amount = d / item.unit.convert
+
+        if item.price:
+            price = amount * item.price
+        else:
+            price = 0
+
         #in_e = G.G.in_edges(item, data=True)
 
-        recipes = list(test_in(G, item, d, ir_dict))
+        recipes = list(kitchen.funcs.test_in(G, item, d, ir_dict))
         
         cat = kitchen.funcs.category_top_for(item.category)
         
@@ -40,13 +50,14 @@ def shoppinglist(store_id = None):
             order = 100000000
         
         #yield item, d / item.unit.convert, item.unit, cat, recipes, order
-        yield shoppinglist_data(
+        yield kitchen.classes.shoppinglist_data(
                 item,
                 d / item.unit.convert,
                 item.unit,
                 cat,
                 recipes,
-                order)
+                order,
+                price)
 
 class ItemList(django.views.generic.ListView):
     
@@ -58,7 +69,13 @@ def inventory(request):
     context = {'items': list(kitchen.funcs.inventory())}
     
     return render(request, 'kitchen/inventory.html', context)
-    
+
+def sum(lst, f):
+    ret = 0
+    for l in lst:
+        ret += f(l)
+    return ret
+
 def shoppinglist_view(request):
 
     try:
@@ -80,7 +97,8 @@ def shoppinglist_view(request):
     context = {
             'items':  items,
             'stores': kitchen.models.Store.objects.all(),
-            'store_id': store_id
+            'store_id': store_id,
+            'price_sum': sum(items, lambda i: i.price),
             }
     
     return render(request, 'kitchen/shoppinglist.html', context)
@@ -306,8 +324,9 @@ def recipeorder_edit(request, recipeorder_id):
     else:
         ings = {}
         for k,v in request.POST.items():
-            if 
-                ings[int(k[])]
+            pass
+            #if 
+            #    ings[int(k[])]
 
 
     context = {

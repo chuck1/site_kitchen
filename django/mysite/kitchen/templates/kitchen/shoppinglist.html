@@ -1,33 +1,22 @@
-<!DOCTYPE html>
-<html lang="en-us" >
+{% extends "kitchen/base.html" %}
 
 {% load staticfiles %}
 
-<head>
-	<link rel="stylesheet" type="text/css" href="{% static "kitchen/style.css" %}" />
-<!--	<link rel="stylesheet" type="text/css" href="/static/admin/css/base.css" />
-	<link rel="stylesheet" type="text/css" href="/static/admin/css/dashboard.css" />-->
-	<style>
-		.color0 { background-color: #ffcccc; }
-		.color1 { background-color: #ffddbb; }
-		.color2 { background-color: #ffffcc; }
-		.color3 { background-color: #ccffcc; }
-		.color4 { background-color: #C0E0FF; }
-		.color5 { background-color: #ffccff; }
-	</style>
-</head>
+{% block style %}
+	.color0 { background-color: #ffcccc; }
+	.color1 { background-color: #ffddbb; }
+	.color2 { background-color: #ffffcc; }
+	.color3 { background-color: #ccffcc; }
+	.color4 { background-color: #C0E0FF; }
+	.color5 { background-color: #ffccff; }
+{% endblock %}
 
-<body class="dashboard">
-	<div id="content-main">
-	<div class="module">
-
-	<a href="../../admin/kitchen">admin</a><br>
-	<a href="../../admin/kitchen/recipeorder/add">add recipe order</a><br>
-
-	<form action="{% url 'kitchen:shoppinglist_view' %}" method="post" id="select_store">
+{% block content %}
+	<form action="{% url 'kitchen:shoppinglist' %}" method="post" id="select_store">
 		{% csrf_token %}
 		<input type="submit" value="select">
 	</form>
+
 	<select name="store_id" form="select_store">
 		{% for store in stores %}
 		<option value="{{ store.id }}">{{ store.name }}</option>
@@ -41,6 +30,7 @@
 		<th>Amount</th>
 		<th>Unit</th>
 		<th>Category</th>
+		<th>Price</th>
 	</tr>
 	{% for item in items %}
 	<tr class="{{ item.color }}">
@@ -49,6 +39,7 @@
 		<td>{{ item.amount }}</td>
 		<td>{{ item.unit }}</td>
 		<td class="{{ c }}">{{ item.cat }}</td>
+		<td>{{ item.price }}</td>
 		{% if item.recipes %}
 		<td><table>
 			{% for rec, a, can in item.recipes %}
@@ -67,11 +58,7 @@
 	</tr>
 	{% endfor %}
 	</table>
-	</div>
-	
-	
-	<!--<img src="{% static "kitchen/ing.png" %}" alt="ing.png"/>-->
-	</div>
-</body>
 
-</html>
+	{{ price_sum }}	
+	
+{% endblock %}

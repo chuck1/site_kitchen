@@ -50,6 +50,7 @@ class Item(models.Model):
     unit = models.ForeignKey(Unit, null=True)
 
     category = models.ForeignKey(Category, null=True)
+    price  = models.FloatField(null=True)
 
     def __unicode__(self):
         #return "Item:" + self.name
@@ -148,8 +149,8 @@ class RecipeOrderTransaction(models.Model):
     amount_std = property(_get_amount_std)
 
 class Transaction(models.Model):
-    item = models.ForeignKey(Item)
-    unit = models.ForeignKey(Unit)
+    item   = models.ForeignKey(Item)
+    unit   = models.ForeignKey(Unit)
     amount = models.FloatField()
     def __unicode__(self):
         return self.item.name + ":" + str(self.amount_std)
