@@ -101,6 +101,7 @@ def calendar():
 def tasklist_view(request):
 
     tasks = list(sorted(gen_tasks(), task_sorter))
+    tasks = filter(lambda t: t[0].date_ea is None, tasks)
 
     context = {'tasks': tasks, 'cal': calendar()}
 

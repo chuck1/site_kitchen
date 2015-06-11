@@ -41,6 +41,7 @@ INSTALLED_APPS = (
     'lit',
     'wiki',
     'task',
+    'climb',
 )
 
 MIDDLEWARE_CLASSES = (
