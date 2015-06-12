@@ -42,6 +42,7 @@ INSTALLED_APPS = (
     'wiki',
     'task',
     'climb',
+    'django_extensions',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -98,6 +99,12 @@ STATICFILES_DIRS = (
 
 USE_TZ = True
 TIME_ZONE = 'America/Los_Angeles'
+
+GRAPH_MODELS = {
+        'all_applications': True,
+        'group_models': True,
+}
+
 
 """
 LOGGING = {

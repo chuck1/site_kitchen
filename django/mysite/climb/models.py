@@ -10,34 +10,37 @@ class Location(models.Model):
 
 class Area(models.Model):
     name     = models.CharField(max_length=256)
+    location = models.ForeignKey(Location)
     
-    location = models.ForeignKey(Location, null=True)
     def __unicode__(self):
         return self.name
 
 class Wall(models.Model):
     name     = models.CharField(max_length=256)
+    area     = models.ForeignKey(Area)
     
-    location = models.ForeignKey(Location, null=True, blank=True)
-    area     = models.ForeignKey(Area, null=True, blank=True)
     def __unicode__(self):
         return self.name
 
 class Route(models.Model):
     name     = models.CharField(max_length=256)
-    
-    location = models.ForeignKey(Location, null=True)
-    area     = models.ForeignKey(Area, null=True)
-    wall     = models.ForeignKey(Wall, null=True)
+    wall     = models.ForeignKey(Wall)
     
     def __unicode__(self):
         return self.name
 
 class Pitch(models.Model):
     name     = models.CharField(max_length=256)
-
-    route = models.ForeignKey(Route)
+    route    = models.ForeignKey(Route)
 
     def __unicode__(self):
         return self.name
+
+class Climb(models.Model):
+    date     = models.DateField()
+    pitch    = models.ForeignKey(Pitch)
+
+
+
+
 

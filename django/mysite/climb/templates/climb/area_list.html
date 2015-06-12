@@ -1,0 +1,8 @@
+
+<table>
+	<tr><th>Location</th><th>Area</th></tr>
+	{% for a in areas %}
+	<tr><td>{{ a.location.name }}</td><td>{{ a.name }}</td></tr>
+	{% endfor %}
+</table>
+

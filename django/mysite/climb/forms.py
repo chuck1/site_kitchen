@@ -2,26 +2,55 @@ import django.forms
 
 import climb.models
 
+class route_select(django.forms.Form):
+    route = django.forms.ModelChoiceField(
+            queryset=climb.models.Route.objects.all())
+
+class pitch_widget(django.forms.Widget):
+    """
+    Base class for all <input> widgets (except type='checkbox' and
+    type='radio', which are special).
+    """
+    input_type = "text"  # Subclasses must define this.
+
+    def _format_value(self, value):
+        if self.is_localized:
+            return formats.localize_input(value)
+        return value
+
+    def render(self, name, value, attrs=None):
+        if value is None:
+            value = ''
+        final_attrs = self.build_attrs(attrs, type=self.input_type, name=name)
+        if value != '':
+            # Only add the 'value' attribute if a value is non-empty.
+            final_attrs['value'] = force_text(self._format_value(value))
+
+        form = route_select()
+
+        s0 = unicode(route_select.route)
+        s1 = django.utils.html.format_html('<input{} />', django.forms.utils.flatatt(final_attrs))
+
+        return s0
+
 class route_create(django.forms.Form):
     name   = django.forms.CharField(max_length=256)
+    wall   = django.forms.ModelChoiceField(
+            queryset=climb.models.Wall.objects.all())
+   
+class climb_create(django.forms.Form):
+    date   = django.forms.DateField()
 
-    location = django.forms.ModelChoiceField(queryset=climb.models.Location.objects.all(), required=False)
-    area     = django.forms.ModelChoiceField(queryset=climb.models.Area.objects.all(), required=False)
-    wall     = django.forms.ModelChoiceField(queryset=climb.models.Wall.objects.all(), required=False)
-    
-    def clean(self):
-        cleaned_data = super(route_create, self).clean()
-
-        location = cleaned_data.get("location")
-        area     = cleaned_data.get("area")
-        wall     = cleaned_data.get("wall")
-       
-        l = [location, area, wall]
-
-        c = list(bool(f) for f in l).count(True)
-
-        if c != 1:
-            raise django.forms.ValidationError("must choose exavtly one of either location, area, or wall {}".format(l))
+    location = django.forms.ModelChoiceField(
+            queryset=climb.models.Location.objects.all())
+    area     = django.forms.ModelChoiceField(
+            queryset=climb.models.Area.objects.all())
+    wall     = django.forms.ModelChoiceField(
+            queryset=climb.models.Wall.objects.all())
+    route    = django.forms.ModelChoiceField(
+            queryset=climb.models.Route.objects.all())
+    pitch    = django.forms.ModelChoiceField(
+            queryset=climb.models.Pitch.objects.all())
     
 
 

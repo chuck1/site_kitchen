@@ -1,0 +1,13 @@
+
+<table>
+	<tr><th>Location</th><th>Area</th><th>Wall</th><th>Route</th></tr>
+	{% for r in routes %}
+	<tr>
+		<td>{{ r.wall.area.location.name }}</td>
+		<td>{{ r.wall.area.name }}</td>
+		<td>{{ r.wall.name }}</td>
+		<td>{{ r.name }}</td>
+	</tr>
+	{% endfor %}
+</table>
+
