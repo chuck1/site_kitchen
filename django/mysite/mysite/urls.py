@@ -9,7 +9,6 @@ urlpatterns = patterns('',
     # url(r'^blog/', include('blog.urls')),
     
     url(r'^kitchen/',  include('kitchen.urls',  namespace="kitchen")),
-    url(r'^task/',  include('task.urls',  namespace="task")),
     url(r'^lit/',   include('lit.urls',   namespace="lit")),
     url(r'^wiki/',  include('wiki.urls',  namespace="wiki")),
     url(r'^climb/', include('climb.urls', namespace="climb")),
