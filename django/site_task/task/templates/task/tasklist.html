@@ -1,104 +1,97 @@
-<!DOCTYPE html>
-<html lang="en-us" >
+{% extends 'task/base.html' %}
 
-{% load staticfiles %}
+{% block style %}
+table td {
+	border: solid black 1px;
+}
+table {
+	border-collapse: collapse;
+}
+.calendar td {
+	height: 100px;
+	min-width: 100px;
+}
+td.today {
+	background-color: #bbbbff;
+}
+{% endblock %}
 
-<head>
-	<style>
-		table td {
-			border: solid black 1px;
-		}
-		table {
-			border-collapse: collapse;
-		}
-		.calendar td {
-			min-height: 100px;
-			min-width: 100px;
-		}
-	</style>
-</head>
-
-<body class="dashboard">
-	<div id="content-main">
+{% block content %}
+<div id="content-main">
 	<div class="module">
-
-	<a href="../../admin/task/task">task admin</a>
-	<a href="../../admin/task/task/add">task admin add task</a>
-
-	<table style="border:1px solid black">
-		<tr>
-			<th>Title</th>
-			<th>SP</th>
-			<th>SA</th>
-			<th>EP</th>
-			<th>EA</th>
-			<th>DP</th>
-			<th>DA</th>
-		</tr>
-		{% for task, sp, sa, ep, ea, dp, da in tasks %}
-		<tr>
-			<td>{{ task.title }}</td>
-			<td>{{ sp }}</td>
-			<td>{{ sa }}</td>
-			<td>{{ ep }}</td>
-			<td>{{ ea }}</td>
-			<td>{{ dp }}</td>
-			<td>{{ da }}</td>
-		
-			<td>
-				<form action="{% url 'task:start_now' task.id %}" method="post">
-					{% csrf_token %}
-					<input type="submit" value="START"/>
-				</form>
-			</td>
-			<td>
-				<form action="{% url 'task:end_now' task.id %}" method="post">
-					{% csrf_token %}
-					<input type="submit" value="END"/>
-				</form>
-			</td>
-		</tr>
-		{% endfor %}
-	</table>
-	</div>
-	</div>
-
-	<div class="calendar">
-		<table>
+		<table style="border:1px solid black">
 			<tr>
-				<th>Monday</th>
-				<th>Tuesday</th>
-				<th>Wednesday</th>
-				<th>Thursday</th>
-				<th>Friday</th>
-				<th>Saturday</th>
-				<th>Sunday</th>
+				<th>Title</th>
+				<th>SP</th>
+				<th>SA</th>
+				<th>EP</th>
+				<th>EA</th>
+				<th>DP</th>
+				<th>DA</th>
 			</tr>
-			{% for w in cal.weeks %}
+			{% for task, sp, sa, ep, ea, dp, da in tasks %}
 			<tr>
-				{% for d in w %}
+				<td>{{ task.title }}</td>
+				<td>{{ sp }}</td>
+				<td>{{ sa }}</td>
+				<td>{{ ep }}</td>
+				<td>{{ ea }}</td>
+				<td>{{ dp }}</td>
+				<td>{{ da }}</td>
+
 				<td>
-					{{ d.date.day }}<br>
-				
-					<table>
-						{% for t in d.tasks %}
-						<tr>
-						<td>
-						    <form action="{% url 'task:end_now' t.id %}" method="post">
-						        {% csrf_token %}
-						        <input type="submit" value="END"/>
-						    </form>
-					    	</td>
-						<td>{{ t.title }}</td>
-						</td></tr>
-						{% endfor %}
-					</table>
+					<form action="{% url 'task:start_now' task.id %}" method="post">
+						{% csrf_token %}
+						<input type="submit" value="START"/>
+					</form>
 				</td>
-				{% endfor %}
+				<td>
+					<form action="{% url 'task:end_now' task.id %}" method="post">
+						{% csrf_token %}
+						<input type="submit" value="END"/>
+					</form>
+				</td>
 			</tr>
 			{% endfor %}
 		</table>
 	</div>
-</body>
+</div>
 
-</html>
+<div class="calendar">
+	<table>
+		<tr>
+			<th>Monday</th>
+			<th>Tuesday</th>
+			<th>Wednesday</th>
+			<th>Thursday</th>
+			<th>Friday</th>
+			<th>Saturday</th>
+			<th>Sunday</th>
+		</tr>
+		{% for w in cal.weeks %}
+		<tr>
+			{% for d in w %}
+			<td class="{{ d.html_class }}">
+				{{ d.date.day }}<br>
+
+				<table>
+					{% for t in d.tasks %}
+					<tr>
+					<td>
+						<form action="{% url 'task:end_now' t.id %}" method="post">
+							{% csrf_token %}
+							<input type="submit" value="END"/>
+						</form>
+					</td>
+					<td>{{ t.title }}</td>
+					</tr>
+					{% endfor %}
+				</table>
+			</td>
+			{% endfor %}
+		</tr>
+	{% endfor %}
+</table>
+</div>
+{% endblock %}
+

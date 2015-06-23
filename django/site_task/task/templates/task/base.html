@@ -1,0 +1,34 @@
+{% load staticfiles %}
+
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="{% static "task/style.css" %}"/>
+<style>
+div.left {
+	float: left;
+	width: 200px;
+}
+div.center {
+	margin-left: 200px;
+}
+form {
+	margin: 0px;
+}
+{% block style %}
+{% endblock %}
+</style>
+</head>
+<body>
+	<div class="left">
+		<a href="{% url 'admin:index' %}">admin</a><br>
+		<a href="{% url 'task:tasklist' %}">task list</a><br>
+	</div>
+	<div class="center">
+		{% block content %}
+		{% endblock %}
+	</div>
+</body>
+</html>
+
+
+

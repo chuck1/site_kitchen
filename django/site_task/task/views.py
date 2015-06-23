@@ -80,6 +80,9 @@ class Day:
     def __init__(self, date, tasks):
         self.date = date
 
+        if self.date == datetime.date.today():
+            self.html_class = "today"
+
         self.tasks = []
         
         print "Day", self.date
@@ -116,7 +119,7 @@ def calendar(tasks):
 
     return cal
 
-def tasklist_view(request):
+def tasklist(request):
 
     tasks = qry_task_active()
 
@@ -131,7 +134,7 @@ def start_now(request, task_id):
     t.date_sa = datetime.datetime.utcnow()
     t.save()
     
-    return HttpResponseRedirect(reverse('task:tasklist_view'))
+    return HttpResponseRedirect(reverse('task:tasklist'))
 
 def end_now(request, task_id):
     
@@ -140,7 +143,7 @@ def end_now(request, task_id):
     t.date_ea = datetime.datetime.utcnow()
     t.save()
     
-    return HttpResponseRedirect(reverse('task:tasklist_view'))
+    return HttpResponseRedirect(reverse('task:tasklist'))
 
 def index(request):
     return render(request, 'task/index.html', {})
