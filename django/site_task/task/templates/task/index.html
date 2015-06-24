@@ -1,6 +1,8 @@
 
+{% load staticfiles %}
+
 <body>
 	<h1>Task Database</h1>
-	<a href="tasklist">tasklist</a>
+	<a href="{% url 'task:tasklist' %}">tasklist</a>
 </body>
 

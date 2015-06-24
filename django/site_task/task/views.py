@@ -9,6 +9,7 @@ import datetime
 import pytz
 
 import task.models
+import task.forms
 
 def task_sorter(x,y):
     if x[0].date_ea:
@@ -148,4 +149,14 @@ def end_now(request, task_id):
 def index(request):
     return render(request, 'task/index.html', {})
     
+def form_task_add(request):
+
+    form = task.forms.task_add()
+
+    return render(request, 'task/form_task_add.html', {'form':form})
+
+
+
+
+
 
