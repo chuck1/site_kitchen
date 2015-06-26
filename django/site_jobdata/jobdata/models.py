@@ -80,4 +80,15 @@ class MyUser(AbstractBaseUser):
         # Simplest possible answer: All admins are staff
         return self.is_admin
 
+class Person(models.Model):
+    user = models.OneToOneField(MyUser)
+    
+    file = models.FileField(null=True, blank=True)
+
+
+
+
+
+
+
 

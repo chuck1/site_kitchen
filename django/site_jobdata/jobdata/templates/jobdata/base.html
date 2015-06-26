@@ -1,0 +1,24 @@
+{% load staticfiles %}
+
+<html>
+<head>
+{% block head %}
+{% endblock %}
+</head>
+<body>
+	<div class="header">
+		username:{{ user.email }}
+		<form action="{% url 'jobdata:logout' %}" method="post">
+			{% csrf_token %}
+			<input type="hidden" name="redirect" value="{{ redirect }}">
+			<input type="hidden" name="redirect_url" value="{{ redirect_url }}">
+			<input type="submit" value="logout">
+		</form>
+	</div>
+	<div>
+	{% block content %}
+	{% endblock %}
+	</div>
+</body>
+</html>
+

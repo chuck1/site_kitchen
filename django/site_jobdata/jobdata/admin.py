@@ -80,4 +80,5 @@ class MyUserAdmin(UserAdmin):
     filter_horizontal = ()
 
 admin.site.register(MyUser, MyUserAdmin)
+admin.site.register(Person)
 

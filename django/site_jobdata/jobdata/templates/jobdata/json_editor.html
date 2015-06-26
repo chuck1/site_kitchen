@@ -1,0 +1,53 @@
+{% extends 'jobdata/base.html' %}
+{% load staticfiles %}
+
+{% block head %}
+	<!-- when using the mode "code", it's important to specify charset utf-8 -->
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8">	
+	<link href="/jsoneditor/dist/jsoneditor.min.css" rel="stylesheet" type="text/css">
+	<script src="/jsoneditor/dist/jsoneditor.min.js"></script>
+	<script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
+	<script src="{% static "jobdata/script.js" %}"></script>
+{% endblock %}
+
+{% block content %}
+	<div id="jsoneditor" style="width: 1200px; height: 800px;"></div>
+
+	<button id="my_button">Hello!</button>
+
+	<script>
+	// create the editor
+	var container = document.getElementById("jsoneditor");
+	var editor = new JSONEditor(container);
+	
+	// set json
+	/*
+	var json = {
+		"Array": [1, 2, 3],
+		"Boolean": true,
+		"Null": null,
+		"Number": 123,
+		"Object": {"a": "b", "c": "d"},
+		"String": "Hello World"
+	};
+	*/
+	var json = {% autoescape off %}{{ json }}{% endautoescape %};
+	editor.set(json);
+
+	// get json
+	//var json = editor.get();
+	
+	$("#my_button").click(function() {
+		var j = editor.get();
+		var s = JSON.stringify(j, null, 2);
+		var x = {json: s, csrfmiddlewaretoken: "{{ csrf_token }}"};
+		alert(s);
+		post("", x);
+	});
+
+	</script>
+
+{% endblock %}
+
+
+
