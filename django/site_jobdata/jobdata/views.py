@@ -153,6 +153,8 @@ def auth_check(request, page):
     if request.user.is_authenticated():
         return None
 
+    print "auth failed"
+
     c = {
             'form':jobdata.forms.login(),
             'redirect':"jobdata:{}".format(page),
@@ -187,25 +189,39 @@ def resume_render(request):
         form = jobdata.forms.resume_render(request.POST)
         if form.is_valid():
             version = form.cleaned_data['version']
+            order   = form.cleaned_data['order']
 
-            print "version",version
-            print "g",g
+            print "version", repr(version)
 
             # use python_resume
-            g = python_resume.Generator(version=version)
+            g = python_resume.Generator(
+                    version=version,
+                    order=order)
 
+            
+
+            print
+            print "j"
+            print j
+            print
+            
+            
             g.load_json(j)
+            g.filt(version)
 
-            html = g.render_text(name="resume",fmt="html")
+            html = g.render_text(name="resume_content",fmt="html")
         else:
             html = ""
     else:
         form = jobdata.forms.resume_render()
     
         html = ""
-
+    
+    
+    
     c = {
             'form': form,
+            'html': html,
             }
 
     return render(request, 'jobdata/resume_render.html', c)

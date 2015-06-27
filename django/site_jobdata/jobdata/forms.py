@@ -21,5 +21,6 @@ class login(forms.Form):
 
 class resume_render(forms.Form):
 	version = forms.CharField(label="version", max_length=64)
+	order   = forms.CharField(label="order"  , max_length=64)
 	
 
