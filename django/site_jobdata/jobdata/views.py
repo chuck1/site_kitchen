@@ -9,10 +9,17 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.forms.util import ErrorList
 from django.core.context_processors import csrf
 from django.contrib.auth import authenticate
+import django.utils.datastructures
+import django.core.files.base
 
 import json
 
 import jobdata.forms
+
+def clean(s):
+    s = s.replace('.','_')
+    s = s.replace('@','_')
+    return s
 
 def form_signup(request):
 
@@ -119,25 +126,27 @@ def json_editor(request):
     r = auth_check(request, 'json_editor')
     if r is not None:
         return r
-   
+
+    person = jobdata.models.Person.objects.get(user=user)
+
     try:
         j = request.POST['json']
-    except:
-        person = jobdata.models.Person.objects.get(user=user)
-        
+
+        fn = clean(user.email) + '.json'
+
+        person.file.save(fn, django.core.files.base.ContentFile(j))
+
+        msg = "write file {}".format(fn)
+
+    except django.utils.datastructures.MultiValueDictKeyError:
+
         f = person.file
-        
+
         if f:
             j = f.read()
         else:
             j = "{}"
 
-    #return json_editor_render(request, user, j)
-    c = {}
-    c.update(csrf(request))
-    print c
-
-    
     c = {
             'json':j,
             'redirect':'jobdata:json_editor',

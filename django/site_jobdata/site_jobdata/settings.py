@@ -85,7 +85,7 @@ STATIC_URL = '/site_jobdata_static/'
 
 STATIC_ROOT = '/var/www/site_jobdata_static/'
 
-MEDIA_ROOT = '/home/chuck/site_jobdata/media/'
+MEDIA_ROOT = '/home/chuck/Dropbox/site_jobdata/media/'
 
 AUTH_USER_MODEL = 'jobdata.MyUser'
 

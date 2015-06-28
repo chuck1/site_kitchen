@@ -2,6 +2,15 @@
 
 <html>
 <head>
+	<style>
+		.leftbar {
+			float: left;
+			width: 200px;
+		}
+		.main {
+			margin-left: 200px;
+		}
+	</style>
 {% block head %}
 {% endblock %}
 </head>
@@ -15,7 +24,11 @@
 			<input type="submit" value="logout">
 		</form>
 	</div>
-	<div>
+	<div class="leftbar">
+		<a href="{% url 'jobdata:json_editor' %}">json editor</a><br>
+		<a href="{% url 'jobdata:resume_render' %}">resume render</a>
+	</div>
+	<div class="main">
 	{% block content %}
 	{% endblock %}
 	</div>

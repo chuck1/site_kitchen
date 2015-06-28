@@ -1,3 +1,6 @@
+{% extends 'jobdata/base.html' %}
+
+{% block content %}
 
 <table>
 	<form action="{% url 'jobdata:resume_render' %}" method="post">
@@ -12,4 +15,6 @@
 {% autoescape off %}
 {{ html }}
 {% endautoescape %}
+
+{% endblock %}
 
