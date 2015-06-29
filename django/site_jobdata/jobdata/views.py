@@ -197,23 +197,29 @@ def resume_render(request):
     if request.method == 'POST':
         form = jobdata.forms.resume_render(request.POST)
         if form.is_valid():
-            version = form.cleaned_data['version']
-            order   = form.cleaned_data['order']
+            company  = form.cleaned_data['company']
+            position = form.cleaned_data['position']
+            version  = form.cleaned_data['version']
+            order    = form.cleaned_data['order']
 
-            print "version", repr(version)
+            print "company",  repr(company)
+            print "position", repr(position)
+            print "version",  repr(version)
+
+            if company:
+                version = version+",company"
+            else:
+                version = version+",nocompany"
 
             # use python_resume
             g = python_resume.Generator(
                     version=version,
                     order=order)
 
-            
-
-            print
-            print "j"
-            print j
-            print
-            
+            #print
+            #print "j"
+            #print j
+            #print
             
             g.load_json(j)
             g.filt(version)
