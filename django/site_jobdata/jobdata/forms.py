@@ -24,5 +24,8 @@ class resume_render(forms.Form):
 	position = forms.CharField(label="position", max_length=64, required=False)
 	version  = forms.CharField(label="version",  max_length=64)
 	order    = forms.CharField(label="order"  ,  max_length=64)
+
+class json_render(forms.Form):
+	version  = forms.CharField(label="version",  max_length=64)
 	
 

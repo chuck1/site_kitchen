@@ -242,5 +242,48 @@ def resume_render(request):
     return render(request, 'jobdata/resume_render.html', c)
 
 
+def json_render(request):
+    print "views.json_render"
+ 
+    user = request.user
+
+    # authenticate user
+    r = auth_check(request, 'json_render')
+    if r is not None:
+        return r
+
+    person = jobdata.models.Person.objects.get(user=user)
+
+    f = person.file
+    
+    if f:
+        j = f.read()
+    else:
+        j = "{}"
+
+    if request.method == 'POST':
+        form = jobdata.forms.json_render(request.POST)
+        if form.is_valid():
+            version  = form.cleaned_data['version']
+
+            g = python_resume.Generator(
+                    version=version,
+                    )
+
+            g.load_json(j)
+            g.filt(version)
+
+            j = g.info
+    else:
+        form = jobdata.forms.json_render()
+
+    c = {
+            'form':form,
+            'json':j,
+            'redirect':'jobdata:json_render',
+            'redirect_url':'jobdata/json_render.html',
+            }
+    
+    return render(request, 'jobdata/json_render.html', c)
 
 

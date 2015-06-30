@@ -12,5 +12,6 @@ urlpatterns = patterns('kitchen.views',
     url(r'json_editor/$',        views.json_editor,    name="json_editor"),
 
     url(r'resume_render/$',      views.resume_render,  name="resume_render"),
+    url(r'json_render/$',        views.json_render,    name="json_render"),
     )
 
