@@ -1,5 +1,16 @@
 {% extends 'jobdata/base.html' %}
 
+{% block style %}
+table, tr, td {
+	border: solid black 1px;
+	border-collapse: collapse;
+}
+table.json th {
+	min-width: 100px;
+	vertical-align: top;
+}
+{% endblock %}
+
 {% block content %}
 
 <table>
@@ -9,8 +20,19 @@
 		<input type="hidden" name="redirect"     value="{{ redirect }}">
 		<input type="hidden" name="redirect_url" value="{{ redirect_url }}">
 		<tr><td><input type="submit" value="render"></td></tr>
+
+		<tr>
+			<td>
+				{% autoescape off %}
+				{{ json_html }}
+				{% endautoescape %}
+			</td>
+		</tr>
+
+
 	</form>
 </table>
+
 
 {% autoescape off %}
 {{ html }}

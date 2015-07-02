@@ -4,7 +4,13 @@ from django.contrib.auth.models import (
     BaseUserManager, AbstractBaseUser
     )
 
+import django.core.files.base
+
 # Create your models here.
+
+import json
+
+import jobdata.funcs
 
 class MyUserManager(BaseUserManager):
     def create_user(self, email, date_of_birth, password=None):
@@ -84,10 +90,36 @@ class Person(models.Model):
     user = models.OneToOneField(MyUser)
     
     file = models.FileField(null=True, blank=True)
+    
+    def file_read(self):
+        f = self.file
+    
+        if f:
+            s = f.read()
+        else:
+            s = "{}"
 
+        return s
 
+    def file_read_json(self):
+        s = self.file_read()
 
+        j = json.loads(s)
 
+        return j
+
+    def file_save(self, s):
+        fn = jobdata.funcs.clean(self.user.email) + '.json'
+
+        cf = django.core.files.base.ContentFile(s)
+
+        self.file.save(fn, cf)
+
+    def file_save_json(self, j):
+
+        s = json.dumps(j)
+
+        self.file_save(s)
 
 
 

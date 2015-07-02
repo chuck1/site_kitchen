@@ -15,6 +15,8 @@ import django.core.files.base
 import json
 
 import jobdata.forms
+import jobdata.html
+import jobdata.myjson
 
 def clean(s):
     s = s.replace('.','_')
@@ -129,8 +131,12 @@ def json_editor(request):
 
     person = jobdata.models.Person.objects.get(user=user)
 
+    jobdata.myjson.json_empty_version(person)
+
     try:
         j = request.POST['json']
+
+        
 
         fn = clean(user.email) + '.json'
 
@@ -187,13 +193,12 @@ def resume_render(request):
 
     person = jobdata.models.Person.objects.get(user=user)
 
-    f = person.file
+    j = person.file_read()
     
-    if f:
-        j = f.read()
-    else:
-        j = "{}"
-
+    # generate json selector
+    json_html = jobdata.html.json_to_html(json.loads(j))
+    
+    # get form data
     if request.method == 'POST':
         form = jobdata.forms.resume_render(request.POST)
         if form.is_valid():
@@ -216,11 +221,6 @@ def resume_render(request):
                     version=version,
                     order=order)
 
-            #print
-            #print "j"
-            #print j
-            #print
-            
             g.load_json(j)
             g.filt(version)
 
@@ -233,8 +233,8 @@ def resume_render(request):
         html = ""
     
     
-    
     c = {
+            'json_html':json_html,
             'form': form,
             'html': html,
             }
