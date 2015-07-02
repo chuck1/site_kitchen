@@ -131,31 +131,20 @@ def json_editor(request):
 
     person = jobdata.models.Person.objects.get(user=user)
 
-    jobdata.myjson.json_empty_version(person)
+    person.validate_json()
 
     try:
-        j = request.POST['json']
+        j_str = request.POST['json']
 
-        
-
-        fn = clean(user.email) + '.json'
-
-        person.file.save(fn, django.core.files.base.ContentFile(j))
-
-        msg = "write file {}".format(fn)
+        person.file_save(j_str)
 
     except django.utils.datastructures.MultiValueDictKeyError:
 
-        f = person.file
-
-        if f:
-            j = f.read()
-        else:
-            j = "{}"
+        j_str = person.file_read()
 
     c = {
-            'json':j,
-            'redirect':'jobdata:json_editor',
+            'json'        :j_str,
+            'redirect'    :'jobdata:json_editor',
             'redirect_url':'jobdata/json_editor.html',
             }
     
@@ -192,7 +181,9 @@ def resume_render(request):
         return r
 
     person = jobdata.models.Person.objects.get(user=user)
-
+    
+    person.validate_json()
+    
     j = person.file_read()
     
     # generate json selector

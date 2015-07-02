@@ -11,6 +11,7 @@ import django.core.files.base
 import json
 
 import jobdata.funcs
+import jobdata.myjson
 
 class MyUserManager(BaseUserManager):
     def create_user(self, email, date_of_birth, password=None):
@@ -121,6 +122,17 @@ class Person(models.Model):
 
         self.file_save(s)
 
+    def validate_json(self):
+
+        j = self.file_read_json()
+
+        for v in jobdata.myjson.json_iter_list_of_dict(j):
+            if jobdata.myjson.json_list_of_dict_field_any(v, 'version'):
+                print "adding fields"
+                jobdata.myjson.json_dict_list_add_field_if_not_exists(v, 'version', [])
+                jobdata.myjson.json_dict_list_add_field_if_not_exists(v, '_selector', [])
+                
+        self.file_save_json(j)
 
 
 
