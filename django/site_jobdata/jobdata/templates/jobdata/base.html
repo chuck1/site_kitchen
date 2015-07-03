@@ -27,9 +27,10 @@
 		</form>
 	</div>
 	<div class="leftbar">
+		<a href="{% url 'admin:index' %}">admin</a><br>
 		<a href="{% url 'jobdata:json_editor' %}">json editor</a><br>
 		<a href="{% url 'jobdata:json_render' %}">json render</a><br>
-		<a href="{% url 'jobdata:resume_list' %}">resume list</a>
+		<a href="{% url 'jobdata:document_list' %}">document list</a>
 	</div>
 	<div class="main">
 	{% block content %}

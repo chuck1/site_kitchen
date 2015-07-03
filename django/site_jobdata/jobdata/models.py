@@ -89,9 +89,10 @@ class MyUser(AbstractBaseUser):
 
 class Person(models.Model):
     user = models.OneToOneField(MyUser)
-    
     file = models.FileField(null=True, blank=True)
-    
+   
+    def __unicode__(
+
     def file_read(self):
         f = self.file
         if f:
@@ -137,12 +138,10 @@ class Document(models.Model):
     person    = models.ForeignKey(Person)
     position  = models.ForeignKey(Position)
     template  = models.ForeignKey(DocTemplate)
-    version   = models.CharField(max_length=256)
+    options   = models.CharField(max_length=256)
     file_html = models.FileField(null=True, blank=True)
     file_pdf  = models.FileField(null=True, blank=True)
 
-class Resume(Document):
-    order    = models.CharField(max_length=256)
 
 
 

@@ -169,68 +169,6 @@ def auth_check(request, page):
 
 import python_resume
 
-def resume_render(request, resume_id):
-    print "views.resume_render", request.method
-    print python_resume
-
-    user = request.user
-    
-    # authenticate user
-    r = auth_check(request, 'resume_render')
-    if r is not None:
-        return r
-
-    person = jobdata.models.Person.objects.get(user=user)
-    
-    person.validate_json()
-    
-    j = person.file_read()
-    
-    # generate json selector
-    json_html = jobdata.html.json_to_html(json.loads(j))
-    
-    # get form data
-    if request.method == 'POST':
-        form = jobdata.forms.resume_render(request.POST)
-        if form.is_valid():
-            company  = form.cleaned_data['company']
-            position = form.cleaned_data['position']
-            version  = form.cleaned_data['version']
-            order    = form.cleaned_data['order']
-
-            print "company",  repr(company)
-            print "position", repr(position)
-            print "version",  repr(version)
-
-            if company:
-                version = version+",company"
-            else:
-                version = version+",nocompany"
-
-            # use python_resume
-            g = python_resume.Generator(
-                    version=version,
-                    order=order)
-
-            g.load_json(j)
-            g.filt(version)
-
-            html = g.render_text(name="resume_content",fmt="html")
-        else:
-            html = ""
-    else:
-        form = jobdata.forms.resume_render()
-    
-        html = ""
-    
-    
-    c = {
-            'json_html':json_html,
-            'form': form,
-            'html': html,
-            }
-
-    return render(request, 'jobdata/resume_render.html', c)
 
 
 def json_render(request):
@@ -277,4 +215,77 @@ def json_render(request):
     
     return render(request, 'jobdata/json_render.html', c)
 
+def document_render(request, document_id):
+    print "views.resume_render", request.method
+
+    user = request.user
+    
+    # authenticate user
+    r = auth_check(request, 'resume_render')
+    if r is not None:
+        return r
+
+    person = jobdata.models.Person.objects.get(user=user)
+    
+    person.validate_json()
+    
+    j = person.file_read()
+    
+    # generate json selector
+    json_html = jobdata.html.json_to_html(json.loads(j))
+    
+    # get form data
+    if request.method == 'POST':
+        form = jobdata.forms.resume_render(request.POST)
+        if form.is_valid():
+            #company  = form.cleaned_data['company']
+            position = form.cleaned_data['position']
+            #version  = form.cleaned_data['version']
+            #order    = form.cleaned_data['order']
+            options  = form.cleaned_data['options']
+
+            options_json = json.loads(options)
+
+            #print "company",  repr(company)
+            print "position", repr(position)
+            #print "version",  repr(version)
+
+            if company:
+                version = version+",company"
+            else:
+                version = version+",nocompany"
+
+            # use python_resume
+            g = python_resume.Generator(
+                    version=version,
+                    order=order)
+
+            g.load_json(j)
+            g.filt(version)
+
+            html = g.render_text(name="resume_content",fmt="html")
+        else:
+            html = ""
+    else:
+        form = jobdata.forms.resume_render()
+    
+        html = ""
+    
+    
+    c = {
+            'json_html':json_html,
+            'form': form,
+            'html': html,
+            }
+
+    return render(request, 'jobdata/resume_render.html', c)
+
+def document_list(request):
+    
+    documents = jobdata.models.Document.objects.all()
+    
+    c = {'documents':documents}
+
+    return render(request, 'jobdata/document_list.html')
+    
 

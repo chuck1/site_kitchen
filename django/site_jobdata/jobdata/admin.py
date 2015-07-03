@@ -81,4 +81,7 @@ class MyUserAdmin(UserAdmin):
 
 admin.site.register(MyUser, MyUserAdmin)
 admin.site.register(Person)
+admin.site.register(Position)
+admin.site.register(Company)
+admin.site.register(Document)
 
