@@ -169,7 +169,7 @@ def auth_check(request, page):
 
 import python_resume
 
-def resume_render(request):
+def resume_render(request, resume_id):
     print "views.resume_render", request.method
     print python_resume
 

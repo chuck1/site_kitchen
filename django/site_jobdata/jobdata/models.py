@@ -94,45 +94,56 @@ class Person(models.Model):
     
     def file_read(self):
         f = self.file
-    
         if f:
             s = f.read()
         else:
             s = "{}"
-
         return s
 
     def file_read_json(self):
         s = self.file_read()
-
         j = json.loads(s)
-
         return j
 
     def file_save(self, s):
         fn = jobdata.funcs.clean(self.user.email) + '.json'
-
         cf = django.core.files.base.ContentFile(s)
-
         self.file.save(fn, cf)
 
     def file_save_json(self, j):
-
         s = json.dumps(j)
-
         self.file_save(s)
 
     def validate_json(self):
-
         j = self.file_read_json()
-
         for v in jobdata.myjson.json_iter_list_of_dict(j):
             if jobdata.myjson.json_list_of_dict_field_any(v, 'version'):
                 print "adding fields"
                 jobdata.myjson.json_dict_list_add_field_if_not_exists(v, 'version', [])
                 jobdata.myjson.json_dict_list_add_field_if_not_exists(v, '_selector', [])
-                
         self.file_save_json(j)
+
+class Company(models.Model):
+    name = models.CharField(max_length=256)
+
+class Position(models.Model):
+    name    = models.CharField(max_length=256)
+    company = models.ForeignKey(Company)
+
+class DocTemplate(models.Model):
+    path    = models.CharField(max_length=256)
+
+class Document(models.Model):
+    person    = models.ForeignKey(Person)
+    position  = models.ForeignKey(Position)
+    template  = models.ForeignKey(DocTemplate)
+    version   = models.CharField(max_length=256)
+    file_html = models.FileField(null=True, blank=True)
+    file_pdf  = models.FileField(null=True, blank=True)
+
+class Resume(Document):
+    order    = models.CharField(max_length=256)
+
 
 
 
