@@ -1,12 +1,12 @@
 {% extends 'jobdata/base.html' %}
 
-{% block contents %}
+{% block content %}
 
 <table>
 	{% for d in documents %}
 	<tr>
 		<td>
-			<a href="{% url "jobdata:document_render" d.id %}">{{ d.name }}</a>
+			<a href="{% url "jobdata:document_render" d.id %}">{{ d.position.name }}</a>
 		</td>
 	</tr>
 	{% endfor %}

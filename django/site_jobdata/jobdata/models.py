@@ -87,33 +87,39 @@ class MyUser(AbstractBaseUser):
         # Simplest possible answer: All admins are staff
         return self.is_admin
 
+#class FileModel(models.Model):
+
 class Person(models.Model):
     user = models.OneToOneField(MyUser)
     file = models.FileField(null=True, blank=True)
-   
-    def __unicode__(
 
     def file_read(self):
         f = self.file
         if f:
             s = f.read()
+            #print "file:"
+            #print s
         else:
+            #print "file not found"
             s = "{}"
         return s
-
     def file_read_json(self):
         s = self.file_read()
         j = json.loads(s)
         return j
 
-    def file_save(self, s):
+    def file_write(self, s):
         fn = jobdata.funcs.clean(self.user.email) + '.json'
         cf = django.core.files.base.ContentFile(s)
         self.file.save(fn, cf)
 
-    def file_save_json(self, j):
+
+    def file_write_json(self, j):
         s = json.dumps(j)
-        self.file_save(s)
+        self.file_write(s)
+   
+    def __unicode__(self):
+        return self.user.email
 
     def validate_json(self):
         j = self.file_read_json()
@@ -122,27 +128,46 @@ class Person(models.Model):
                 print "adding fields"
                 jobdata.myjson.json_dict_list_add_field_if_not_exists(v, 'version', [])
                 jobdata.myjson.json_dict_list_add_field_if_not_exists(v, '_selector', [])
-        self.file_save_json(j)
+        self.file_write_json(j)
 
 class Company(models.Model):
     name = models.CharField(max_length=256)
+    def __unicode__(self):
+        return self.name
 
 class Position(models.Model):
     name    = models.CharField(max_length=256)
     company = models.ForeignKey(Company)
+    def __unicode__(self):
+        return self.name
 
 class DocTemplate(models.Model):
     path    = models.CharField(max_length=256)
+    def extension(self):
+        t,h = os.path.splitext(self.path)
+        return h
+    def __unicode__(self):
+        return self.path
 
 class Document(models.Model):
     person    = models.ForeignKey(Person)
     position  = models.ForeignKey(Position)
-    template  = models.ForeignKey(DocTemplate)
+    template  = models.ForeignKey(DocTemplate, null=True, blank=True)
+
     options   = models.CharField(max_length=256)
-    file_html = models.FileField(null=True, blank=True)
-    file_pdf  = models.FileField(null=True, blank=True)
 
+    file      = models.FileField(null=True, blank=True)
 
+    def extension(self):
+        return self.template.extension()
+
+    def file_write_str(self, s):
+        fn = jobdata.funcs.clean(self.user.email) + self.extension()
+        cf = django.core.files.base.ContentFile(s)
+        self.file.save(fn, cf)
+
+    def __unicode__(self):
+        return str(self.person) + " " + str(self.position)
 
 
 

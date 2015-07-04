@@ -19,11 +19,8 @@ class login(forms.Form):
 	username = forms.CharField(label="username", max_length=64)
 	password = forms.CharField(label="password", max_length=64)
 
-class resume_render(forms.Form):
-	company  = forms.CharField(label="company",  max_length=64, required=False)
-	position = forms.CharField(label="position", max_length=64, required=False)
-	version  = forms.CharField(label="version",  max_length=64)
-	order    = forms.CharField(label="order"  ,  max_length=64)
+class document_render(forms.Form):
+	options = forms.CharField(label="options"  ,  max_length=64)
 
 class json_render(forms.Form):
 	version  = forms.CharField(label="version",  max_length=64)

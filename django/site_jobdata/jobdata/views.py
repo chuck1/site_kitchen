@@ -216,12 +216,14 @@ def json_render(request):
     return render(request, 'jobdata/json_render.html', c)
 
 def document_render(request, document_id):
-    print "views.resume_render", request.method
-
+    print "views.document_render", request.method
+    
+    document = jobdata.models.Document.objects.get(pk=document_id)
+    
     user = request.user
     
     # authenticate user
-    r = auth_check(request, 'resume_render')
+    r = auth_check(request, 'document_render')
     if r is not None:
         return r
 
@@ -229,17 +231,17 @@ def document_render(request, document_id):
     
     person.validate_json()
     
-    j = person.file_read()
+    j = person.file_read_json()
     
     # generate json selector
-    json_html = jobdata.html.json_to_html(json.loads(j))
+    json_html = jobdata.html.json_to_html(j)
     
     # get form data
     if request.method == 'POST':
-        form = jobdata.forms.resume_render(request.POST)
+        form = jobdata.forms.document_render(request.POST)
         if form.is_valid():
             #company  = form.cleaned_data['company']
-            position = form.cleaned_data['position']
+            #position = form.cleaned_data['position']
             #version  = form.cleaned_data['version']
             #order    = form.cleaned_data['order']
             options  = form.cleaned_data['options']
@@ -247,18 +249,24 @@ def document_render(request, document_id):
             options_json = json.loads(options)
 
             #print "company",  repr(company)
-            print "position", repr(position)
+            #print "position", repr(position)
             #print "version",  repr(version)
+            print "options",  repr(options)
+            
+            if not options_json.has_key('version'):
+                options_json['version'] = []
+            if not options_json.has_key('order'):
+                options_json['order'] = ''
 
-            if company:
-                version = version+",company"
+            if document.position:
+                options_json['version'] += "company"
             else:
-                version = version+",nocompany"
+                options_json['version'] += "nocompany"
 
             # use python_resume
             g = python_resume.Generator(
-                    version=version,
-                    order=order)
+                    version=options_json['version'],
+                    order=options_json['order'])
 
             g.load_json(j)
             g.filt(version)
@@ -267,18 +275,19 @@ def document_render(request, document_id):
         else:
             html = ""
     else:
-        form = jobdata.forms.resume_render()
+        form = jobdata.forms.document_render()
     
         html = ""
     
     
     c = {
+            'document':document,
             'json_html':json_html,
             'form': form,
             'html': html,
             }
 
-    return render(request, 'jobdata/resume_render.html', c)
+    return render(request, 'jobdata/document_render.html', c)
 
 def document_list(request):
     
@@ -286,6 +295,6 @@ def document_list(request):
     
     c = {'documents':documents}
 
-    return render(request, 'jobdata/document_list.html')
+    return render(request, 'jobdata/document_list.html', c)
     
 

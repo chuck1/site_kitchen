@@ -5,6 +5,9 @@ table, tr, td {
 	border: solid black 1px;
 	border-collapse: collapse;
 }
+table.json td {
+	padding: 0px;
+}
 table.json th {
 	min-width: 100px;
 	vertical-align: top;
@@ -13,8 +16,11 @@ table.json th {
 
 {% block content %}
 
+company: {{ position.company }}<br>
+position: {{ position }}<br>
+
 <table>
-	<form action="{% url 'jobdata:resume_render' %}" method="post">
+	<form action="{% url 'jobdata:document_render' document.id %}" method="post">
 		{% csrf_token %}
 		{{ form }}
 		<input type="hidden" name="redirect"     value="{{ redirect }}">
@@ -22,6 +28,7 @@ table.json th {
 		<tr><td><input type="submit" value="render"></td></tr>
 
 		<tr>
+			<td/>
 			<td>
 				{% autoescape off %}
 				{{ json_html }}

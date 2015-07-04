@@ -84,4 +84,5 @@ admin.site.register(Person)
 admin.site.register(Position)
 admin.site.register(Company)
 admin.site.register(Document)
+admin.site.register(DocTemplate)
 
