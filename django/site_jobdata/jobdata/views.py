@@ -259,9 +259,9 @@ def document_render(request, document_id):
                 options_json['order'] = ''
 
             if document.position:
-                options_json['version'] += "company"
+                options_json['version'] += ["company"]
             else:
-                options_json['version'] += "nocompany"
+                options_json['version'] += ["nocompany"]
 
             # use python_resume
             g = python_resume.Generator(
@@ -269,7 +269,7 @@ def document_render(request, document_id):
                     order=options_json['order'])
 
             g.load_json(j)
-            g.filt(version)
+            g.filt(options_json['version'])
 
             html = g.render_text(name="resume_content",fmt="html")
         else:
@@ -281,10 +281,10 @@ def document_render(request, document_id):
     
     
     c = {
-            'document':document,
+            'document': document,
             'json_html':json_html,
-            'form': form,
-            'html': html,
+            'form':     form,
+            'html':     html,
             }
 
     return render(request, 'jobdata/document_render.html', c)

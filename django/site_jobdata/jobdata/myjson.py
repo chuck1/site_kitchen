@@ -56,7 +56,7 @@ def json_dict_list_add_field_if_not_exists(j, field, val):
             v[field] = val
 
 def json_dict_list_add_field_if_not_exists_rec(j, field, val):
-    print "json_dict_list_add_field_if_not_exists_rec"
+    #print "json_dict_list_add_field_if_not_exists_rec"
 
     if isinstance(j, dict):
         #print "dict"
@@ -72,9 +72,9 @@ def json_dict_list_add_field_if_not_exists_rec(j, field, val):
                 json_empty_version_rec(v)
 
 def json_iter_test(j, test):
-    print "json_iter_test"
+    #print "json_iter_test"
     if test(j):
-        print "yield",j
+        #print "yield",j
         yield j
     
     if isinstance(j, dict):
@@ -87,7 +87,7 @@ def json_iter_test(j, test):
                 yield x
 
 def json_iter_list_of_dict(j):
-    print "json_iter_list_of_dict"
+    #print "json_iter_list_of_dict"
     return json_iter_test(j, json_is_list_of_dict)
 
 

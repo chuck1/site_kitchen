@@ -16,8 +16,8 @@ table.json th {
 
 {% block content %}
 
-company: {{ position.company }}<br>
-position: {{ position }}<br>
+company: {{ document.position.company }}<br>
+position: {{ document.position }}<br>
 
 <table>
 	<form action="{% url 'jobdata:document_render' document.id %}" method="post">
