@@ -12,6 +12,7 @@ from django.contrib.auth import authenticate
 import django.utils.datastructures
 import django.core.files.base
 
+import re
 import json
 
 import jobdata.forms
@@ -136,7 +137,7 @@ def json_editor(request):
     try:
         j_str = request.POST['json']
 
-        person.file_save(j_str)
+        person.file_write(j_str)
 
     except django.utils.datastructures.MultiValueDictKeyError:
 
@@ -219,7 +220,6 @@ def document_render(request, document_id):
     print "views.document_render", request.method
     
     document = jobdata.models.Document.objects.get(pk=document_id)
-    
     user = request.user
     
     # authenticate user
@@ -228,66 +228,111 @@ def document_render(request, document_id):
         return r
 
     person = jobdata.models.Person.objects.get(user=user)
-    
     person.validate_json()
     
     j = person.file_read_json()
     
-    # generate json selector
-    json_html = jobdata.html.json_to_html(j)
-    
-    # get form data
+    # generate json selector in order to get paths list
+    _,paths = jobdata.html.json_to_html(j, document.id)
+
+    print "\n".join(["paths"]+list("    {}".format(p) for p in paths))
+
+    # options
     if request.method == 'POST':
-        form = jobdata.forms.document_render(request.POST)
-        if form.is_valid():
-            #company  = form.cleaned_data['company']
-            #position = form.cleaned_data['position']
-            #version  = form.cleaned_data['version']
-            #order    = form.cleaned_data['order']
-            options  = form.cleaned_data['options']
+        document.options = request.POST['options']
+        document.save()
+    
+    options_json = json.loads(document.options)
+    print "options",  repr(document.options)
 
-            options_json = json.loads(options)
+    if not options_json.has_key('version'):
+        options_json['version'] = []
 
-            #print "company",  repr(company)
-            #print "position", repr(position)
-            #print "version",  repr(version)
-            print "options",  repr(options)
-            
-            if not options_json.has_key('version'):
-                options_json['version'] = []
-            if not options_json.has_key('order'):
-                options_json['order'] = ''
+    if not options_json.has_key('order'):
+        options_json['order'] = ''
 
-            if document.position:
-                options_json['version'] += ["company"]
-            else:
-                options_json['version'] += ["nocompany"]
-
-            # use python_resume
-            g = python_resume.Generator(
-                    version=options_json['version'],
-                    order=options_json['order'])
-
-            g.load_json(j)
-            g.filt(options_json['version'])
-
-            html = g.render_text(name="resume_content",fmt="html")
-        else:
-            html = ""
+    if document.position:
+        options_json['version'] += ["company"]
     else:
-        form = jobdata.forms.document_render()
+        options_json['version'] += ["nocompany"]
+
+
+    # extract values from json_html
+    if request.method == 'POST':
+        for k,v in request.POST.items():
+            m = re.match("^selector_(.*)$", k)
+            if m:
+                #s = m.group(1).split(',')
+                s = json_path_process(m.group(1))
+
+                # remove element from paths list
+                paths.remove(s)
+
+                o = jobdata.myjson.json_path(j,s)
+                sel = o['_selector']
+                print s,sel,v
+                sel[str(document.id)] = True
+
+        # remaining path are unchecked
+        print "remaining paths"
+        for p in paths:
+            print "   ",p
+            o = jobdata.myjson.json_path(j,p)
+            sel = o['_selector']
+            sel[str(document.id)] = False
+
+        # write json
+        person.file_write_json(j)
+
+    # filter json based on version so that json_html
+    # doesnt have unessesary elements
+    python_resume.filter_json(j, options_json['version'])
+
+    # generate json selector again
+    json_html,_ = jobdata.html.json_to_html(j, document.id)
+
+    # render document
+    g = python_resume.Generator(
+            version=options_json['version'],
+            order=options_json['order'])
     
-        html = ""
-    
-    
+    if document.position:
+        g.company  = document.position.company.name
+        g.position = document.position.name
+
+    g.load_json(j)
+    g.filt(options_json['version'], document.id)
+
+    html = g.render_text(name="resume_content",fmt="html")
+
+    # response
     c = {
             'document': document,
             'json_html':json_html,
-            'form':     form,
             'html':     html,
             }
 
     return render(request, 'jobdata/document_render.html', c)
+
+def json_path_process(s):
+    l = s.split(',')
+
+    def temp(x):
+        try:
+            return int(x)
+        except:
+            return x
+
+    l = list(temp(x) for x in l)
+    return l
+
+def str_to_bool(s):
+    if s == 'on':
+        return True
+    elif s == 'off':
+        return False
+    else:
+        raise ValueError("")
 
 def document_list(request):
     

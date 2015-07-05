@@ -14,7 +14,7 @@ def has_field(j, f):
 
     return False
 
-def json_to_element_list(j,sel_id,path,paths):
+def json_to_element_list(j,path,paths):
     t = et.Element('table')
   
     cnt = 0
@@ -28,17 +28,9 @@ def json_to_element_list(j,sel_id,path,paths):
             attrib = {
                     'type':'checkbox',
                     'name':"selector_" + ",".join(list(str(x) for x in p)),
+                    'checked':'',
                     }
             
-            # if json has _selector entry, use that value, else use default of True
-            try:
-                o = v['_selector'][str(sel_id)]
-            except:
-                attrib['checked'] = ''
-            else:
-                if o:
-                    attrib['checked'] = ''
-
             # add path to paths output
             paths.append(p)
 
@@ -50,32 +42,23 @@ def json_to_element_list(j,sel_id,path,paths):
 
         if isinstance(v, dict):
             if v:
-                e,paths = json_to_element(v,sel_id, p, paths)
-                d.append(e)
+                d.append(json_to_element(v, p))
 
         elif isinstance(v, list):
             if v:
-                e,paths = json_to_element_list(v,sel_id, p, paths)
-                d.append(e)
+                d.append(json_to_element_list(v, p))
 
         else:
             d.text = str(v)
 
         cnt += 1
 
-    return t,paths
+    return t
 
-def json_to_element(j,sel_id,path,paths):
-    """
-    create an html table displaying the contents of a json dict object
-    """
+def json_to_element(j,path):
     t = et.Element('table', attrib={'class':'json'})
     
     for k,v in j.items():
-        # do not display the _selector field
-        if k == '_selector':
-            continue
-
         r = et.SubElement(t, 'tr')
         
         d = et.SubElement(r, 'th')
@@ -85,26 +68,20 @@ def json_to_element(j,sel_id,path,paths):
 
         if isinstance(v, dict):
             if v:
-                e,paths = json_to_element(
+                d.append(json_to_element(
                     v,
-                    sel_id,
-                    path + [k],
-                    paths)
-                d.append(e)
+                    path + [k]))
         elif isinstance(v, list):
             if v:
-                e,paths = json_to_element_list(
+                d.append(json_to_element_list(
                     v,
-                    sel_id,
-                    path + [k],
-                    paths)
-                d.append(e)
+                    path + [k]))
         else:
             d.text = str(v)
         
-    return t,paths
+    return t
 
-def json_to_html(j,sel_id):
-    t,paths = json_to_element(j,sel_id,[],[])
-    return et.tostring(t),paths
+def json_to_html(j):
+    t = json_to_element(j,[])
+    return et.tostring(t)
 

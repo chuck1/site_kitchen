@@ -90,6 +90,14 @@ def json_iter_list_of_dict(j):
     #print "json_iter_list_of_dict"
     return json_iter_test(j, json_is_list_of_dict)
 
+def json_path(j, path):
+    for p in path:
+        try:
+            j = j[int(p)]
+        except:
+            j = j[p]
+    return j
+
 
 
 

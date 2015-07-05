@@ -19,8 +19,6 @@ class login(forms.Form):
 	username = forms.CharField(label="username", max_length=64)
 	password = forms.CharField(label="password", max_length=64)
 
-class document_render(forms.Form):
-	options = forms.CharField(label="options"  ,  max_length=64)
 
 class json_render(forms.Form):
 	version  = forms.CharField(label="version",  max_length=64)

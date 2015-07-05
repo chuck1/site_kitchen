@@ -22,10 +22,19 @@ position: {{ document.position }}<br>
 <table>
 	<form action="{% url 'jobdata:document_render' document.id %}" method="post">
 		{% csrf_token %}
-		{{ form }}
 		<input type="hidden" name="redirect"     value="{{ redirect }}">
 		<input type="hidden" name="redirect_url" value="{{ redirect_url }}">
-		<tr><td><input type="submit" value="render"></td></tr>
+
+		<tr>
+			<th>options</th>
+			<td><textarea name="options" rows="3" cols="60">{{ document.options }}</textarea></td>
+		</tr>
+
+		<tr>
+			<td>
+				<input type="submit" value="render">
+			</td>
+		</tr>
 
 		<tr>
 			<td/>

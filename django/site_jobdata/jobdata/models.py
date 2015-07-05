@@ -154,7 +154,7 @@ class Document(models.Model):
     position  = models.ForeignKey(Position)
     template  = models.ForeignKey(DocTemplate, null=True, blank=True)
 
-    options   = models.CharField(max_length=256)
+    options   = models.TextField(max_length=256)
 
     file      = models.FileField(null=True, blank=True)
 
