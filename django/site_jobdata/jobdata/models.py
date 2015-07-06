@@ -166,6 +166,22 @@ class Document(models.Model):
     def extension(self):
         return self.template.extension()
 
+    def get_options_json(self):
+        options_json = json.loads(self.options)
+    
+        if not options_json.has_key('version'):
+            options_json['version'] = []
+    
+        if not options_json.has_key('order'):
+            options_json['order'] = ''
+    
+        if self.position:
+            options_json['version'] += ["company"]
+        else:
+            options_json['version'] += ["nocompany"]
+
+        return options_json
+
     def file_write_str(self, s):
         fn = jobdata.funcs.clean(self.user.email) + self.extension()
         cf = django.core.files.base.ContentFile(s)

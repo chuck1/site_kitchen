@@ -14,12 +14,33 @@ def has_field(j, f):
 
     return False
 
-def json_to_element_list(j,sel_id,path,paths):
+
+def json_to_element_list(j, sel_id, path, paths, filter_function):
+    """
+    warning j must be unfiltered or else list indices could be wrong
+    """
     t = et.Element('table')
   
+    paths_temp = []
+    
+    return_none = True
+    
     cnt = 0
     for v in j:
         p = path + [cnt]
+        cnt += 1
+
+        print p
+
+        # perform auxilary filter here
+        # if element is filtered out, it will not
+        # appear in the paths list and it will not
+        # be displayed in html
+        if not filter_function(v):
+            continue
+            pass
+
+        return_none = False
 
         r = et.SubElement(t, 'tr')
        
@@ -40,7 +61,7 @@ def json_to_element_list(j,sel_id,path,paths):
                     attrib['checked'] = ''
 
             # add path to paths output
-            paths.append(p)
+            paths_temp.append(p)
 
             # checkbox
             d = et.SubElement(r, 'td')
@@ -50,22 +71,25 @@ def json_to_element_list(j,sel_id,path,paths):
 
         if isinstance(v, dict):
             if v:
-                e,paths = json_to_element(v,sel_id, p, paths)
+                e,paths = json_to_element(v,sel_id, p, paths, filter_function)
                 d.append(e)
 
         elif isinstance(v, list):
             if v:
-                e,paths = json_to_element_list(v,sel_id, p, paths)
+                e,paths = json_to_element_list(v,sel_id, p, paths, filter_function)
                 d.append(e)
 
         else:
             d.text = str(v)
 
-        cnt += 1
+    paths += paths_temp
+    
+    if return_none:
+        return None,paths
+    else:
+        return t,paths
 
-    return t,paths
-
-def json_to_element(j,sel_id,path,paths):
+def json_to_element(j,sel_id,path,paths, filter_function):
     """
     create an html table displaying the contents of a json dict object
     """
@@ -89,22 +113,24 @@ def json_to_element(j,sel_id,path,paths):
                     v,
                     sel_id,
                     path + [k],
-                    paths)
-                d.append(e)
+                    paths, filter_function)
+                if e is not None:
+                    d.append(e)
         elif isinstance(v, list):
             if v:
                 e,paths = json_to_element_list(
                     v,
                     sel_id,
                     path + [k],
-                    paths)
-                d.append(e)
+                    paths, filter_function)
+                if e is not None:
+                    d.append(e)
         else:
             d.text = str(v)
         
     return t,paths
 
-def json_to_html(j,sel_id):
-    t,paths = json_to_element(j,sel_id,[],[])
+def json_to_html(j,sel_id, filter_function):
+    t,paths = json_to_element(j,sel_id,[],[], filter_function)
     return et.tostring(t),paths
 

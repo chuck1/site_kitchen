@@ -14,6 +14,7 @@ import django.core.files.base
 
 import re
 import json
+import copy
 
 import jobdata.forms
 import jobdata.html
@@ -227,34 +228,35 @@ def document_render(request, document_id):
     if r is not None:
         return r
 
-    person = jobdata.models.Person.objects.get(user=user)
-    person.validate_json()
-    
-    j = person.file_read_json()
-    
-    # generate json selector in order to get paths list
-    _,paths = jobdata.html.json_to_html(j, document.id)
-
-    print "\n".join(["paths"]+list("    {}".format(p) for p in paths))
-
     # options
     if request.method == 'POST':
         document.options = request.POST['options']
         document.save()
+
+    options_json = document.get_options_json()
+
+    # get user data
+    person = jobdata.models.Person.objects.get(user=user)
+    person.validate_json()
+    j = person.file_read_json()
     
-    options_json = json.loads(document.options)
-    print "options",  repr(document.options)
+    # generate json selector in order to get paths list
+    def json_html_filter(x):
+        if isinstance(x, dict):
+            if x.has_key('version'):
+                s0 = set(x['version'])
+                s1 = set(options_json['version'])
+                res = s0.issubset(s1)
+                print "comparing {} {} {}".format(s0,s1,res)
+                if not s0.issubset(s1):
+                    return False
+        return True
 
-    if not options_json.has_key('version'):
-        options_json['version'] = []
+    _,paths = jobdata.html.json_to_html(j, document.id, json_html_filter)
+    
+    print "\n".join(
+            ["paths"]+list("    {} {}".format(p,myjson.get_element(j,p + ['_selector'])) for p in paths))
 
-    if not options_json.has_key('order'):
-        options_json['order'] = ''
-
-    if document.position:
-        options_json['version'] += ["company"]
-    else:
-        options_json['version'] += ["nocompany"]
 
 
     # extract values from json_html
@@ -263,15 +265,15 @@ def document_render(request, document_id):
             m = re.match("^selector_(.*)$", k)
             if m:
                 #s = m.group(1).split(',')
-                s = json_path_process(m.group(1))
+                s = myjson.path_str_to_list(m.group(1))
 
                 # remove element from paths list
                 paths.remove(s)
 
-                o = myjson.get_element(j,s)
-                sel = o['_selector']
-                print s,sel,v
+                sel = myjson.get_element(j,s + ['_selector'])
+                print "   ",s,sel[str(document.id)],v
                 sel[str(document.id)] = True
+                print "   ",s,sel[str(document.id)],v
 
         # remaining path are unchecked
         print "remaining paths"
@@ -286,10 +288,24 @@ def document_render(request, document_id):
 
     # filter json based on version so that json_html
     # doesnt have unessesary elements
-    python_resume.filter_json(j, options_json['version'])
+    #python_resume.filter_json(j, options_json['version'])
+
+    # json filter out elements without selectors
+    j_selector = copy.deepcopy(j)
+
+    def temp_test(x):
+        if isinstance(x, dict):
+            #print "temp_test"
+            if x.has_key(u'_selector'):
+                #print "TRUE"
+                return True
+        return False
+   
+    myjson.filt_test(j_selector, temp_test)
 
     # generate json selector again
-    json_html,_ = jobdata.html.json_to_html(j, document.id)
+    #json_html,_ = jobdata.html.json_to_html(j_selector, document.id)
+    json_html,_ = jobdata.html.json_to_html(j, document.id, json_html_filter)
 
     # render document
     g = python_resume.Generator(
@@ -314,25 +330,41 @@ def document_render(request, document_id):
 
     return render(request, 'jobdata/document_render.html', c)
 
-def json_path_process(s):
-    l = s.split(',')
 
-    def temp(x):
-        try:
-            return int(x)
-        except:
-            return x
+def document_view(request, document_id):
+    document = jobdata.models.Document.objects.get(pk=document_id)
+    user = request.user
+    
+    # authenticate user
+    r = auth_check(request, 'document_render')
+    if r is not None:
+        return r
 
-    l = list(temp(x) for x in l)
-    return l
+    options_json = document.get_options_json()
+    
+    # get user data
+    person = jobdata.models.Person.objects.get(user=user)
+    person.validate_json()
+    j = person.file_read_json()
+    
+    # render document
+    g = python_resume.Generator(
+            version=options_json['version'],
+            order=options_json['order'])
+    
+    if document.position:
+        g.company  = document.position.company.name
+        g.position = document.position.name
 
-def str_to_bool(s):
-    if s == 'on':
-        return True
-    elif s == 'off':
-        return False
-    else:
-        raise ValueError("")
+    g.load_json(j)
+    g.filt(options_json['version'], document.id)
+
+    html = g.render_text(name="resume",fmt="html")
+
+    # response
+    c = {'html':html}
+    return render(request, 'jobdata/blank.html', c)
+    
 
 def document_list(request):
     
@@ -342,4 +374,5 @@ def document_list(request):
 
     return render(request, 'jobdata/document_list.html', c)
     
+
 

@@ -16,6 +16,7 @@ urlpatterns = patterns('kitchen.views',
     url(r'json_render/$',        views.json_render,    name="json_render"),
 
     url(r'^(?P<document_id>\d+)/document_render/$',      views.document_render,  name="document_render"),
+    url(r'^(?P<document_id>\d+)/document_view/$',        views.document_view,    name="document_view"),
  
     )
 

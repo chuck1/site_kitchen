@@ -22,6 +22,10 @@
 	var options = {
 		editable: function (node) {
 			//alert(node.path);
+			
+			// for debug purposes
+			//return true;
+
 			if (typeof node.field === "undefined") {
 				return true;
 				//alert("field undef");

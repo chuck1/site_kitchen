@@ -49,10 +49,7 @@ position: {{ document.position }}<br>
 	</form>
 </table>
 
-
-{% autoescape off %}
-{{ html }}
-{% endautoescape %}
+<iframe src="{% url "jobdata:document_view" document.id %}" width="1000" height="800"><iframe/>
 
 {% endblock %}
 
