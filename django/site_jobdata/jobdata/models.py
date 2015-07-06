@@ -11,7 +11,8 @@ import django.core.files.base
 import json
 
 import jobdata.funcs
-import jobdata.myjson
+#import jobdata.myjson
+import myjson
 
 class MyUserManager(BaseUserManager):
     def create_user(self, email, date_of_birth, password=None):
@@ -123,11 +124,15 @@ class Person(models.Model):
 
     def validate_json(self):
         j = self.file_read_json()
-        for v in jobdata.myjson.json_iter_list_of_dict(j):
-            if jobdata.myjson.json_list_of_dict_field_any(v, 'version'):
+        
+        print myjson
+
+        #for v in jobdata.myjson.json_iter_list_of_dict(j):
+        for v in myjson.iter_list_of_dict(j):
+            if myjson.list_of_dict_field_any(v, 'version'):
                 print "adding fields"
-                jobdata.myjson.json_dict_list_add_field_if_not_exists(v, 'version', [])
-                jobdata.myjson.json_dict_list_add_field_if_not_exists(v, '_selector', [])
+                myjson.list_of_dict_add_field_if_not_exists(v, 'version', [])
+                myjson.list_of_dict_add_field_if_not_exists(v, '_selector', [])
         self.file_write_json(j)
 
 class Company(models.Model):

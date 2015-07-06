@@ -17,7 +17,7 @@ import json
 
 import jobdata.forms
 import jobdata.html
-import jobdata.myjson
+import myjson
 
 def clean(s):
     s = s.replace('.','_')
@@ -268,7 +268,7 @@ def document_render(request, document_id):
                 # remove element from paths list
                 paths.remove(s)
 
-                o = jobdata.myjson.json_path(j,s)
+                o = myjson.get_element(j,s)
                 sel = o['_selector']
                 print s,sel,v
                 sel[str(document.id)] = True
@@ -277,7 +277,7 @@ def document_render(request, document_id):
         print "remaining paths"
         for p in paths:
             print "   ",p
-            o = jobdata.myjson.json_path(j,p)
+            o = myjson.get_element(j,p)
             sel = o['_selector']
             sel[str(document.id)] = False
 
