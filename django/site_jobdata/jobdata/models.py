@@ -8,11 +8,12 @@ import django.core.files.base
 
 # Create your models here.
 
+import os
 import json
 
-import jobdata.funcs
-#import jobdata.myjson
 import myjson
+
+import jobdata.funcs
 
 class MyUserManager(BaseUserManager):
     def create_user(self, email, date_of_birth, password=None):
@@ -106,7 +107,11 @@ class Person(models.Model):
         return s
     def file_read_json(self):
         s = self.file_read()
-        j = json.loads(s)
+        try:
+            j = json.loads(s)
+        except Exception as e:
+            print repr(s)
+            raise e
         return j
 
     def file_write(self, s):
@@ -125,14 +130,12 @@ class Person(models.Model):
     def validate_json(self):
         j = self.file_read_json()
         
-        print myjson
-
         #for v in jobdata.myjson.json_iter_list_of_dict(j):
         for v in myjson.iter_list_of_dict(j):
             if myjson.list_of_dict_field_any(v, 'version'):
                 print "adding fields"
                 myjson.list_of_dict_add_field_if_not_exists(v, 'version', [])
-                myjson.list_of_dict_add_field_if_not_exists(v, '_selector', [])
+                myjson.list_of_dict_add_field_if_not_exists(v, '_selector', {})
         self.file_write_json(j)
 
 class Company(models.Model):
@@ -156,8 +159,8 @@ class DocTemplate(models.Model):
 
 class Document(models.Model):
     person    = models.ForeignKey(Person)
-    position  = models.ForeignKey(Position)
-    template  = models.ForeignKey(DocTemplate, null=True, blank=True)
+    position  = models.ForeignKey(Position, null=True, blank=True)
+    template  = models.ForeignKey(DocTemplate)
 
     options   = models.TextField(max_length=256)
 
@@ -182,8 +185,34 @@ class Document(models.Model):
 
         return options_json
 
+    def filename(self):
+        un = jobdata.funcs.clean(self.person.user.email)
+
+        company_clean = jobdata.funcs.clean(self.position.company.name)
+        position_clean = jobdata.funcs.clean(self.position.name)
+        
+        if self.position:
+            #fn = os.path.join(
+            fn = "___".join([
+                    'documents',
+                    un,
+                    company_clean,
+                    position_clean,
+                    self.template.path
+                    ])
+        else:
+            #fn = os.path.join(
+            fn = "___".join([
+                    'documents',
+                    un,
+                    'no_company',
+                    self.template.path
+                    ])
+
+        return fn
+
     def file_write_str(self, s):
-        fn = jobdata.funcs.clean(self.user.email) + self.extension()
+        fn = self.filename()
         cf = django.core.files.base.ContentFile(s)
         self.file.save(fn, cf)
 

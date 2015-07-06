@@ -24,7 +24,7 @@
 			//alert(node.path);
 			
 			// for debug purposes
-			//return true;
+			return true;
 
 			if (typeof node.field === "undefined") {
 				return true;
@@ -49,7 +49,7 @@
 		var j = editor.get();
 		var s = JSON.stringify(j, null, 2);
 		var x = {json: s, csrfmiddlewaretoken: "{{ csrf_token }}"};
-		alert(s);
+		//alert(s);
 		post("", x);
 	});
 

@@ -2,7 +2,7 @@
 function post(path, params, method) {
 	method = method || "post"; // Set method to post by default if not specified.
 
-	alert(method);
+	//alert(method);
 
 	// The rest of this code assumes you are not using a library.
 	// It can be made less wordy if you use one.

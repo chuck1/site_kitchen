@@ -133,16 +133,16 @@ def json_editor(request):
 
     person = jobdata.models.Person.objects.get(user=user)
 
-    person.validate_json()
-
     try:
         j_str = request.POST['json']
-
         person.file_write(j_str)
-
     except django.utils.datastructures.MultiValueDictKeyError:
+        #j_str = person.file_read()
+        pass
 
-        j_str = person.file_read()
+    person.validate_json()
+
+    j_str = person.file_read()
 
     c = {
             'json'        :j_str,
@@ -271,9 +271,10 @@ def document_render(request, document_id):
                 paths.remove(s)
 
                 sel = myjson.get_element(j,s + ['_selector'])
-                print "   ",s,sel[str(document.id)],v
+
+                #print "   ",s,sel[str(document.id)],v
                 sel[str(document.id)] = True
-                print "   ",s,sel[str(document.id)],v
+                #print "   ",s,sel[str(document.id)],v
 
         # remaining path are unchecked
         print "remaining paths"
@@ -319,13 +320,18 @@ def document_render(request, document_id):
     g.load_json(j)
     g.filt(options_json['version'], document.id)
 
-    html = g.render_text(name="resume_content",fmt="html")
+
+    # save to file
+    html = g.render_text(name="resume",fmt="html")
+
+    print "write to", repr(document.filename())
+    
+    document.file_write_str(html)
 
     # response
     c = {
             'document': document,
             'json_html':json_html,
-            'html':     html,
             }
 
     return render(request, 'jobdata/document_render.html', c)
@@ -360,7 +366,8 @@ def document_view(request, document_id):
     g.filt(options_json['version'], document.id)
 
     html = g.render_text(name="resume",fmt="html")
-
+    
+    
     # response
     c = {'html':html}
     return render(request, 'jobdata/blank.html', c)
