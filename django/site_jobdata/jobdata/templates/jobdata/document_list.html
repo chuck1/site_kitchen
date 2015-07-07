@@ -6,7 +6,14 @@
 	{% for d in documents %}
 	<tr>
 		<td>
-			<a href="{% url "jobdata:document_render" d.id %}">{{ d.position.name }}</a>
+			<a href="{% url "jobdata:document_render" d.id %}">
+				{% if d.position %}
+				{{ d.position.name }}
+				{% else %}
+				no company
+				{% endif %}
+				{{ d.template.path }}
+			</a>
 		</td>
 	</tr>
 	{% endfor %}

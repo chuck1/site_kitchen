@@ -3,13 +3,14 @@ from django.db import models
 from django.contrib.auth.models import (
     BaseUserManager, AbstractBaseUser
     )
-
+from django.conf import settings
 import django.core.files.base
 
 # Create your models here.
 
 import os
 import json
+import subprocess
 
 import myjson
 
@@ -188,10 +189,10 @@ class Document(models.Model):
     def filename(self):
         un = jobdata.funcs.clean(self.person.user.email)
 
-        company_clean = jobdata.funcs.clean(self.position.company.name)
-        position_clean = jobdata.funcs.clean(self.position.name)
         
         if self.position:
+            company_clean = jobdata.funcs.clean(self.position.company.name)
+            position_clean = jobdata.funcs.clean(self.position.name)
             #fn = os.path.join(
             fn = "___".join([
                     'documents',
@@ -215,6 +216,21 @@ class Document(models.Model):
         fn = self.filename()
         cf = django.core.files.base.ContentFile(s)
         self.file.save(fn, cf)
+        
+        # make pdf
+        h,t = os.path.splitext(fn)
+        if t == '.html':
+
+            cmd = [
+                    'wkhtmltopdf',
+                    '-q',
+                    os.path.join(settings.MEDIA_ROOT, h + '.html'),
+                    os.path.join(settings.MEDIA_ROOT, h + '.pdf'),
+                    ]
+
+            p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+
+            output = p.communicate()
 
     def __unicode__(self):
         return str(self.person) + " " + str(self.position)
