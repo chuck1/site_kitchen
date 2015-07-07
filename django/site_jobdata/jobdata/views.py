@@ -12,6 +12,7 @@ from django.contrib.auth import authenticate
 import django.utils.datastructures
 import django.core.files.base
 
+import os
 import re
 import json
 import copy
@@ -320,9 +321,10 @@ def document_render(request, document_id):
     g.load_json(j)
     g.filt(options_json['version'], document.id)
 
+    h,t = os.path.splitext(document.template.path)
 
     # save to file
-    html = g.render_text(name="resume",fmt="html")
+    html = g.render_text(name = h, fmt = t)
 
     print "write to", repr(document.filename())
     
@@ -365,7 +367,8 @@ def document_view(request, document_id):
     g.load_json(j)
     g.filt(options_json['version'], document.id)
 
-    html = g.render_text(name="resume",fmt="html")
+    h,t = os.path.splitext(document.template.path)
+    html = g.render_text(name=h,fmt=t)
     
     
     # response

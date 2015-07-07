@@ -148,7 +148,7 @@ class Position(models.Model):
     name    = models.CharField(max_length=256)
     company = models.ForeignKey(Company)
     def __unicode__(self):
-        return self.name
+        return self.company.name+" --- "+self.name
 
 class DocTemplate(models.Model):
     path    = models.CharField(max_length=256)
@@ -233,7 +233,11 @@ class Document(models.Model):
             output = p.communicate()
 
     def __unicode__(self):
-        return str(self.person) + " " + str(self.position)
+        return "{0:_>40}{1:_>40}{2:_>40}".format(
+                str(self.person),
+                str(self.template.path),
+                str(self.position)
+                )
 
 
 
