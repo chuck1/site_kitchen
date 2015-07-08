@@ -134,21 +134,11 @@ class Person(models.Model):
         #for v in jobdata.myjson.json_iter_list_of_dict(j):
         for v in myjson.iter_list_of_dict(j):
             if myjson.list_of_dict_field_any(v, 'version'):
-                print "adding fields"
+                #print "adding fields"
                 myjson.list_of_dict_add_field_if_not_exists(v, 'version', [])
                 myjson.list_of_dict_add_field_if_not_exists(v, '_selector', {})
         self.file_write_json(j)
 
-class Company(models.Model):
-    name = models.CharField(max_length=256)
-    def __unicode__(self):
-        return self.name
-
-class Position(models.Model):
-    name    = models.CharField(max_length=256)
-    company = models.ForeignKey(Company)
-    def __unicode__(self):
-        return self.company.name+" --- "+self.name
 
 class DocTemplate(models.Model):
     path    = models.CharField(max_length=256)
@@ -158,14 +148,18 @@ class DocTemplate(models.Model):
     def __unicode__(self):
         return self.path
 
+def upload_to_func(self,_):
+    print "upload_to_func"
+    return self.filename()
+
 class Document(models.Model):
     person    = models.ForeignKey(Person)
-    position  = models.ForeignKey(Position, null=True, blank=True)
+    position  = models.ForeignKey('Position', null=True, blank=True)
     template  = models.ForeignKey(DocTemplate)
 
     options   = models.TextField(max_length=256)
 
-    file      = models.FileField(null=True, blank=True)
+    file      = models.FileField(null=True, blank=True, upload_to=upload_to_func)
 
     def extension(self):
         return self.template.extension()
@@ -188,13 +182,18 @@ class Document(models.Model):
 
     def filename(self):
         un = jobdata.funcs.clean(self.person.user.email)
-
         
         if self.position:
             company_clean = jobdata.funcs.clean(self.position.company.name)
             position_clean = jobdata.funcs.clean(self.position.name)
-            #fn = os.path.join(
-            fn = "___".join([
+            fn = os.path.join(
+                    'documents',
+                    un,
+                    company_clean,
+                    position_clean,
+                    self.template.path
+                    )
+            fn1 = "___".join([
                     'documents',
                     un,
                     company_clean,
@@ -202,8 +201,13 @@ class Document(models.Model):
                     self.template.path
                     ])
         else:
-            #fn = os.path.join(
-            fn = "___".join([
+            fn = os.path.join(
+                    'documents',
+                    un,
+                    'no_company',
+                    self.template.path
+                    )
+            fn1 = "___".join([
                     'documents',
                     un,
                     'no_company',
@@ -214,8 +218,19 @@ class Document(models.Model):
 
     def file_write_str(self, s):
         fn = self.filename()
+
+        h,t = os.path.split(fn)
+
+        ab = os.path.join(settings.MEDIA_ROOT, h)
+        try:
+            os.makedirs(ab)
+        except:
+            pass
+
         cf = django.core.files.base.ContentFile(s)
-        self.file.save(fn, cf)
+
+        self.file.save(t, cf)
+        #self.file.save(fn, cf)
         
         # make pdf
         h,t = os.path.splitext(fn)
@@ -240,4 +255,28 @@ class Document(models.Model):
                 )
 
 
+class Position(models.Model):
+    name    = models.CharField(max_length=256)
+    company = models.ForeignKey('Company')
+    def __unicode__(self):
+        return "{} --- {} --- {}".format(
+                self.id,
+                self.company.name,
+                self.name)
+
+    def _documents(self):
+        return Document.objects.filter(position=self)
+
+    documents = property(_documents)
+    
+
+class Company(models.Model):
+    name = models.CharField(max_length=256)
+    def __unicode__(self):
+        return self.name
+
+    def _positions(self):
+        return Position.objects.filter(company=self)
+
+    positions = property(_positions)
 

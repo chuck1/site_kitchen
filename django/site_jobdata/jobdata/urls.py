@@ -17,6 +17,9 @@ urlpatterns = patterns('kitchen.views',
 
     url(r'^(?P<document_id>\d+)/document_render/$',      views.document_render,  name="document_render"),
     url(r'^(?P<document_id>\d+)/document_view/$',        views.document_view,    name="document_view"),
+
+    url(r'^(?P<company_id>\d+)/company_view/$',          views.company,          name="company_view"),
+    url(r'^(?P<position_id>\d+)/position/$',             views.position,         name="position"),
  
     )
 

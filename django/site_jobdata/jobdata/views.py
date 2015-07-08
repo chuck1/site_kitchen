@@ -54,7 +54,7 @@ def form_signup(request):
     return render(request, 'jobdata/form_signup.html', {'form':form})
 
 def form_login(request):
-    print "views.form_login"
+    #print "views.form_login"
 
     redirect = request.POST['redirect']
     redirect_url = request.POST['redirect_url']
@@ -90,7 +90,7 @@ def form_login(request):
     return render(request, 'jobdata/form_login.html', c)
 
 def my_render(request, redirect, redirect_url, user):
-    print "views.my_render", redirect
+    #print "views.my_render", redirect
 
     if redirect == 'jobdata:json_editor':
         return json_editor(request)
@@ -248,15 +248,15 @@ def document_render(request, document_id):
                 s0 = set(x['version'])
                 s1 = set(options_json['version'])
                 res = s0.issubset(s1)
-                print "comparing {} {} {}".format(s0,s1,res)
+                #print "comparing {} {} {}".format(s0,s1,res)
                 if not s0.issubset(s1):
                     return False
         return True
 
     _,paths = jobdata.html.json_to_html(j, document.id, json_html_filter)
     
-    print "\n".join(
-            ["paths"]+list("    {} {}".format(p,myjson.get_element(j,p + ['_selector'])) for p in paths))
+    #print "\n".join(
+    #        ["paths"]+list("    {} {}".format(p,myjson.get_element(j,p + ['_selector'])) for p in paths))
 
 
 
@@ -278,9 +278,9 @@ def document_render(request, document_id):
                 #print "   ",s,sel[str(document.id)],v
 
         # remaining path are unchecked
-        print "remaining paths"
+        #print "remaining paths"
         for p in paths:
-            print "   ",p
+            #print "   ",p
             o = myjson.get_element(j,p)
             sel = o['_selector']
             sel[str(document.id)] = False
@@ -326,7 +326,7 @@ def document_render(request, document_id):
     # save to file
     html = g.render_text(name = h, fmt = t)
 
-    print "write to", repr(document.filename())
+    #print "write to", repr(document.filename())
     
     document.file_write_str(html)
 
@@ -337,7 +337,6 @@ def document_render(request, document_id):
             }
 
     return render(request, 'jobdata/document_render.html', c)
-
 
 def document_view(request, document_id):
     document = jobdata.models.Document.objects.get(pk=document_id)
@@ -370,7 +369,6 @@ def document_view(request, document_id):
     h,t = os.path.splitext(document.template.path)
     html = g.render_text(name=h,fmt=t)
     
-    
     # response
     c = {'html':html}
     return render(request, 'jobdata/blank.html', c)
@@ -380,9 +378,25 @@ def document_list(request):
     
     documents = jobdata.models.Document.objects.all()
     
-    c = {'documents':documents}
+    def srt(x):
+        if x.position:
+            return x.position.company
+        return x.template.path
 
+    documents = sorted(documents, key=srt)
+    
+    c = {'documents':documents}
+    
     return render(request, 'jobdata/document_list.html', c)
     
+def company(request, company_id):
+    company = jobdata.models.Company.objects.get(pk=company_id)
+    c = {'company':company}
+    return render(request, 'jobdata/company.html', c)
+
+def position(request, position_id):
+    position = jobdata.models.Position.objects.get(pk=position_id)
+    c = {'position':position}
+    return render(request, 'jobdata/position.html', c)
 
 

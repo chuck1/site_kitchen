@@ -30,7 +30,7 @@ def json_to_element_list(j, sel_id, path, paths, filter_function):
         p = path + [cnt]
         cnt += 1
 
-        print p
+        #print p
 
         # perform auxilary filter here
         # if element is filtered out, it will not
