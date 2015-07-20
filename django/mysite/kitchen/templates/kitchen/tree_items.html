@@ -7,7 +7,7 @@
 					{% csrf_token %}
 					<input type="submit" value="{{ item.name }}"></input>
 				</form>-->
-				<a href="/django/admin/kitchen/item/{{ item.id }}/">{{ item.name }}</a>
+				<a href="/site2/admin/kitchen/item/{{ item.id }}/">{{ item.name }}</a>
 			</td>
 		</tr>
 		{% endfor %}

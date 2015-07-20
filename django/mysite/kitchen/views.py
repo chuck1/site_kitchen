@@ -133,7 +133,7 @@ def create_recipe(request):
         #return render(request, 'kitchen/error.html', {'message':'create recipe: Success'})
         #return recipe_edit(request, r.id)
         #return HttpResponse('/django/admin/')
-        return HttpResponseRedirect("/django/kitchen/{}/recipe_edit/".format(r.id))
+        return HttpResponseRedirect("/site2/kitchen/{}/recipe_edit/".format(r.id))
 
 def ingredient_create(request):
     
@@ -158,7 +158,7 @@ def ingredient_create(request):
 
         i.save()
 
-        return HttpResponseRedirect("/django/kitchen/{}/recipe_edit/".format(recipe_id))
+        return HttpResponseRedirect("/site2/kitchen/{}/recipe_edit/".format(recipe_id))
 
 def create_recipe_order(request, recipe_id):
     
@@ -346,10 +346,10 @@ def tree(request):
     c_lst_0 = []
 
     for c in c_lst:
-        if not category_is_child(c):
+        if not kitchen.funcs.category_is_child(c):
             c_lst_0.append((
                 c,
-                category_get_children(c),
+                kitchen.funcs.category_get_children(c),
                 Item.objects.filter(category=c)
                 ))
 

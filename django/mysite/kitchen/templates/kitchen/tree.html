@@ -34,9 +34,25 @@
 									<tr>
 										<td class="cat">{{ c4.name }}</td>
 										<td><table>
-											{% for c5,l5 in l4 %}
+											{% for c5,l5,il5 in l4 %}
 											<tr>
 												<td class="cat">{{ c5.name }}</td>
+												<td><table>
+													{% for c6,l6,il6 in l5 %}
+													<tr>
+														<td class="cat">{{ c6.name }}</td>
+														<td><table>
+															{% for c7,l7,il7 in l6 %}
+															<tr>
+																<td class="cat">{{ c7.name }}</td>
+															</tr>
+														{% endfor %}
+														</table></td>
+														{% include "kitchen/tree_items.html" with items=il6 %}
+													</tr>
+												{% endfor %}
+												</table></td>
+												{% include "kitchen/tree_items.html" with items=il5 %}
 											</tr>
 										{% endfor %}
 										</table></td>
