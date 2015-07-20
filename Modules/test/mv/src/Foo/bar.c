@@ -1,3 +1,0 @@
-
-#include <Foo/bar.h>
-

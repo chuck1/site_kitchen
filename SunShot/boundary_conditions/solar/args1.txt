@@ -1,8 +1,0 @@
-data.csv
--s 1e-3
--f 1e6
---prof p1.prof
--x 0.0
--y 0.0
--z 0.0
- 
