@@ -38,9 +38,6 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'mysite',
     'kitchen',
-    'lit',
-    'wiki',
-    'climb',
     'django_extensions',
 )
 
@@ -88,7 +85,7 @@ USE_TZ = True
 #STATIC_URL = '/django/static/'
 STATIC_URL = '/static/'
 
-STATIC_ROOT = '/var/www/mysite/static/'
+STATIC_ROOT = '/var/www/site_kitchen/static/'
 #STATIC_ROOT = 'static/'
 
 STATICFILES_DIRS = (
