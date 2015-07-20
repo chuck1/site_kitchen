@@ -357,5 +357,11 @@ def tree(request):
 
     return render(request, 'kitchen/tree.html', context)
 
+def store_edit(request, store_id):
+    store = Store.objects.get(pk=store_id)
+    c = {
+            'categories':StoreCategory.objects.filter(store=store)
+            }
+    return render(request, 'kitchen/store_edit.html', c)
 
 

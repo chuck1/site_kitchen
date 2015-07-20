@@ -21,5 +21,6 @@ urlpatterns = patterns('kitchen.views',
     url(r'^(?P<recipe_id>\d+)/create_recipe_order/$',   views.create_recipe_order, name='create_recipe_order'),
     url(r'^(?P<recipe_id>\d+)/recipe_edit/$',           views.recipe_edit,         name='recipe_edit'),
     url(r'^(?P<recipeorder_id>\d+)/recipeorder_edit/$', views.recipeorder_edit,    name='recipeorder_edit'),
+    url(r'^(?P<store_id>\d+)/store_edit/$',             views.store_edit,          name='store_edit'),
     )
 

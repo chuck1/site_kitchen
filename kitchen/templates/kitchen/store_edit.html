@@ -1,0 +1,81 @@
+{% extends 'kitchen/base.html' %}
+
+{% load staticfiles %}
+
+{% block head %}
+<script src="{% static 'kitchen/Sortable/Sortable.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+
+<ul id="sort_list">
+	{% for c in categories %}
+	<li class="drag_handle">
+		{{ c.category.name }} {{ c.order }}
+		<input id="order" type="hidden" name="{{ c.id }}_order" value="{{ c.order }}"></input>
+	</li>
+	{% endfor %}
+</ul>
+
+{% endblock %}
+
+{% block foot %}
+<script>
+	var container = document.getElementById("sort_list");
+	var sort = Sortable.create(container, {
+		animation: 150, // ms, animation speed moving items when sorting, `0` — without animation
+		handle: ".drag_handle", // Restricts sort start click/touch to the specified element
+		onUpdate: function (evt/**Event*/){
+			var item = evt.item; // the current dragged HTMLElement
+			var i = item.querySelector("#order");
+
+			var c = item.closest("li");
+
+			var p = $(c).prev();
+			var n = $(c).next();
+
+			var p_str = "none";
+			var n_str = "none";
+
+			var p_order = 0;
+			//if (!jQuery.isEmptyObject(p)) {
+			if (p[0] != undefined) {
+				p_str = p[0].innerHTML;
+				p_order = parseFloat(p[0].querySelector("#order").value);
+				//p_str = "not none";
+				//p_str = jQuery.type(p);
+				//p_str = p[0];
+			} else {
+				alert("top of list");
+			}
+
+			var n_order = 0;
+			if (n[0] != undefined) {
+				n_str = n[0].innerHTML;
+				n_order = parseFloat(n[0].querySelector("#order").value);
+			} else {
+				alert("bottom of list");
+			}
+
+			var order = 100;
+			if ((p[0] == undefined) && (n[0] == undefined)) {
+				order = 100;
+			} else if(p[0] == undefined) {
+				order = n_order - 10;
+			} else if(n[0] == undefined) {
+				order = p_order + 10;
+			} else {
+				order = (p_order + n_order) / 2;
+			}
+			
+			i.value = order;
+
+			alert("new order = " + order);
+			//alert(p_str + c.innerHTML + n_str);
+			//alert(p[0].innerHTML + c.innerHTML + n[0].innerHTML);
+		}
+	});
+</script>
+{% endblock %}
+
+

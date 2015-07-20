@@ -3,6 +3,7 @@
 <html>
 	<head>
 		<link rel="stylesheet" type="text/css" href="{% static "kitchen/style.css" %}"/>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 		<style>
 			div.left {
 				float: left;
@@ -17,6 +18,8 @@
 			{% block style %}
 			{% endblock %}
 		</style>
+		{% block head %}
+		{% endblock %}
 	</head>
 	<body>
 		<div class="left">
@@ -35,6 +38,8 @@
 			{% block content %}
 			{% endblock %}
 		</div>
+	{% block foot %}
+	{% endblock %}
 	</body>
 </html>
 
