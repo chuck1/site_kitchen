@@ -20,11 +20,12 @@
 	</head>
 	<body>
 		<div class="left">
-			<a href="{% url 'admin:index' %}">admin</a><br>
-			<a href="{% url 'kitchen:index' %}">home</a><br>
+			<a href="{% url 'admin:index'  %}">admin</a><br>
+			<a href="{% url 'kitchen:home' %}">home</a><br>
 			<h3>Tools</h3>
 			<a href="{% url 'kitchen:shoppinglist' %}">shoppinglist</a><br>
 			<h3>Recipes</h3>
+			<a href="{% url 'kitchen:recipe_add'  %}">add</a><br>
 			<a href="{% url 'kitchen:recipe_list' %}">list</a><br>
 			<h3>Recipe Orders</h3>
 			<a href="{% url 'kitchen:recipeorder_list' %}">list</a><br>

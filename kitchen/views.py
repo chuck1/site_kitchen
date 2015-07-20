@@ -193,7 +193,7 @@ def create_transaction(request, item_id):
 
         return HttpResponseRedirect(reverse('kitchen:shoppinglist_view'))
 
-def add_recipe(request):
+def recipe_add(request):
     if request.method == 'POST':
         form = kitchen.forms.add_recipe(request.POST)
         if form.is_valid():
@@ -203,8 +203,8 @@ def add_recipe(request):
 
     return render(request, 'kitchen/add_recipe.html', {'form':form})
 
-def index(request):
-    return render(request, 'kitchen/index.html', {})
+def home(request):
+    return render(request, 'kitchen/home.html', {})
 
 def item_selector_final(request):
  
