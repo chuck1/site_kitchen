@@ -1,0 +1,21 @@
+
+body {
+	font-family: arial;
+}
+
+table, td, th {
+	border: 1px solid black;
+	border-collapse: collapse;
+}
+td, th {
+	padding: 2px;
+}
+
+.color0 { background-color: #008800; }
+.color1 { background-color: #00ff00; }
+.color2 { background-color: #00ff00; }
+.color3 { background-color: #00ff00; }
+.color4 { background-color: #00ff00; }
+.color5 { background-color: #00ff00; }
+
+
