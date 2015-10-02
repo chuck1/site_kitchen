@@ -85,7 +85,7 @@ USE_TZ = True
 #STATIC_URL = '/django/static/'
 STATIC_URL = '/static/site_kitchen/'
 
-STATIC_ROOT = '/home/chuck/home/var/www/source/static/site_kitchen/'
+STATIC_ROOT = '/home/chuck/git/www/source/static/site_kitchen/'
 #STATIC_ROOT = 'static/'
 
 STATICFILES_DIRS = (
