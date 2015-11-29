@@ -27,6 +27,13 @@
 					<td><a href="../../../admin/kitchen/item/{{ing.item.id}}/">{{ ing.item.name }}</a></td>
 					<td>{{ ing.unit }}</td>
 					<td>{{ ing.amount }}</td>
+					<td>
+						<form action="{% url 'kitchen:ing_delete' ing.id %}"
+							method="post">
+							{% csrf_token %}
+							<input type="submit" value="delete">
+						</form>
+					</td>
 				</tr>
 				{% endfor %}
 			</table>

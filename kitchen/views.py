@@ -131,9 +131,9 @@ def create_recipe(request):
         r.save()
         
         #return render(request, 'kitchen/error.html', {'message':'create recipe: Success'})
-        #return recipe_edit(request, r.id)
+        return recipe_edit(request, r.id)
         #return HttpResponse('/django/admin/')
-        return HttpResponseRedirect("/site2/kitchen/{}/recipe_edit/".format(r.id))
+        #return HttpResponseRedirect("/ite2/kitchen/{}/recipe_edit/".format(r.id))
 
 def ingredient_create(request):
     
@@ -158,7 +158,11 @@ def ingredient_create(request):
 
         i.save()
 
-        return HttpResponseRedirect("/site2/kitchen/{}/recipe_edit/".format(recipe_id))
+        return HttpResponseRedirect("/site_kitchen/kitchen/{}/recipe_edit/".format(recipe_id))
+def ing_delete(request, ing_id):
+    ing = get_object_or_404(Ingredient, pk=ing_id)
+    ing.delete()
+    return HttpResponseRedirect("/site_kitchen/kitchen/{}/recipe_edit/".format(ing.recipe.id))
 
 def create_recipe_order(request, recipe_id):
     
