@@ -323,9 +323,13 @@ def recipeorder_edit(request, recipeorder_id):
 
     try:
         request.POST['btnComplete']
+
+        # insert code for when recipe order is completed
+        # the extra unit and quantity are for creating inventory transation for what was actually used
     except:
         pass
     else:
+        # dont really know what this was...
         ings = {}
         for k,v in request.POST.items():
             pass
@@ -337,9 +341,18 @@ def recipeorder_edit(request, recipeorder_id):
             'recipeorder': recipeorder,
             'ingredients': kitchen.models.Ingredient.objects.filter(recipe=recipeorder.recipe),
             'units':       kitchen.models.Unit.objects.all(),
-            'ings':        ings,
+            #'ings':        ings,
             }
     return render(request, "kitchen/recipeorder_edit.html", context)
+
+def recipeorder_cancel(request, recipeorder_id):
+    recipeorder = get_object_or_404(RecipeOrder, pk=recipeorder_id)
+
+    recipeorder.status = kitchen.models.RecipeOrder.CANCELED
+
+    recipeorder.save()
+
+    return recipeorder_list(request)
 
 def tree(request):
     

@@ -11,7 +11,16 @@
 			<input type="submit" value="edit">
 		</form>
 	</td>
+	<td>
+		<form action="{% url 'kitchen:recipeorder_cancel' ro.id %}" method="post">
+			{% csrf_token %}
+			<input type="submit" value="cancel">
+		</form>
+	</td>
 </tr>
 {% endfor %}
 </table>
 {% endblock %}
+
+
+
